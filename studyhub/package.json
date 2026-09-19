@@ -14,7 +14,7 @@
     "db:seed:demo": "tsx --env-file=.env prisma/seed.ts --demo",
     "postinstall": "prisma generate",
     "test:e2e:clean": "tsx --env-file=.env tests/e2e/cleanup.ts",
-    "test:e2e": "npm run test:e2e:clean && node --env-file=.env tests/e2e/auth.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/admin.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/materials.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/semesters.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/student.e2e.mjs && npm run test:e2e:clean"
+    "test:e2e": "npm run test:e2e:clean && node --env-file=.env tests/e2e/auth.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/admin.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/materials.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/semesters.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/student.e2e.mjs && npm run test:e2e:clean && node --env-file=.env tests/e2e/engagement.e2e.mjs && npm run test:e2e:clean"
   },
   "dependencies": {
     "@node-rs/argon2": "^2.2.1",

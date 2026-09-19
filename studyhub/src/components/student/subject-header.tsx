@@ -2,10 +2,12 @@ import { subjectIcon } from "@/lib/subject-icons";
 import type { Progress } from "@/lib/progress";
 import { IconTile } from "@/components/ui/icon-tile";
 import { ProgressCard } from "./progress-bar";
+import { SubjectBookmarkButton } from "./toggle-buttons";
 
-/** The banner at the top of a subject: big icon, name, program and semester, description, and overall progress. */
-export function SubjectHeader({ name, subtitle, description, icon, progress }: {
+/** The banner at the top of a subject: big icon, name, program and semester, description, progress and bookmark. */
+export function SubjectHeader({ name, subtitle, description, icon, progress, subjectId, bookmarked, returnTo }: {
   name: string; subtitle: string; description: string; icon: string; progress: Progress;
+  subjectId: string; bookmarked: boolean; returnTo: string;
 }) {
   const tile = subjectIcon(icon);
   return (
@@ -23,7 +25,10 @@ export function SubjectHeader({ name, subtitle, description, icon, progress }: {
             {description && <p className="mt-3 max-w-2xl text-muted">{description}</p>}
           </div>
         </div>
-        <ProgressCard progress={progress} />
+        <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end">
+          <ProgressCard progress={progress} />
+          <SubjectBookmarkButton subjectId={subjectId} bookmarked={bookmarked} returnTo={returnTo} />
+        </div>
       </div>
     </section>
   );

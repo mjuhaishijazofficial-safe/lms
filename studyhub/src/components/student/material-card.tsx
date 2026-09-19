@@ -14,7 +14,7 @@ export function MaterialCard({ material: m, completed, context }: { material: Ma
       <div className="flex gap-3.5">
         <IconTile icon={d.icon} className={d.tile} />
         <div className="min-w-0 flex-1">
-          <Link href={`/materials/${m.id}`} className="line-clamp-2 font-semibold leading-snug hover:text-primary">{m.title}</Link>
+          <Link href={`/materials/${m.id}`} prefetch={false} className="line-clamp-2 font-semibold leading-snug hover:text-primary">{m.title}</Link>
           {m.description && <p className="mt-1 line-clamp-2 text-sm text-muted">{m.description}</p>}
           <p className="mt-1.5 text-sm text-muted">{meta}</p>
           {context && <p className="mt-0.5 truncate text-xs text-muted">{context}</p>}

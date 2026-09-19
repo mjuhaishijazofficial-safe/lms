@@ -15,3 +15,9 @@ export function idParam(sp: SearchParams, key: string): string | undefined {
 }
 
 export const pageParam = (sp: SearchParams) => pageSchema.parse(one(sp, "page"));
+
+/** Only same-site relative paths (no protocol, no backslash) are safe as a post-action redirect target. */
+export function safeReturnPath(value: FormDataEntryValue | null, fallback: string): string {
+  const v = typeof value === "string" ? value : "";
+  return v.startsWith("/") && !v.startsWith("//") && !v.includes("\\") ? v : fallback;
+}

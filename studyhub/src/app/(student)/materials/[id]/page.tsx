@@ -4,12 +4,15 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowRight, Download } from "lucide-react";
 import { requireStudent } from "@/server/auth/guards";
 import { getMaterialView } from "@/server/services/library";
+import { isMaterialBookmarked } from "@/server/services/bookmarks";
+import { getMaterialProgress, recordOpened } from "@/server/services/progress";
 import { idSchema } from "@/server/validation/common";
 import { describeMaterial, materialMeta } from "@/lib/material-types";
 import { timeAgo } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { IconTile } from "@/components/ui/icon-tile";
 import { DocumentCard, LinkCard, NoteReader, PdfViewer, VideoPlayer } from "@/components/student/material-viewers";
+import { MarkCompleteButton, MaterialBookmarkButton } from "@/components/student/toggle-buttons";
 
 export const metadata: Metadata = { title: "Study material" };
 
@@ -22,6 +25,12 @@ export default async function MaterialPage({ params }: PageProps<"/materials/[id
   const d = describeMaterial(m);
   const { chapter } = m;
   const isPdf = m.type === "FILE" && m.mimeType === "application/pdf";
+  const returnTo = `/materials/${m.id}`;
+
+  // Visiting this page is what "opened" means. Links to it (cards, previous/next) all disable prefetch, so this
+  // only runs on a real navigation, never just because a link scrolled into view.
+  await recordOpened(user.id, m.id);
+  const [bookmarked, progress] = await Promise.all([isMaterialBookmarked(user.id, m.id), getMaterialProgress(user.id, m.id)]);
 
   return (
     <div className="space-y-6">
@@ -39,6 +48,11 @@ export default async function MaterialPage({ params }: PageProps<"/materials/[id
         actions={isPdf ? <a href={`/api/materials/${m.id}/file?download=1`} className="btn-primary"><Download className="size-4.5" aria-hidden /> Download</a> : undefined}
       />
 
+      <div className="flex flex-wrap items-center gap-3">
+        <MarkCompleteButton materialId={m.id} completed={progress.completed} returnTo={returnTo} />
+        <MaterialBookmarkButton materialId={m.id} bookmarked={bookmarked} returnTo={returnTo} />
+      </div>
+
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
         <span className="inline-flex items-center gap-2"><IconTile icon={d.icon} size="sm" className={d.tile} /> {d.label}</span>
         {materialMeta(m) && <span>· {materialMeta(m)}</span>}
@@ -54,11 +68,11 @@ export default async function MaterialPage({ params }: PageProps<"/materials/[id
 
       <nav aria-label="Other material in this chapter" className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
         {previous ? (
-          <Link href={`/materials/${previous.id}`} className="btn-outline max-w-full"><ArrowLeft className="size-4.5 shrink-0" aria-hidden /> <span className="truncate">{previous.title}</span></Link>
+          <Link href={`/materials/${previous.id}`} prefetch={false} className="btn-outline max-w-full"><ArrowLeft className="size-4.5 shrink-0" aria-hidden /> <span className="truncate">{previous.title}</span></Link>
         ) : <span />}
         <p className="text-sm text-muted">{position} of {total} in this chapter</p>
         {next ? (
-          <Link href={`/materials/${next.id}`} className="btn-outline max-w-full"><span className="truncate">{next.title}</span> <ArrowRight className="size-4.5 shrink-0" aria-hidden /></Link>
+          <Link href={`/materials/${next.id}`} prefetch={false} className="btn-outline max-w-full"><span className="truncate">{next.title}</span> <ArrowRight className="size-4.5 shrink-0" aria-hidden /></Link>
         ) : <span />}
       </nav>
     </div>

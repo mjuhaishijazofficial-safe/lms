@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { BookOpen, Info, ListOrdered, Sparkles } from "lucide-react";
 import { requireStudent } from "@/server/auth/guards";
 import { getSubjectView } from "@/server/services/library";
+import { isSubjectBookmarked } from "@/server/services/bookmarks";
 import { idSchema } from "@/server/validation/common";
 import { idParam, one } from "@/lib/params";
 import { plural } from "@/lib/format";
@@ -25,11 +26,15 @@ export default async function SubjectPage({ params, searchParams }: PageProps<"/
   const view = idSchema.safeParse(id).success ? await getSubjectView(user.id, id) : null;
   if (!view) notFound();
   const { subject, progress, opened, completed } = view;
+  const bookmarked = await isSubjectBookmarked(user.id, subject.id);
 
   const tab: Tab = TABS.find((t) => t === one(sp, "tab")) ?? "chapters";
   const base = `/subjects/${subject.id}`;
+  const chapterParam = idParam(sp, "chapter");
   // Open the chapter named in the link, otherwise the first chapter that has something in it.
-  const openId = idParam(sp, "chapter") ?? subject.chapters.find((c) => c.materials.length > 0)?.id;
+  const openId = chapterParam ?? subject.chapters.find((c) => c.materials.length > 0)?.id;
+  const returnQs = new URLSearchParams({ ...(tab !== "chapters" ? { tab } : {}), ...(chapterParam ? { chapter: chapterParam } : {}) });
+  const returnTo = returnQs.size ? `${base}?${returnQs}` : base;
 
   const materials = subject.chapters.flatMap((c) => c.materials.map((m) => ({ m, chapter: c })));
   const upNext = materials.filter(({ m }) => !opened.has(m.id)).slice(0, 8);
@@ -44,7 +49,10 @@ export default async function SubjectPage({ params, searchParams }: PageProps<"/
         ...(subject.semester ? [{ label: subject.semester.name, href: `/courses/${subject.course.id}#semester-${subject.semester.id}` }] : []),
         { label: subject.name },
       ]} />
-      <SubjectHeader name={subject.name} subtitle={[subject.course.name, subject.semester?.name].filter(Boolean).join(" · ")} description={subject.description} icon={subject.icon} progress={progress} />
+      <SubjectHeader
+        name={subject.name} subtitle={[subject.course.name, subject.semester?.name].filter(Boolean).join(" · ")} description={subject.description} icon={subject.icon} progress={progress}
+        subjectId={subject.id} bookmarked={bookmarked} returnTo={returnTo}
+      />
 
       <Tabs
         label="Subject sections" active={tab}

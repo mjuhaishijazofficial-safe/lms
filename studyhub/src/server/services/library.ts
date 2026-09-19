@@ -23,40 +23,50 @@ export type Library = { courses: LibraryCourse[]; subjectCount: number; material
 
 const ORDER = [{ order: "asc" as const }, { createdAt: "asc" as const }];
 
+const subjectTreeSelect = {
+  id: true, name: true, description: true, icon: true, semester: { select: { id: true, name: true, order: true } },
+  chapters: {
+    where: { status: "PUBLISHED" as const }, orderBy: ORDER,
+    select: { id: true, title: true, description: true, chapterNumber: true, materials: { where: { status: "PUBLISHED" as const }, orderBy: ORDER, select: { id: true } } },
+  },
+} as const;
+
+type SubjectTreeRow = {
+  id: string; name: string; description: string; icon: string; semester: SemesterRef | null;
+  chapters: { id: string; title: string; description: string; chapterNumber: number; materials: { id: string }[] }[];
+};
+
+/** Turns a subject-with-chapters row into the display shape, computing its progress from `completed`. */
+function buildSubject(s: SubjectTreeRow, completed: ReadonlySet<string>): LibrarySubject {
+  const chapters = s.chapters.map((c) => ({ id: c.id, title: c.title, description: c.description, chapterNumber: c.chapterNumber, materialIds: c.materials.map((m) => m.id) }));
+  return {
+    id: s.id, name: s.name, description: s.description, icon: s.icon, semester: s.semester, chapters,
+    chapterCount: chapters.length, materialCount: chapters.reduce((n, c) => n + c.materialIds.length, 0), progress: computeProgress(chapters, completed),
+  };
+}
+
+async function completedMaterialIds(userId: string): Promise<Set<string>> {
+  const rows = await db.materialProgress.findMany({ where: { userId, completedAt: { not: null } }, select: { materialId: true } });
+  return new Set(rows.map((r) => r.materialId));
+}
+
 /** Loaded once per request per student (React `cache`), then sliced by the dashboard, program and subject pages. */
 export const loadLibrary = cache(async (userId: string): Promise<Library> => {
   const scope = await getStudentScope(userId);
-  const [courses, doneRows] = await Promise.all([
+  const [courses, completed] = await Promise.all([
     db.course.findMany({
       where: studentCourseWhere(scope),
       orderBy: ORDER,
       select: {
         id: true, name: true, description: true,
-        subjects: {
-          where: studentSubjectWhere(scope),
-          orderBy: [{ semester: { order: "desc" } }, { order: "asc" }, { createdAt: "asc" }],
-          select: {
-            id: true, name: true, description: true, icon: true, semester: { select: { id: true, name: true, order: true } },
-            chapters: {
-              where: { status: "PUBLISHED" }, orderBy: ORDER,
-              select: { id: true, title: true, description: true, chapterNumber: true, materials: { where: { status: "PUBLISHED" }, orderBy: ORDER, select: { id: true } } },
-            },
-          },
-        },
+        subjects: { where: studentSubjectWhere(scope), orderBy: [{ semester: { order: "desc" } }, { order: "asc" }, { createdAt: "asc" }], select: subjectTreeSelect },
       },
     }),
-    db.materialProgress.findMany({ where: { userId, completedAt: { not: null } }, select: { materialId: true } }),
+    completedMaterialIds(userId),
   ]);
-  const completed = new Set(doneRows.map((r) => r.materialId));
 
   const built = courses.map((course): LibraryCourse => {
-    const subjects = course.subjects.map((s): LibrarySubject => {
-      const chapters = s.chapters.map((c) => ({ id: c.id, title: c.title, description: c.description, chapterNumber: c.chapterNumber, materialIds: c.materials.map((m) => m.id) }));
-      return {
-        id: s.id, name: s.name, description: s.description, icon: s.icon, semester: s.semester, chapters,
-        chapterCount: chapters.length, materialCount: chapters.reduce((n, c) => n + c.materialIds.length, 0), progress: computeProgress(chapters, completed),
-      };
-    });
+    const subjects = course.subjects.map((s) => buildSubject(s, completed));
     const allChapters = subjects.flatMap((s) => s.chapters);
     return {
       id: course.id, name: course.name, description: course.description,
@@ -74,6 +84,18 @@ export const loadLibrary = cache(async (userId: string): Promise<Library> => {
   };
 });
 
+/** Specific subjects by id (e.g. bookmarked ones), in the given order. Subjects no longer visible are dropped silently. */
+export async function getSubjectsByIds(userId: string, ids: string[]): Promise<LibrarySubject[]> {
+  if (ids.length === 0) return [];
+  const scope = await getStudentScope(userId);
+  const [rows, completed] = await Promise.all([
+    db.subject.findMany({ where: { id: { in: ids }, ...studentSubjectWhere(scope) }, select: subjectTreeSelect }),
+    completedMaterialIds(userId),
+  ]);
+  const byId = new Map(rows.map((s) => [s.id, buildSubject(s, completed)]));
+  return ids.map((id) => byId.get(id)).filter((s): s is LibrarySubject => !!s);
+}
+
 export type SubjectGroup = { key: string; name: string; current: boolean; subjects: LibrarySubject[] };
 
 /** Groups subjects by semester: the current one first, earlier ones newest-first, then subjects for the whole program. */
@@ -88,7 +110,7 @@ export function groupBySemester(subjects: LibrarySubject[], currentId: string | 
   return [...groups.values()].sort((a, b) => rank(b) - rank(a));
 }
 
-const cardSelect = {
+export const cardSelect = {
   id: true, type: true, title: true, description: true, fileName: true, fileSize: true, durationSeconds: true, externalUrl: true, createdAt: true,
 } as const;
 
@@ -96,6 +118,13 @@ export type MaterialCardData = {
   id: string; type: MaterialType; title: string; description: string; fileName: string | null; fileSize: number | null;
   durationSeconds: number | null; externalUrl: string | null; createdAt: Date;
 };
+
+/** A material card plus which subject/chapter it lives in, for lists that mix material from more than one place. */
+export const materialWithContextSelect = {
+  ...cardSelect,
+  chapter: { select: { chapterNumber: true, title: true, subject: { select: { id: true, name: true, icon: true } } } },
+} as const;
+export type MaterialWithContext = MaterialCardData & { chapter: { chapterNumber: number; title: string; subject: { id: string; name: string; icon: string } } };
 
 /** One subject with its chapters, materials and this student's activity. Null when it isn't theirs to see. */
 export async function getSubjectView(userId: string, subjectId: string) {
@@ -144,16 +173,11 @@ export async function getMaterialView(userId: string, materialId: string) {
   return { material, previous: siblings[at - 1] ?? null, next: siblings[at + 1] ?? null, position: at + 1, total: siblings.length };
 }
 
-const recentSelect = {
-  ...cardSelect,
-  chapter: { select: { chapterNumber: true, title: true, subject: { select: { id: true, name: true, icon: true } } } },
-} as const;
-
 /** Newest material first, only what this student is allowed to see. */
 export async function listRecentMaterials(userId: string, page: number, pageSize = PAGE_SIZE) {
   const where = studentMaterialWhere(await getStudentScope(userId));
   const [rows, total] = await Promise.all([
-    db.material.findMany({ where, orderBy: { createdAt: "desc" }, skip: (page - 1) * pageSize, take: pageSize, select: recentSelect }),
+    db.material.findMany({ where, orderBy: { createdAt: "desc" }, skip: (page - 1) * pageSize, take: pageSize, select: materialWithContextSelect }),
     db.material.count({ where }),
   ]);
   return { rows, total };

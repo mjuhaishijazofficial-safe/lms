@@ -116,7 +116,7 @@ for (const p of ["/dashboard", `/subjects/${sA1}`, `/materials/${mPdf}`, "/recen
   check("dashboard: shows their subjects, hides archived + other classes", t.includes(`${P} Algebra`) && !t.includes("Hidden Archived Subject") && !t.includes("Beta Biology"));
   check("dashboard: recently added lists visible material only", t.includes(`${P} Worksheet`) && !t.includes("Draft Material") && !t.includes("Archived Material") && !t.includes("In Draft Chapter") && !t.includes("Beta Secret Note"));
   check("dashboard: the bell counts this week's new material and lists it", /5 new study materials this week/.test(h), h.match(/aria-label="[^"]*study materials[^"]*"/)?.[0]);
-  check("dashboard: sidebar has the student links and no admin or unfinished links", ["/dashboard", "/courses", "/subjects", "/recent", "/profile"].every((p) => h.includes(`href="${p}"`)) && !h.includes('href="/admin') && !h.includes('href="/bookmarks"')); }
+  check("dashboard: sidebar has the student links and no admin links", ["/dashboard", "/courses", "/subjects", "/search", "/recent", "/bookmarks", "/profile"].every((p) => h.includes(`href="${p}"`)) && !h.includes('href="/admin')); }
 { const { h } = await html("/dashboard", s2.jar); const t = text(h);
   check("isolation: the Beta student sees Beta only (no Alpha names anywhere)", t.includes(`${P} Beta Biology`) && !t.includes("Alpha") && !t.includes("Algebra") && !t.includes("Worksheet") && /Total Materials\s+1\b/.test(t), t.match(/Total Materials\s+\d+/)?.[0]); }
 { const { h } = await html("/dashboard", s3.jar); const t = text(h);
@@ -205,12 +205,14 @@ for (let i = 1; i <= 22; i++) await makeMaterial(chB, { type: "LINK", title: `${
 
 // ---- progress (recorded straight in the database; the UI for it arrives with Phase 5) --------------------------
 { // Completing the only material in Polynomials completes that chapter: 1 of 2 chapters.
-  await db.materialProgress.create({ data: { userId: s1.id, materialId: mDocx, completedAt: new Date() } });
+  // upsert, not create: visiting a material's page (which several earlier checks in this suite already did)
+  // now records it as "opened" on its own, so a row may already exist here.
+  await db.materialProgress.upsert({ where: { userId_materialId: { userId: s1.id, materialId: mDocx } }, create: { userId: s1.id, materialId: mDocx, completedAt: new Date() }, update: { completedAt: new Date() } });
   const { h } = await html(`/subjects/${sA1}`, s1.jar); const t = text(h);
   check("progress: one finished chapter shows 1 / 2 chapters, 50%", /1 \/ 2 chapters/.test(t) && /aria-valuenow="50"/.test(h) && /Chapter completed/.test(h), t.match(/\d+ \/ \d+ chapters/)?.[0]);
   const d = text((await html("/dashboard", s1.jar)).h); check("progress: the dashboard shows the same overall percentage", /Your progress\s+50%/.test(d), d.match(/Your progress\s+\d+%/)?.[0]);
   // Finishing every *visible* material in Real Numbers completes it, even though hidden drafts were never completed.
-  for (const id of [mPdf, mYt, mLink, mNote]) await db.materialProgress.create({ data: { userId: s1.id, materialId: id, completedAt: new Date() } });
+  for (const id of [mPdf, mYt, mLink, mNote]) await db.materialProgress.upsert({ where: { userId_materialId: { userId: s1.id, materialId: id } }, create: { userId: s1.id, materialId: id, completedAt: new Date() }, update: { completedAt: new Date() } });
   const t2 = text((await html(`/subjects/${sA1}`, s1.jar)).h);
   check("progress: hidden draft/archived material never blocks completion (2 / 2, 100%)", /2 \/ 2 chapters/.test(t2) && /Overall Progress[^]*100\s*%/.test(t2), t2.match(/\d+ \/ \d+ chapters/)?.[0]);
   const t3 = text((await html("/dashboard", s2.jar)).h); check("progress: one student's progress never appears for another", /Your progress\s+0%/.test(t3)); }
