@@ -1,0 +1,36 @@
+body { font-family: Arial, sans-serif; background: #fff; color: #000; margin: 0; line-height: 1.5; }
+main { max-width: 760px; margin: 0 auto; padding: 16px; }
+a { color: #000; }
+h1 { font-size: 24px; } h2 { font-size: 19px; margin-top: 32px; } h3 { font-size: 16px; margin-top: 24px; }
+
+/* sidebar: the only coloured part */
+.side { background: #0b1f4d; color: #fff; padding: 20px 0; display: flex; flex-direction: column; }
+.side a { color: #fff; text-decoration: none; padding: 10px 24px; display: block; }
+.side a:hover { background: #16306e; }
+.side a.active { background: #1f3f8a; }
+.brand { font-size: 22px; font-weight: bold; padding: 0 24px 20px; }
+.brand small { display: block; font-size: 12px; font-weight: normal; color: #b8c4e0; }
+.side form { margin: 16px 24px 0; }
+.side button { background: none; color: #fff; border: 1px solid #fff; padding: 6px 14px; margin: 0; }
+body.with-side { display: flex; min-height: 100vh; }
+body.with-side .side { width: 220px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; box-sizing: border-box; }
+body.with-side main { flex: 1; margin: 0; max-width: none; padding: 24px 32px; min-width: 0; }
+@media (max-width: 700px) {
+  body.with-side { display: block; }
+  body.with-side .side { width: auto; height: auto; position: static; }
+}
+
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; }
+form { margin: 8px 0; }
+.inline2 { display: inline; margin: 0 0 0 8px; }
+.inline2 button { margin: 0; padding: 1px 8px; font-size: 13px; }
+label { display: block; margin: 8px 0; }
+label.check { margin: 4px 0; }
+input:not([type=checkbox]):not([type=hidden]), textarea { display: block; width: 100%; max-width: 420px; padding: 6px; border: 1px solid #000; font: inherit; box-sizing: border-box; }
+textarea { max-width: 100%; }
+button { font: inherit; padding: 4px 12px; margin-top: 6px; cursor: pointer; }
+.err { border: 1px solid #000; padding: 8px; }
+.msgs { border: 1px solid #000; height: 380px; overflow-y: auto; padding: 8px; margin-bottom: 8px; }
+.msg { margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #ccc; }
+.time { font-size: 12px; color: #444; margin-left: 8px; }
