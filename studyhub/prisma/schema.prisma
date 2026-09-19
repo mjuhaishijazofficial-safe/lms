@@ -1,0 +1,243 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/// Shared lifecycle for courses, subjects, chapters and materials.
+/// Students only ever see PUBLISHED content.
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum MaterialType {
+  FILE
+  YOUTUBE
+  LINK
+  TEXT
+}
+
+model User {
+  id                 String     @id @default(cuid())
+  name               String
+  email              String     @unique
+  passwordHash       String
+  role               Role
+  status             UserStatus @default(ACTIVE)
+  /// Set when an admin creates the account or resets the password; the user must choose their own at next login.
+  mustChangePassword Boolean    @default(false)
+  lastLoginAt        DateTime?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  studentProfile    StudentProfile?
+  adminProfile      AdminProfile?
+  sessions          Session[]
+  enrollments       Enrollment[]
+  materialProgress  MaterialProgress[]
+  materialBookmarks MaterialBookmark[]
+  subjectBookmarks  SubjectBookmark[]
+  uploadedMaterials Material[]         @relation("UploadedBy")
+
+  @@index([role, status])
+}
+
+model StudentProfile {
+  id        String  @id @default(cuid())
+  userId    String  @unique
+  studentId String? @unique
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AdminProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Only a SHA-256 hash of the session token is stored; the raw token lives in an HttpOnly cookie.
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+/// A program of study: a degree (BS Computer Science), a class or a track. The label users see lives in lib/terms.ts.
+model Course {
+  id          String        @id @default(cuid())
+  name        String
+  description String        @default("")
+  status      ContentStatus @default(PUBLISHED)
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  semesters   Semester[]
+  subjects    Subject[]
+  enrollments Enrollment[]
+
+  @@index([status, order])
+}
+
+/// A term of a program (Semester 1, Semester 2, ...). The order field decides which semesters come earlier.
+model Semester {
+  id        String   @id @default(cuid())
+  courseId  String
+  name      String
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  subjects    Subject[]
+  enrollments Enrollment[]
+
+  @@index([courseId, order])
+}
+
+/// Schema allows many programs per student; V1 services enforce one.
+/// semesterId is the student's CURRENT semester: they can open subjects of that semester and earlier ones.
+model Enrollment {
+  id         String    @id @default(cuid())
+  userId     String
+  courseId   String
+  semesterId String?
+  createdAt  DateTime  @default(now())
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course     Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  semester   Semester? @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, courseId])
+  @@index([courseId, semesterId])
+}
+
+/// semesterId is empty for a subject that applies to the whole program (visible from the first semester).
+model Subject {
+  id          String        @id @default(cuid())
+  courseId    String
+  semesterId  String?
+  name        String
+  description String        @default("")
+  icon        String        @default("book")
+  order       Int           @default(0)
+  status      ContentStatus @default(PUBLISHED)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  course    Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  semester  Semester?         @relation(fields: [semesterId], references: [id], onDelete: SetNull)
+  chapters  Chapter[]
+  bookmarks SubjectBookmark[]
+
+  @@index([courseId, semesterId, status, order])
+}
+
+model Chapter {
+  id            String        @id @default(cuid())
+  subjectId     String
+  title         String
+  description   String        @default("")
+  chapterNumber Int
+  order         Int           @default(0)
+  status        ContentStatus @default(PUBLISHED)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  materials Material[]
+
+  @@index([subjectId, status, order])
+}
+
+/// A future Topic layer can sit between Chapter and Material via a nullable topicId.
+model Material {
+  id              String        @id @default(cuid())
+  chapterId       String
+  type            MaterialType
+  title           String
+  description     String        @default("")
+  // FILE
+  fileKey         String?       @unique
+  fileName        String?
+  mimeType        String?
+  fileSize        Int?
+  // LINK
+  externalUrl     String?
+  // YOUTUBE
+  youtubeId       String?
+  durationSeconds Int?
+  // TEXT (sanitized HTML)
+  textContent     String?
+  order           Int           @default(0)
+  status          ContentStatus @default(PUBLISHED)
+  uploadedById    String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  chapter    Chapter            @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  uploadedBy User?              @relation("UploadedBy", fields: [uploadedById], references: [id], onDelete: SetNull)
+  progress   MaterialProgress[]
+  bookmarks  MaterialBookmark[]
+
+  @@index([chapterId, status, order])
+  @@index([status, createdAt])
+}
+
+model MaterialProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  materialId  String
+  openedAt    DateTime  @default(now())
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  material    Material  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, materialId])
+  @@index([materialId])
+}
+
+model MaterialBookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  materialId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, materialId])
+  @@index([materialId])
+}
+
+model SubjectBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  subjectId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subjectId])
+  @@index([subjectId])
+}

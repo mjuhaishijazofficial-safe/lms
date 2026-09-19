@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* Design tokens taken from the StudyHub reference screenshots. */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --color-page: #f5f7fb;
+  --color-surface: #ffffff;
+  --color-line: #e6eaf2;
+  --color-ink: #0f172a;
+  --color-muted: #64748b;
+
+  --color-primary: #1d4ed8;
+  --color-primary-hover: #1e40af;
+  --color-primary-soft: #e8efff;
+
+  --color-tile-blue: #e6ecff;
+  --color-tile-amber: #fff4d6;
+  --color-tile-green: #dcfce7;
+  --color-tile-red: #fde8e8;
+  --color-tile-purple: #efe7ff;
+
+  --radius-card: 1rem;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 16px rgb(15 23 42 / 0.04);
+}
+
+body {
+  background: var(--color-page);
+  color: var(--color-ink);
+}
+
+@layer components {
+  .card {
+    @apply rounded-card border border-line bg-surface shadow-card;
+  }
+  .input,
+  .select,
+  .textarea {
+    @apply w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-ink placeholder:text-muted/70 outline-none transition
+      focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed;
+  }
+  .select {
+    @apply appearance-none pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+  }
+  .textarea {
+    @apply min-h-28 resize-y;
+  }
+  /* Study notes: shared by the admin editor and the student reader so both look identical. */
+  .note {
+    @apply text-[15px] leading-7 text-ink;
+  }
+  .note > * + * {
+    @apply mt-3;
+  }
+  .note h2 {
+    @apply mt-6 text-xl font-bold;
+  }
+  .note h3 {
+    @apply mt-5 text-lg font-semibold;
+  }
+  .note ul {
+    @apply list-disc pl-6;
+  }
+  .note ol {
+    @apply list-decimal pl-6;
+  }
+  .note blockquote {
+    @apply border-l-4 border-primary/30 pl-4 text-muted italic;
+  }
+  .note a {
+    @apply text-primary underline underline-offset-2;
+  }
+  .note code {
+    @apply rounded bg-page px-1.5 py-0.5 font-mono text-sm;
+  }
+  .note pre {
+    @apply overflow-x-auto rounded-xl bg-page p-4 font-mono text-sm;
+  }
+  .note hr {
+    @apply my-6 border-line;
+  }
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-semibold text-white transition
+      hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-semibold text-ink transition
+      hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium text-muted transition
+      hover:bg-page hover:text-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-40;
+  }
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 font-semibold text-white transition
+      hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/25 disabled:opacity-60;
+  }
+  .btn-soft {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary-soft px-5 py-2.5 font-semibold text-primary transition
+      hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25;
+  }
+}
