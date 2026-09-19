@@ -41,6 +41,13 @@ Demo students sign in with `ali@studyhub.local` / `Student-Demo-2026` (and `sara
 **End-to-end tests** drive the real forms over HTTP. Build and start the app on port 3200 first
 (`npm run build && npx next start -p 3200`), with `.env` loaded. They create and remove records named `SmokeTest…`.
 
+Six suites, ~396 checks: `auth` (login, sessions, rate limiting), `admin` (class/subject/chapter/student CRUD,
+reordering, filters, pagination), `materials` (uploads incl. disguised/oversized files, YouTube/link/note
+validation, download authorization), `semesters` (program setup, promotion, cross-semester visibility),
+`student` (dashboard/subject/material pages, isolation between students, access tampering), and `engagement`
+(bookmarks, mark-as-complete, search scoping). Every suite includes deliberate tampering attempts (wrong role,
+wrong owner, content outside the caller's visibility) to confirm the server — not just the UI — refuses them.
+
 ## Where things live
 
 - `src/server/services/` business rules and database access (every function checks the caller is allowed)
