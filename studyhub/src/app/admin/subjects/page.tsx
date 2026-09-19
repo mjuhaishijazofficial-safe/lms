@@ -68,14 +68,14 @@ export default async function SubjectsPage({ searchParams }: PageProps<"/admin/s
             <TableCard>
               <Table caption="Subjects">
                 <thead>
-                  <tr><Th>Order</Th><Th>Subject</Th><Th>{TERMS.program}</Th><Th>Chapters</Th><Th>Status</Th><Th><span className="sr-only">Actions</span></Th></tr>
+                  <tr><Th className="hidden md:table-cell">Order</Th><Th>Subject</Th><Th className="hidden md:table-cell">{TERMS.program}</Th><Th className="hidden md:table-cell">Chapters</Th><Th>Status</Th><Th><span className="sr-only">Actions</span></Th></tr>
                 </thead>
                 <tbody>
                   {subjects.map((s, i) => {
                     const icon = subjectIcon(s.icon);
                     return (
                       <Tr key={s.id}>
-                        <Td>
+                        <Td className="hidden md:table-cell">
                           <MoveButtons id={s.id} action={moveSubjectAction} returnTo={returnTo} label={s.name}
                             first={i > 0 && !sameGroup(subjects[i - 1], s)} last={i < subjects.length - 1 && !sameGroup(subjects[i + 1], s)} />
                         </Td>
@@ -85,14 +85,15 @@ export default async function SubjectsPage({ searchParams }: PageProps<"/admin/s
                             <div className="min-w-0">
                               <Link href={`/admin/subjects/${s.id}`} className="font-semibold hover:text-primary">{s.name}</Link>
                               {s.description && <p className="line-clamp-1 max-w-sm text-muted">{s.description}</p>}
+                              <p className="mt-0.5 text-xs text-muted md:hidden">{s.course.name} · {plural(s._count.chapters, "chapter")}</p>
                             </div>
                           </div>
                         </Td>
-                        <Td className="whitespace-nowrap">
+                        <Td className="hidden whitespace-nowrap md:table-cell">
                           <Link href={`/admin/courses/${s.course.id}`} className="hover:text-primary">{s.course.name}</Link>
                           <p className="text-muted">{s.semester?.name ?? `Every ${TERMS.semesterLower}`}</p>
                         </Td>
-                        <Td className="whitespace-nowrap"><Link href={`/admin/chapters?subject=${s.id}`} className="text-primary hover:underline">{plural(s._count.chapters, "chapter")}</Link></Td>
+                        <Td className="hidden whitespace-nowrap md:table-cell"><Link href={`/admin/chapters?subject=${s.id}`} className="text-primary hover:underline">{plural(s._count.chapters, "chapter")}</Link></Td>
                         <Td><StatusBadge status={s.status} /></Td>
                         <Td>
                           <RowActions id={s.id} name={s.name} status={s.status} editHref={`/admin/subjects/${s.id}`} returnTo={returnTo}

@@ -75,12 +75,12 @@ export default async function ChaptersPage({ searchParams }: PageProps<"/admin/c
             <TableCard footer={<Pagination page={page} total={total} pageSize={PAGE_SIZE} basePath="/admin/chapters" params={params} />}>
               <Table caption="Chapters">
                 <thead>
-                  <tr><Th>Order</Th><Th>No.</Th><Th>Chapter</Th><Th>Subject</Th><Th>Materials</Th><Th>Status</Th><Th><span className="sr-only">Actions</span></Th></tr>
+                  <tr><Th className="hidden md:table-cell">Order</Th><Th>No.</Th><Th>Chapter</Th><Th className="hidden md:table-cell">Subject</Th><Th className="hidden md:table-cell">Materials</Th><Th>Status</Th><Th><span className="sr-only">Actions</span></Th></tr>
                 </thead>
                 <tbody>
                   {rows.map((c, i) => (
                     <Tr key={c.id}>
-                      <Td>
+                      <Td className="hidden md:table-cell">
                         <MoveButtons id={c.id} action={moveChapterAction} returnTo={returnTo} label={c.title}
                           first={i > 0 && rows[i - 1].subjectId !== c.subjectId} last={i < rows.length - 1 && rows[i + 1].subjectId !== c.subjectId} />
                       </Td>
@@ -90,12 +90,13 @@ export default async function ChaptersPage({ searchParams }: PageProps<"/admin/c
                       <Td>
                         <Link href={`/admin/chapters/${c.id}`} className="font-semibold hover:text-primary">{c.title}</Link>
                         {c.description && <p className="line-clamp-1 max-w-sm text-muted">{c.description}</p>}
+                        <p className="mt-0.5 text-xs text-muted md:hidden">{c.subject.name} · {plural(c._count.materials, "material")}</p>
                       </Td>
-                      <Td className="whitespace-nowrap">
+                      <Td className="hidden whitespace-nowrap md:table-cell">
                         <p>{c.subject.name}</p>
                         <p className="text-muted">{[c.subject.course.name, c.subject.semester?.name].filter(Boolean).join(" · ")}</p>
                       </Td>
-                      <Td className="whitespace-nowrap"><Link href={`/admin/materials?chapter=${c.id}`} className="text-primary hover:underline">{plural(c._count.materials, "material")}</Link></Td>
+                      <Td className="hidden whitespace-nowrap md:table-cell"><Link href={`/admin/materials?chapter=${c.id}`} className="text-primary hover:underline">{plural(c._count.materials, "material")}</Link></Td>
                       <Td><StatusBadge status={c.status} /></Td>
                       <Td>
                         <RowActions id={c.id} name={c.title} status={c.status} editHref={`/admin/chapters/${c.id}`} returnTo={returnTo}
