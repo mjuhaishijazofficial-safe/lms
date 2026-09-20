@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bookmark, BookMarked, Clock, Files, GraduationCap, Headset, Home, Layers, LayoutDashboard, ListOrdered, Menu, Search, Settings, User, Users, X,
+  Bookmark, BookMarked, ShieldCheck, Clock, Files, GraduationCap, Headset, Home, Layers, LayoutDashboard, ListOrdered, Menu, Search, Settings, User, Users, X,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/format";
@@ -23,6 +23,7 @@ const NAV: Record<"admin" | "student", NavItem[]> = {
     { href: "/admin/subjects", label: "Subjects", icon: Layers },
     { href: "/admin/chapters", label: "Chapters", icon: ListOrdered },
     { href: "/admin/materials", label: "Materials", icon: Files },
+    { href: "/admin/admins", label: "Admins", icon: ShieldCheck },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ],
   student: [

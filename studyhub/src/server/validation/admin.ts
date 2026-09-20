@@ -26,6 +26,7 @@ const studentBase = {
   status: z.enum(["ACTIVE", "INACTIVE"]),
 };
 
+export const createAdminSchema = z.object({ name: trimmed(120, "Full name"), email: loginHandleSchema, password: passwordSchema });
 export const createStudentSchema = z.object({ ...studentBase, password: passwordSchema });
 export const updateStudentSchema = z.object({ id: idSchema, ...studentBase });
 export const resetPasswordSchema = z
