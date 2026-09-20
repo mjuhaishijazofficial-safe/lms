@@ -1,13 +1,14 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { env } from "@/server/env";
+import { DatabaseStorage } from "./database";
 import { LocalStorage } from "./local";
 import type { StorageProvider } from "./types";
 
 let instance: StorageProvider | undefined;
 
 export function getStorage(): StorageProvider {
-  instance ??= new LocalStorage(env.STORAGE_LOCAL_DIR);
+  instance ??= env.STORAGE_DRIVER === "database" ? new DatabaseStorage() : new LocalStorage(env.STORAGE_LOCAL_DIR);
   return instance;
 }
 

@@ -241,3 +241,10 @@ model SubjectBookmark {
   @@unique([userId, subjectId])
   @@index([subjectId])
 }
+
+/// Uploaded study files when STORAGE_DRIVER="database" (hosts with a read-only disk, such as Vercel).
+model StoredFile {
+  key       String   @id
+  data      Bytes
+  createdAt DateTime @default(now())
+}
