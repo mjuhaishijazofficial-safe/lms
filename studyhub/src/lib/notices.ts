@@ -7,6 +7,7 @@ export const NOTICES = {
   "student-activated": "Student reactivated. They can sign in again.",
   "student-deactivated": "Student deactivated and signed out everywhere.",
   "admin-created": "Admin created. They must choose their own password when they first sign in.",
+  "admin-password-reset": "Temporary password set. The admin has been signed out and must choose a new password at next sign-in.",
   "admin-activated": "Admin reactivated. They can sign in again.",
   "admin-deactivated": "Admin deactivated and signed out everywhere.",
   "password-reset": "Temporary password set. The student has been signed out and must choose a new password at next sign-in.",

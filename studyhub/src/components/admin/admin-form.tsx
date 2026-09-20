@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import type { FormState } from "@/server/action-result";
-import { createAdminAction } from "@/app/admin/admins/actions";
+import { createAdminAction, resetAdminPasswordAction } from "@/app/admin/admins/actions";
 import { Alert } from "@/components/ui/notice";
 import { Field, invalid } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -29,6 +29,21 @@ export function AdminForm() {
         </Field>
       </div>
       <SubmitButton pendingText="Creating…">Create admin</SubmitButton>
+    </form>
+  );
+}
+
+export function ResetAdminPasswordForm({ adminId, name }: { adminId: string; name: string }) {
+  const [state, action] = useActionState<FormState, FormData>(resetAdminPasswordAction, {});
+  const message = state.error ?? state.fieldErrors?.password?.[0];
+  return (
+    <form action={action} className="flex flex-col items-end gap-1" noValidate>
+      <input type="hidden" name="id" value={adminId} />
+      <div className="flex items-center gap-2">
+        <input name="password" type="text" required minLength={8} autoComplete="new-password" placeholder="New temporary password" aria-label={`New temporary password for ${name}`} className="input h-9 w-44 font-mono text-sm" />
+        <SubmitButton variant="soft" pendingText="Saving…">Reset</SubmitButton>
+      </div>
+      {message && <p role="alert" className="text-xs text-red-600">{message}</p>}
     </form>
   );
 }

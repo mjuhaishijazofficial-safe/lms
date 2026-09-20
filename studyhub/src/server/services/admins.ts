@@ -39,3 +39,15 @@ export async function setAdminStatus(actor: SessionUser, id: string, status: Use
   if (!count) throw new ServiceError("This admin no longer exists.", undefined, "not-found");
   if (status === "INACTIVE") await destroyAllSessions(id);
 }
+
+/** Sets a temporary password for another admin; they must replace it at next sign-in and are signed out everywhere. */
+export async function resetAdminPassword(actor: SessionUser, id: string, password: string) {
+  ensureAdmin(actor);
+  if (id === actor.id) throw new ServiceError("Change your own password from your profile.");
+  const { count } = await db.user.updateMany({
+    where: { id, role: "ADMIN" },
+    data: { passwordHash: await hashPassword(password), mustChangePassword: true },
+  });
+  if (!count) throw new ServiceError("This admin no longer exists.", undefined, "not-found");
+  await destroyAllSessions(id);
+}

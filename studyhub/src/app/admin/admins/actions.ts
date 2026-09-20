@@ -6,9 +6,9 @@ import { z } from "zod";
 import { assertAdmin } from "@/server/auth/guards";
 import { formValues, fromZodError, toFormState, type FormState } from "@/server/action-result";
 import { runAdminAction } from "@/server/action-helpers";
-import { createAdminSchema } from "@/server/validation/admin";
+import { adminPasswordSchema, createAdminSchema } from "@/server/validation/admin";
 import { idSchema } from "@/server/validation/common";
-import { createAdmin, setAdminStatus } from "@/server/services/admins";
+import { createAdmin, resetAdminPassword, setAdminStatus } from "@/server/services/admins";
 
 export async function createAdminAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = formValues(formData);
@@ -33,4 +33,16 @@ export async function setAdminStatusAction(formData: FormData) {
   if (id === actor.id && status === "INACTIVE") redirect("/admin/admins?error=admin-self");
   await runAdminAction("student", "/admin/admins", status === "ACTIVE" ? "admin-activated" : "admin-deactivated",
     (a) => setAdminStatus(a, id, status));
+}
+
+export async function resetAdminPasswordAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = adminPasswordSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return fromZodError(parsed.error);
+  try {
+    await resetAdminPassword(await assertAdmin(), parsed.data.id, parsed.data.password);
+  } catch (err) {
+    return toFormState(err);
+  }
+  revalidatePath("/admin", "layout");
+  redirect("/admin/admins?notice=admin-password-reset");
 }

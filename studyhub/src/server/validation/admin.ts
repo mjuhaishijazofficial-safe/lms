@@ -27,6 +27,7 @@ const studentBase = {
 };
 
 export const createAdminSchema = z.object({ name: trimmed(120, "Full name"), email: loginHandleSchema, password: passwordSchema });
+export const adminPasswordSchema = z.object({ id: idSchema, password: passwordSchema });
 export const createStudentSchema = z.object({ ...studentBase, password: passwordSchema });
 export const updateStudentSchema = z.object({ id: idSchema, ...studentBase });
 export const resetPasswordSchema = z

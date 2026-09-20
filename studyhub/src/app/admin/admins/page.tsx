@@ -8,7 +8,7 @@ import { Notice } from "@/components/ui/notice";
 import { Avatar } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TableCard, Td, Th, Tr } from "@/components/ui/data-table";
-import { AdminForm } from "@/components/admin/admin-form";
+import { AdminForm, ResetAdminPasswordForm } from "@/components/admin/admin-form";
 import { setAdminStatusAction } from "./actions";
 
 export const metadata: Metadata = { title: "Admins" };
@@ -49,7 +49,8 @@ export default async function AdminsPage({ searchParams }: PageProps<"/admin/adm
                   </Td>
                   <Td className="hidden whitespace-nowrap text-muted md:table-cell">{a.lastLoginAt ? timeAgo(a.lastLoginAt) : "Never"}</Td>
                   <Td>
-                    <div className="flex justify-end">
+                    <div className="flex items-start justify-end gap-3">
+                      {!isMe && <ResetAdminPasswordForm adminId={a.id} name={a.name} />}
                       {!isMe && (
                         <form action={setAdminStatusAction}>
                           <input type="hidden" name="id" value={a.id} />
