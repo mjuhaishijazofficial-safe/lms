@@ -53,7 +53,7 @@ export function VideoPlayer({ videoId, title, durationSeconds }: { videoId: stri
 export function LinkCard({ id, host }: { id: string; host: string }) {
   return (
     <div className="card flex flex-wrap items-center gap-5 p-6">
-      <IconTile icon={ExternalLink} size="lg" className="bg-tile-blue text-primary" />
+      <IconTile icon={ExternalLink} size="lg" className="bg-tile-purple text-violet-600" />
       <div className="min-w-0 flex-1 basis-60">
         <p className="font-semibold">External resource</p>
         <p className="truncate text-sm text-muted">Opens {host || "the website"} in a new tab</p>

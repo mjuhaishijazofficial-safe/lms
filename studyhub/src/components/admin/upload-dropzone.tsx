@@ -75,7 +75,7 @@ export function UploadDropzone({ maxMb, current, error, required }: {
         />
         {picked ? (
           <div className="relative z-10 flex items-center justify-center gap-3 text-left">
-            <span className="inline-flex size-11 items-center justify-center rounded-xl bg-tile-blue text-primary"><FileText className="size-5" aria-hidden /></span>
+            <span className="inline-flex size-11 items-center justify-center rounded-xl bg-tile-red text-red-600"><FileText className="size-5" aria-hidden /></span>
             <div className="min-w-0">
               <p className="truncate font-medium">{picked.name}</p>
               <p className="text-sm text-muted">{formatBytes(picked.size)} · ready to upload</p>
