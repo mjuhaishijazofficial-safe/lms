@@ -10,6 +10,7 @@ import {
 import { cn } from "@/lib/format";
 import { Logo } from "./logo";
 import { TERMS } from "@/lib/terms";
+import { ADMIN_WHATSAPP_URL } from "@/lib/contact";
 
 type NavItem = { href: string; label: string; icon: LucideIcon; exact?: boolean };
 
@@ -64,13 +65,13 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
 
 function HelpCard() {
   return (
-    <div className="flex items-center gap-3 rounded-2xl bg-primary-soft/70 p-4">
+    <a href={ADMIN_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl bg-primary-soft/70 p-4">
       <Headset className="size-7 shrink-0 text-primary" aria-hidden />
       <div className="text-sm leading-tight">
         <p className="font-semibold text-ink">Need Help?</p>
-        <p className="mt-0.5 text-muted">Contact your admin</p>
+        <p className="mt-0.5 text-muted">WhatsApp your admin</p>
       </div>
-    </div>
+    </a>
   );
 }
 
