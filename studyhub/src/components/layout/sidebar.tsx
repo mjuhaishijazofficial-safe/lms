@@ -51,7 +51,7 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex items-center gap-4 rounded-xl px-4 py-3 text-[15px] font-medium transition",
-                active ? "bg-primary-soft text-primary" : "text-ink/85 hover:bg-page hover:text-ink",
+                active ? "bg-primary-soft text-primary shadow-[inset_3px_0_0_var(--color-accent)]" : "text-ink/85 hover:bg-page hover:text-ink",
               )}
             >
               <Icon className="size-5.5 shrink-0" strokeWidth={active ? 2.2 : 1.8} aria-hidden />
