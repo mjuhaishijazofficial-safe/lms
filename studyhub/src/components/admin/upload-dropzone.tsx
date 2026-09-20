@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FileText, UploadCloud, X } from "lucide-react";
 import { ACCEPT_ATTRIBUTE, ALLOWED_EXTENSIONS, extensionOf } from "@/server/materials/upload";
 import { cn, formatBytes } from "@/lib/format";
@@ -17,6 +17,15 @@ export function UploadDropzone({ maxMb, current, error, required }: {
   const [picked, setPicked] = useState<{ name: string; size: number } | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+
+  // React clears the form (file input included) after every submitted action, so drop the chip with it.
+  useEffect(() => {
+    const form = input.current?.form;
+    if (!form) return;
+    const onReset = () => setPicked(null);
+    form.addEventListener("reset", onReset);
+    return () => form.removeEventListener("reset", onReset);
+  }, []);
 
   function accept(list: FileList | null) {
     const file = list?.[0];
