@@ -39,11 +39,11 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
 
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         <StatCard icon={Users} tile="bg-tile-blue text-primary" label="Total students" value={stats.students} href="/admin/students" />
-        <StatCard icon={UserCheck} tile="bg-tile-green text-emerald-600" label="Active students" value={stats.activeStudents} hint={stats.students ? `${stats.students - stats.activeStudents} inactive` : undefined} href="/admin/students?status=ACTIVE" />
-        <StatCard icon={GraduationCap} tile="bg-tile-purple text-violet-600" label={TERMS.programs} value={stats.courses} href="/admin/courses" />
-        <StatCard icon={Layers} tile="bg-tile-amber text-amber-700" label="Subjects" value={stats.subjects} href="/admin/subjects" />
+        <StatCard icon={UserCheck} tile="bg-tile-green text-teal-700" label="Active students" value={stats.activeStudents} hint={stats.students ? `${stats.students - stats.activeStudents} inactive` : undefined} href="/admin/students?status=ACTIVE" />
+        <StatCard icon={GraduationCap} tile="bg-tile-purple text-violet-800" label={TERMS.programs} value={stats.courses} href="/admin/courses" />
+        <StatCard icon={Layers} tile="bg-tile-amber text-amber-800" label="Subjects" value={stats.subjects} href="/admin/subjects" />
         <StatCard icon={ListOrdered} tile="bg-sky-100 text-sky-600" label="Chapters" value={stats.chapters} href="/admin/chapters" />
-        <StatCard icon={FileText} tile="bg-tile-red text-red-600" label="Study materials" value={stats.materials} />
+        <StatCard icon={FileText} tile="bg-tile-red text-rose-800" label="Study materials" value={stats.materials} />
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">

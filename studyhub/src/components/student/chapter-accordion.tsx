@@ -22,7 +22,7 @@ export function ChapterAccordion({ chapters, openId, completed }: { chapters: Ac
                 <span className="block truncate text-lg font-semibold">{c.title}</span>
                 {c.description && <span className="block truncate text-muted">{c.description}</span>}
               </span>
-              {allDone && <CircleCheck className="size-5 shrink-0 text-emerald-600" aria-label="Chapter completed" />}
+              {allDone && <CircleCheck className="size-5 shrink-0 text-teal-700" aria-label="Chapter completed" />}
               <span className="hidden shrink-0 text-muted sm:block">{plural(c.materials.length, "material")}</span>
               <ChevronDown className="size-5 shrink-0 text-ink/70 transition group-open:rotate-180" aria-hidden />
             </summary>

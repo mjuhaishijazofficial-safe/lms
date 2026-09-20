@@ -45,10 +45,10 @@ export default async function StudentDashboard({ searchParams }: PageProps<"/das
           icon={CalendarRange} tile="bg-tile-blue text-primary" label={TERMS.semester} value={current?.name ?? "—"}
           hint={course?.name} href={course ? `/courses/${course.id}` : undefined}
         />
-        <StatCard icon={BookOpen} tile="bg-tile-amber text-amber-700" label="Subjects" value={library.subjectCount} hint={earlier > 0 ? `incl. ${earlier} earlier` : undefined} href="/subjects" />
+        <StatCard icon={BookOpen} tile="bg-tile-amber text-amber-800" label="Subjects" value={library.subjectCount} hint={earlier > 0 ? `incl. ${earlier} earlier` : undefined} href="/subjects" />
         <StatCard icon={FileText} tile="bg-tile-blue text-primary" label="Total Materials" value={library.materialCount} href="/recent" />
         <StatCard
-          icon={TrendingUp} tile="bg-tile-green text-emerald-600" label="Your progress" value={`${progress.percent}%`}
+          icon={TrendingUp} tile="bg-tile-green text-teal-700" label="Your progress" value={`${progress.percent}%`}
           hint={progress.totalChapters === 0 ? "Nothing to study yet" : progress.completedChapters === 0 ? "Start with any chapter" : `${plural(progress.completedChapters, "chapter")} completed. Keep going!`}
         />
       </div>

@@ -16,10 +16,10 @@
   --color-accent: #c9a227;
 
   --color-tile-blue: #e3e9f7;
-  --color-tile-amber: #fff4d6;
-  --color-tile-green: #dcfce7;
-  --color-tile-red: #fde8e8;
-  --color-tile-purple: #efe7ff;
+  --color-tile-amber: #f6ecd2;
+  --color-tile-green: #dcefeb;
+  --color-tile-red: #f6e2e2;
+  --color-tile-purple: #ebe4f5;
 
   --radius-card: 1rem;
   --shadow-card: 0 1px 2px rgb(11 27 58 / 0.05), 0 4px 16px rgb(11 27 58 / 0.06);
