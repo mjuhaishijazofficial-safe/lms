@@ -98,9 +98,9 @@ export class OpenAiClient implements LlmClient {
   private async errorFor(res: Response): Promise<AiError> {
     const detail = asRecord(asRecord(await res.json().catch(() => null)).error);
     const code = String(detail.code ?? detail.type ?? "");
-    if (res.status === 401 || res.status === 403) return new AiError("auth", "OpenAI did not accept the key. Check that it is correct and still active.");
+    if (res.status === 401 || res.status === 403) return new AiError("auth", "OpenAI did not accept the key. Check that OPENAI_API_KEY in the hosting settings is correct and still active.");
     // A 429 means either "slow down" or "you have no credit"; only the error code tells them apart.
-    if (res.status === 429 && /insufficient_quota|billing/i.test(code)) return new AiError("quota", "The OpenAI account is out of credit.");
+    if (res.status === 429 && /insufficient_quota|billing/i.test(code)) return new AiError("quota", "The OpenAI account is out of credit. Add credit under Billing on platform.openai.com, then press Retry.");
     if (res.status === 429) return new AiError("rate", "OpenAI is asking us to slow down.");
     if (res.status === 404 || /model_not_found/i.test(code)) return new AiError("config", "OpenAI does not recognise that model name.");
     // The request itself was refused (too long, or a setting the model does not accept): repeating it cannot help.
