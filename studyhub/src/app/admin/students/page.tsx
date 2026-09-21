@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Pencil, Plus, UserRoundCheck, UserRoundX, Users } from "lucide-react";
+import { ClipboardPaste, Pencil, Plus, UserRoundCheck, UserRoundX, Users } from "lucide-react";
 import { courseOptions } from "@/server/services/courses";
 import { semesterTree } from "@/server/services/semesters";
 import { TERMS } from "@/lib/terms";
@@ -40,7 +40,12 @@ export default async function StudentsPage({ searchParams }: PageProps<"/admin/s
       <PageHeader
         title="Students"
         description={`Create student accounts, place them in a ${TERMS.programLower} and ${TERMS.semesterLower}, and control who can sign in.`}
-        actions={<Link href="/admin/students/new" className="btn-primary"><Plus className="size-4.5" aria-hidden /> New student</Link>}
+        actions={
+          <>
+            <Link href="/admin/students/import" className="btn-outline"><ClipboardPaste className="size-4.5" aria-hidden /> Import list</Link>
+            <Link href="/admin/students/new" className="btn-primary"><Plus className="size-4.5" aria-hidden /> New student</Link>
+          </>
+        }
       />
       <Notice searchParams={sp} />
 
