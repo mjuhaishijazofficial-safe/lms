@@ -30,8 +30,21 @@ export function readNotes(data: unknown): NotesPart | null {
   return { subtitle: text(d.subtitle), topics, definitions };
 }
 
+/**
+ * Puts a question's options in a random order and moves the answer with them. Models tend to put the right answer in
+ * the first two positions however they are told not to, which lets a student guess by position. Done here, in code.
+ */
+export function shuffleQuestion<Q extends { options: string[]; answer: number }>(q: Q, rng: () => number = Math.random): Q {
+  const order = q.options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return { ...q, options: order.map((i) => q.options[i]), answer: order.indexOf(q.answer) };
+}
+
 /** Keeps the questions that make sense and reports how many did not, rather than losing the whole set. */
-export function readMcqs(data: unknown): { mcqs: Lesson["mcqs"]; dropped: number } {
+export function readMcqs(data: unknown, rng: () => number = Math.random): { mcqs: Lesson["mcqs"]; dropped: number } {
   const raw = Array.isArray(rec(data).mcqs) ? (rec(data).mcqs as unknown[]) : [];
   const mcqs: Lesson["mcqs"] = [];
   let dropped = 0;
@@ -47,7 +60,7 @@ export function readMcqs(data: unknown): { mcqs: Lesson["mcqs"]; dropped: number
       dropped++;
       continue;
     }
-    mcqs.push({ question: text(r.question), options, answer: answer as number, ...(text(r.explanation) ? { explanation: text(r.explanation) } : {}) });
+    mcqs.push(shuffleQuestion({ question: text(r.question), options, answer: answer as number, ...(text(r.explanation) ? { explanation: text(r.explanation) } : {}) }, rng));
   }
   return { mcqs, dropped };
 }

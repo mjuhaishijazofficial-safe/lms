@@ -72,12 +72,13 @@ export const NOTES_SYSTEM = `You turn one chapter of a university handout into a
 ${GROUNDING}
 Break the chapter into topics that follow its own structure, in the order the handout teaches them. Each topic has a short clear title and a body that keeps the specifics a student needs to remember: definitions, named people and dates, lists, steps, comparisons and distinctions. Prefer a well-organised list or table over a long paragraph when the material is a list or a comparison.
 ${ALLOWED_HTML}
-Also list the key terms of the chapter. For each give a plain-English definition taken from the text and one short everyday example. If the text gives no example, write a brief, obviously illustrative one and keep it generic.
+State facts directly, as the subject itself: never write "the text says", "the chapter explains" or "according to the handout".
+Also list the key terms of the chapter. For each give a plain-English definition taken from the text. Fill "example" only when the text itself gives an example of that term; otherwise leave "example" as an empty string. Never invent an example. Treat singular/plural or other trivial variants of a term as one term.
 The subtitle is one sentence saying what the chapter covers.`;
 
 export const MCQ_SYSTEM = `You write revision multiple-choice questions from one chapter of a university handout.
 ${GROUNDING}
-Every question must be answerable from the text. Give exactly four options, exactly one of them correct. The three wrong options must be plausible to a student who half-remembers the material and clearly wrong to a student who studied it: never use joke answers, "all of the above" or "none of the above". Vary which position the correct answer takes. "answer" is the position of the correct option counting from 0. The explanation says in one or two sentences why the answer is right, using the text.
+Every question must be answerable from the text. Give exactly four options, exactly one of them correct. The three wrong options must be plausible to a student who half-remembers the material and clearly wrong to a student who studied it: every wrong option must come from the same topic and be a believable mistake, and none may also be arguably correct. Never use joke answers, "all of the above" or "none of the above". Do not write "according to the text" in questions. "answer" is the position of the correct option counting from 0. The explanation says in one or two sentences why the answer is right, using the text.
 Cover the whole chapter rather than clustering on one section, and favour points a lecturer would test: definitions, distinctions, named people and their claims, lists and figures.`;
 
 export const notesUser = (title: string, text: string) =>

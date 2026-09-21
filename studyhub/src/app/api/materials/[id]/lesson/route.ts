@@ -32,7 +32,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/api/mate
     where: { id },
     select: {
       type: true, title: true, lessonData: true,
-      chapter: { select: { chapterNumber: true, subject: { select: { name: true } } } },
+      chapter: { select: { title: true, subject: { select: { name: true } } } },
     },
   });
   if (!material || material.type !== "LESSON" || !material.lessonData) return json(404, "Lesson not found.");
@@ -41,16 +41,15 @@ export async function GET(_request: Request, { params }: RouteContext<"/api/mate
   const parsed = parseLesson(material.lessonData);
   if (!parsed.ok) return json(500, "This lesson could not be prepared. Please tell your admin.");
 
-  const html = lessonToHtml(parsed.lesson, {
-    title: material.title,
-    subject: material.chapter.subject.name,
-    chapter: `Chapter ${material.chapter.chapterNumber}`,
-  });
+  // The chapter is what the student knows this by ("Lesson 4: Dimensions of Bilinguality"); every lesson's material is
+  // simply called "Study guide", which would make every download look the same.
+  const title = material.chapter.title || material.title;
+  const html = lessonToHtml(parsed.lesson, { title, subject: material.chapter.subject.name });
 
   return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
-      "Content-Disposition": `attachment; filename="${fileNameFor(material.title)}"`,
+      "Content-Disposition": `attachment; filename="${fileNameFor(title)}"`,
       "X-Content-Type-Options": "nosniff",
       "Cache-Control": "private, no-store",
       // If the file is ever opened straight from the browser, it still cannot load or send anything anywhere.
