@@ -173,3 +173,13 @@ export async function mergeSubject(actor: SessionUser, sourceId: string, targetI
     await tx.subject.delete({ where: { id: sourceId } }); // its remaining picks and bookmarks go with it
   });
 }
+
+/** Students who have this subject picked for them, for the subject's page. */
+export async function studentsTakingSubject(subjectId: string) {
+  const rows = await db.studentSubject.findMany({
+    where: { subjectId, user: { role: "STUDENT" } },
+    orderBy: { user: { name: "asc" } },
+    select: { user: { select: { id: true, name: true, email: true, status: true } } },
+  });
+  return rows.map((r) => r.user);
+}
