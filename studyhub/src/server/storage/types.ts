@@ -11,4 +11,4 @@ export interface StorageProvider {
 }
 
 /** Storage keys are random, extension-suffixed and never derived from user input. */
-export const STORAGE_KEY_PATTERN = /^[a-f0-9]{48}\.(pdf|doc|docx|ppt|pptx)$/;
+export const STORAGE_KEY_PATTERN = /^[a-f0-9]{48}\.(pdf|doc|docx|ppt|pptx|xls|xlsx|txt|jpg|jpeg|png)$/;

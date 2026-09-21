@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { FileText, UploadCloud, X } from "lucide-react";
-import { ACCEPT_ATTRIBUTE, ALLOWED_EXTENSIONS, extensionOf } from "@/server/materials/upload";
+import { ACCEPT_ATTRIBUTE, ALLOWED_EXTENSIONS, ALLOWED_TYPES_TEXT, extensionOf } from "@/server/materials/upload";
 import { cn, formatBytes } from "@/lib/format";
 import { Field } from "@/components/ui/field";
 
@@ -32,7 +32,7 @@ export function UploadDropzone({ maxMb, current, error, required }: {
     if (!file) return;
     const ext = extensionOf(file.name);
     let problem: string | null = null;
-    if (!(ALLOWED_EXTENSIONS as readonly string[]).includes(ext)) problem = "That file type isn't allowed. Upload a PDF, Word or PowerPoint file.";
+    if (!(ALLOWED_EXTENSIONS as readonly string[]).includes(ext)) problem = `That file type${ext ? ` (.${ext})` : ""} isn't allowed. Upload a ${ALLOWED_TYPES_TEXT} file.`;
     else if (file.size === 0) problem = "This file is empty.";
     else if (file.size > maxMb * 1_048_576) problem = `This file is too large. The limit is ${maxMb} MB.`;
     if (problem) {
@@ -53,7 +53,7 @@ export function UploadDropzone({ maxMb, current, error, required }: {
 
   const message = localError ?? error?.[0];
   return (
-    <Field id="file" label="File" required={required} error={message} hint={message ? undefined : `PDF, Word or PowerPoint, up to ${maxMb} MB.`}>
+    <Field id="file" label="File" required={required} error={message} hint={message ? undefined : `PDF, Word, PowerPoint, Excel, text or image, up to ${maxMb} MB.`}>
       <div
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}

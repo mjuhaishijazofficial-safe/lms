@@ -10,6 +10,40 @@ const pdf = (extra = "") => new TextEncoder().encode(`%PDF-1.4\n${extra}`);
 const zipWith = (...names: string[]) => Uint8Array.from(Buffer.concat([Buffer.from([0x50, 0x4b, 0x03, 0x04]), Buffer.from(names.join("\0"))]));
 const ole = () => Uint8Array.from([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1, 0, 0, 0, 0]);
 
+describe("checkUpload: spreadsheets, text and images", () => {
+  const png = () => bytes(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0);
+  const jpg = () => bytes(0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46);
+  const text = (t: string) => new TextEncoder().encode(t);
+
+  it("accepts real files of each new type", () => {
+    expect(checkUpload({ name: "marks.xlsx", data: zipWith("[Content_Types].xml", "xl/workbook.xml") }, 50 * MB)).toMatchObject({ ok: true, ext: "xlsx" });
+    expect(checkUpload({ name: "old.xls", data: ole() }, 50 * MB)).toMatchObject({ ok: true, ext: "xls" });
+    expect(checkUpload({ name: "readme.txt", data: text("Chapter 1 notes\nاردو") }, 50 * MB)).toMatchObject({ ok: true, ext: "txt", mime: "text/plain" });
+    expect(checkUpload({ name: "scan.png", data: png() }, 50 * MB)).toMatchObject({ ok: true, ext: "png", mime: "image/png" });
+    expect(checkUpload({ name: "photo.JPG", data: jpg() }, 50 * MB)).toMatchObject({ ok: true, ext: "jpg", mime: "image/jpeg" });
+    expect(checkUpload({ name: "photo.jpeg", data: jpg() }, 50 * MB)).toMatchObject({ ok: true, ext: "jpeg" });
+  });
+
+  it("rejects a file whose contents do not match its extension", () => {
+    expect(checkUpload({ name: "a.png", data: jpg() }, 50 * MB).ok).toBe(false);
+    expect(checkUpload({ name: "a.jpg", data: png() }, 50 * MB).ok).toBe(false);
+    expect(checkUpload({ name: "a.png", data: text("not an image") }, 50 * MB).ok).toBe(false);
+    expect(checkUpload({ name: "a.xlsx", data: zipWith("[Content_Types].xml", "word/document.xml") }, 50 * MB).ok).toBe(false); // a docx wearing an .xlsx name
+  });
+
+  it("rejects a binary file renamed to .txt, and executables renamed to any new type", () => {
+    expect(checkUpload({ name: "a.txt", data: bytes(0x41, 0x42, 0x00, 0x43) }, 50 * MB).ok).toBe(false);
+    const exe = bytes(0x4d, 0x5a, 0x90, 0, 3, 0, 0, 0);
+    for (const name of ["a.txt", "a.png", "a.jpg", "a.xlsx", "a.xls"]) expect(checkUpload({ name, data: exe }, 50 * MB).ok, name).toBe(false);
+  });
+
+  it("names the rejected type in the error so the admin can see what went wrong", () => {
+    const r = checkUpload({ name: "song.mp3", data: pdf() }, 50 * MB);
+    expect(r).toMatchObject({ ok: false });
+    expect(r.ok === false && r.error).toContain(".mp3");
+  });
+});
+
 describe("checkUpload", () => {
   it("accepts real files of each allowed type", () => {
     expect(checkUpload({ name: "notes.pdf", data: pdf() }, 50 * MB)).toMatchObject({ ok: true, ext: "pdf", mime: "application/pdf" });
@@ -20,7 +54,7 @@ describe("checkUpload", () => {
   });
 
   it("rejects files whose extension is not allowed", () => {
-    for (const name of ["virus.exe", "run.bat", "x.js", "x.html", "x.svg", "x.php", "x.sh", "x.zip", "x.png", "noextension", "x.pdf.exe", ".pdf"]) {
+    for (const name of ["virus.exe", "run.bat", "x.js", "x.html", "x.svg", "x.php", "x.sh", "x.zip", "x.rar", "x.gif", "x.webp", "x.docm", "x.xlsm", "noextension", "x.pdf.exe", ".pdf"]) {
       const r = checkUpload({ name, data: pdf() }, 50 * MB);
       expect(r.ok, name).toBe(false);
     }

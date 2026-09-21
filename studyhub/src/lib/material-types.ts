@@ -13,6 +13,9 @@ export function describeMaterial(m: { type: MaterialType; fileName?: string | nu
     if (ext === "pdf") return { label: "PDF", icon: FileText, tile: "bg-tile-red text-rose-800", action: "Download" };
     if (ext === "doc" || ext === "docx") return { label: "Word document", icon: FileText, tile: "bg-tile-blue text-primary", action: "Download" };
     if (ext === "ppt" || ext === "pptx") return { label: "Slides", icon: FileText, tile: "bg-tile-amber text-amber-800", action: "Download" };
+    if (ext === "xls" || ext === "xlsx") return { label: "Spreadsheet", icon: FileText, tile: "bg-tile-green text-teal-700", action: "Download" };
+    if (ext === "jpg" || ext === "jpeg" || ext === "png") return { label: "Image", icon: FileText, tile: "bg-tile-purple text-violet-800", action: "Download" };
+    if (ext === "txt") return { label: "Text file", icon: FileText, tile: "bg-tile-blue text-primary", action: "Download" };
   }
   const t = MATERIAL_TYPES[m.type];
   return { label: t.label, icon: t.icon, tile: t.tile, action: t.action };
