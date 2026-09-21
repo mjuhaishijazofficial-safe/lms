@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chapterLabel, chunkText, splitHandout } from "@/lib/handout";
+import { chapterLabel, chunkText, splitHandout, stripPageFurniture, tidyTitle } from "@/lib/handout";
 
 const filler = (topic: string, n = 12) =>
   Array.from({ length: n }, (_, i) => `${topic} sentence ${i + 1} explains a point about the subject in enough words to count.`).join(" ");
@@ -107,5 +107,93 @@ describe("chapterLabel", () => {
     expect(chapterLabel({ number: 43, title: "Teaching Academic L2 Writing II", text: "" })).toBe("Lesson 43: Teaching Academic L2 Writing II");
     expect(chapterLabel({ number: 5, title: "", text: "" })).toBe("Lesson 5");
     expect(chapterLabel({ number: null, title: "Part 2", text: "" })).toBe("Part 2");
+  });
+});
+
+// A synthetic handout that has every quirk found in a real Virtual University handout: a cover and contents page that
+// list every lesson, titles on the line after the heading (in capitals, sometimes wrapped), a "Topic No." line under
+// each, a watermark and footer repeated on every page, and a heading whose letters were split by mixed fonts.
+describe("splitHandout on a real-world layout", () => {
+  const body = (topic: string, n = 14) => filler(topic, n).replace(/\. /g, ".\n\n");
+  const furniture = (n: number) => `vubookshoppk.com\n\n${"__BODY__"}\n\nENG999 VU\nAll VU books are available in hard copy. Order now!\nWebsite: vubookshoppk.com | WhatsApp: 0326-0775533 ${n}`;
+  const page = (n: number, content: string) => furniture(n).replace("__BODY__", content);
+
+  const contents = `Table of Contents\nLesson No. Title Topic Page\nLesson 1 Definitions and Guiding Principles of\nBilingualism\n001-006 5-6\nLesson 2 Forms of Language and Change 007-011 7-8\nLesson 3 Collective Aspects of Language\nBehavior\n012-016 9-10\nLesson 4 Code Switching 017-021 11\nLesson 5 Marginalization 022-026 12`;
+  const pages = [
+    page(1, "Virtual University of Pakistan\nCOURSE HANDOUTS\nBilingualism\nENG999"),
+    page(2, contents),
+    page(3, `Lesson-01\n\nDEFINITIONS AND GUIDING PRINCIPLES OF BILINGUALISM\n\nTopic No. 001-006\n\nIntroduction; Definitions\n\n${body("alpha")}`),
+    page(4, body("alpha continued")),
+    page(5, `Lesson-02\nFORMS OF LANGUAGE AND CHANGE\nTopic No 007-011\nLanguage Change\n${body("beta")}`),
+    page(6, `Le sson-03\n\nLINGUISTIC DIMENSIONS OF BILINGUALISM- EARLY LANGUAGE\nDEVELOPMENT\nTopic No. 012-016\n${body("gamma")}`),
+    page(7, `Lesson-04\n21ST CENTURY NEEDS:SOCIAL JUSTICE AND SOCIAL PRACTICES\nTopic No. 017-021\n${body("delta")}`),
+    page(8, `Lesson-05\nTranslanguaging-A Closer Look\n\nTopic No. 022-026\n${body("epsilon")}`),
+  ];
+  const chapters = splitHandout(pages);
+
+  it("finds every lesson, not the contents page entries, and no 'introduction' made of the cover and contents", () => {
+    expect(chapters.map((c) => c.number)).toEqual([1, 2, 3, 4, 5]);
+    expect(chapters.some((c) => c.title === "Introduction")).toBe(false);
+  });
+
+  it("takes the title from the line after the heading, including wrapped and capitalised titles", () => {
+    expect(chapters.map((c) => c.title)).toEqual([
+      "Definitions and Guiding Principles of Bilingualism",
+      "Forms of Language and Change",
+      "Linguistic Dimensions of Bilingualism- Early Language Development",
+      "21st Century Needs:Social Justice and Social Practices",
+      "Translanguaging-A Closer Look", // already mixed case: left as the author wrote it
+    ]);
+  });
+
+  it("recognises a heading whose letters were split by mixed fonts ('Le sson-03')", () => {
+    expect(chapters[2].number).toBe(3);
+  });
+
+  it("removes the watermark and footer from every chapter, so they are never sent to the AI", () => {
+    const all = chapters.map((c) => c.text).join("\n");
+    for (const junk of ["vubookshoppk", "ENG999 VU", "All VU books", "WhatsApp"]) expect(all, junk).not.toContain(junk);
+  });
+
+  it("keeps the real content, and drops the heading, title and 'Topic No.' lines from it", () => {
+    expect(chapters[0].text).toContain("alpha sentence 1");
+    expect(chapters[0].text).toContain("alpha continued sentence 1"); // a chapter spanning two pages stays whole
+    expect(chapters[0].text).not.toMatch(/Lesson-01|DEFINITIONS AND|Topic No/);
+    expect(chapters[1].text).not.toContain("alpha");
+  });
+
+  it("keeps a real introduction when there is no contents page", () => {
+    const withIntro = splitHandout([`${filler("preface", 20)}\nLesson 1\nFirst Title\n${filler("one")}\nLesson 2\nSecond Title\n${filler("two")}`]);
+    expect(withIntro[0]).toMatchObject({ number: null, title: "Introduction" });
+    expect(withIntro.map((c) => c.number)).toEqual([null, 1, 2]);
+  });
+});
+
+describe("stripPageFurniture", () => {
+  it("removes lines repeated across pages, ignoring the page number inside them", () => {
+    const pages = ["Watermark\nreal one\nPage 1 of ads", "Watermark\nreal two\nPage 2 of ads", "Watermark\nreal three\nPage 3 of ads", "Watermark\nreal four\nPage 4 of ads"];
+    expect(stripPageFurniture(pages).join("|")).toBe("real one|real two|real three|real four");
+  });
+
+  it("never removes chapter headings or 'Topic No.' lines, even though they repeat", () => {
+    const pages = ["Lesson 1\nTopic No. 1\nx", "Lesson 2\nTopic No. 2\ny", "Lesson 3\nTopic No. 3\nz", "Lesson 4\nTopic No. 4\nw"];
+    const out = stripPageFurniture(pages).join("\n");
+    expect(out).toContain("Lesson 3");
+    expect(out).toContain("Topic No. 3");
+  });
+
+  it("leaves a short handout alone: with two pages nothing counts as repeated", () => {
+    expect(stripPageFurniture(["Same line\na", "Same line\nb"])).toEqual(["Same line\na", "Same line\nb"]);
+  });
+});
+
+describe("tidyTitle", () => {
+  it("title-cases a shouting title and keeps small words small", () => {
+    expect(tidyTitle("DEFINITIONS AND GUIDING PRINCIPLES OF BILINGUALISM")).toBe("Definitions and Guiding Principles of Bilingualism");
+    expect(tidyTitle("SELF-REGULATION")).toBe("Self-Regulation");
+    expect(tidyTitle("21ST CENTURY NEEDS")).toBe("21st Century Needs");
+  });
+  it("leaves a mixed-case title exactly as written", () => {
+    expect(tidyTitle("Teaching Academic L2 Writing II")).toBe("Teaching Academic L2 Writing II");
   });
 });
