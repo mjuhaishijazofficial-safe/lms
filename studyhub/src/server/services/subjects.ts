@@ -23,7 +23,7 @@ const ORDER: Prisma.SubjectOrderByWithRelationInput[] = [
 const listInclude = {
   course: { select: { id: true, name: true } },
   semester: { select: { id: true, name: true } },
-  _count: { select: { chapters: true } },
+  _count: { select: { chapters: true, students: true } },
 } satisfies Prisma.SubjectInclude;
 
 export function listSubjects(filter: { courseId?: string; semesterId?: string; q?: string }) {

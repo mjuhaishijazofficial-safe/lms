@@ -28,6 +28,12 @@ const studentBase = {
   subjectIds: z.array(idSchema).default([]),
 };
 
+export const announcementSchema = z.object({
+  title: trimmed(120, "Title"),
+  body: trimmed(2000, "Message"),
+  // Empty means every student.
+  courseId: z.preprocess(emptyToNull, idSchema.nullable()),
+});
 export const createAdminSchema = z.object({ name: trimmed(120, "Full name"), email: loginHandleSchema, password: passwordSchema });
 export const adminPasswordSchema = z.object({ id: idSchema, password: passwordSchema });
 export const createStudentSchema = z.object({ ...studentBase, password: passwordSchema });

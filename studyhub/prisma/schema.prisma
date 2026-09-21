@@ -98,6 +98,7 @@ model Course {
   semesters   Semester[]
   subjects    Subject[]
   enrollments Enrollment[]
+  announcements Announcement[]
 
   @@index([status, order])
 }
@@ -264,4 +265,19 @@ model StudentSubject {
 
   @@unique([userId, subjectId])
   @@index([subjectId])
+}
+
+/// A message from the admins on students' dashboards. courseId empty means every student; otherwise only that program.
+model Announcement {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  courseId  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  course Course? @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([active, createdAt])
+  @@index([courseId])
 }

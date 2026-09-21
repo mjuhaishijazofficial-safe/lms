@@ -3,11 +3,13 @@ import Link from "next/link";
 import { BookOpen, CalendarRange, FileText, Layers, TrendingUp } from "lucide-react";
 import { requireStudent } from "@/server/auth/guards";
 import { listRecentMaterials, loadLibrary } from "@/server/services/library";
+import { announcementsForStudent } from "@/server/services/announcements";
 import { plural } from "@/lib/format";
 import { TERMS } from "@/lib/terms";
 import { Notice } from "@/components/ui/notice";
 import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { AnnouncementsCard } from "@/components/student/announcements-card";
 import { SubjectCard } from "@/components/student/subject-card";
 import { RecentMaterialCard } from "@/components/student/recent-material-card";
 
@@ -24,7 +26,7 @@ function SectionHeading({ title, note, href, label }: { title: string; note?: st
 
 export default async function StudentDashboard({ searchParams }: PageProps<"/dashboard">) {
   const user = await requireStudent();
-  const [library, recent] = await Promise.all([loadLibrary(user.id), listRecentMaterials(user.id, 1, 5)]);
+  const [library, recent, announcements] = await Promise.all([loadLibrary(user.id), listRecentMaterials(user.id, 1, 5), announcementsForStudent(user.id)]);
   const course = library.courses[0];
   const current = course?.currentSemester ?? null;
   // The dashboard puts this semester's subjects first; earlier semesters are one click away on the Subjects page.
@@ -39,6 +41,7 @@ export default async function StudentDashboard({ searchParams }: PageProps<"/das
         <p className="mt-1 text-muted">Keep learning, keep growing.</p>
       </header>
       <Notice searchParams={await searchParams} />
+      <AnnouncementsCard items={announcements} />
 
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
