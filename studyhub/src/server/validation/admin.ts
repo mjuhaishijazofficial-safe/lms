@@ -24,6 +24,8 @@ const studentBase = {
   courseId: z.preprocess(emptyToNull, idSchema.nullable()),
   semesterId: z.preprocess(emptyToNull, idSchema.nullable()),
   status: z.enum(["ACTIVE", "INACTIVE"]),
+  // Checkbox values arrive as a list; an empty list means "fall back to the semester rule".
+  subjectIds: z.array(idSchema).default([]),
 };
 
 export const createAdminSchema = z.object({ name: trimmed(120, "Full name"), email: loginHandleSchema, password: passwordSchema });

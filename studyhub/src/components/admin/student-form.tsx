@@ -10,10 +10,14 @@ import { Alert } from "@/components/ui/notice";
 import { Field, invalid } from "@/components/ui/field";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { ProgramSemesterFields } from "./program-semester-fields";
+import { SubjectPicker, type StudentPreset } from "./subject-picker";
+import type { SubjectCatalogue } from "@/server/services/subjects";
 
 type Initial = { id: string; name: string; email: string; studentId: string; courseId: string; semesterId: string; status: string };
 
-export function StudentForm({ student, tree }: { student?: Initial; tree: SemesterTree }) {
+export function StudentForm({ student, tree, catalogue, presets, subjectIds = [] }: {
+  student?: Initial; tree: SemesterTree; catalogue: SubjectCatalogue; presets: StudentPreset[]; subjectIds?: string[];
+}) {
   const [state, action] = useActionState<FormState, FormData>(student ? updateStudentAction : createStudentAction, {});
   const v = (k: keyof Initial, fallback = "") => state.values?.[k] ?? student?.[k] ?? fallback;
   const e = state.fieldErrors ?? {};
@@ -41,6 +45,10 @@ export function StudentForm({ student, tree }: { student?: Initial; tree: Semest
         noProgramLabel="Not assigned yet" noSemesterLabel={`First ${TERMS.semesterLower} (default)`}
         semesterHint={`The ${TERMS.semesterLower} the student is in now. They see its subjects and earlier ones.`}
       />
+
+      <Field id="subjectIds" label="Subjects" error={e.subjectIds} hint="Tick the subjects this student is studying.">
+        <SubjectPicker catalogue={catalogue} presets={presets} initial={subjectIds} />
+      </Field>
 
       <Field id="status" label="Status" error={e.status}>
         <select id="status" name="status" defaultValue={v("status", "ACTIVE")} className="select">

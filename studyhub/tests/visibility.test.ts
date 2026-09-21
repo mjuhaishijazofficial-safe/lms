@@ -59,3 +59,46 @@ describe("material visibility chain", () => {
     expect(studentCourseWhere(scope({ courseId: "cs", semester: sem(3) }))).toEqual({ status: "PUBLISHED", id: { in: ["cs"] } });
   });
 });
+
+describe("subject visibility (subjects picked per student)", () => {
+  const picked = (ids: string[], semester = sem(3)): StudentScope => ({
+    userId: "u1", enrollments: [{ courseId: "cs", semester }], subjectIds: ids,
+  });
+
+  it("shows exactly the picked subjects and ignores the semester rule", () => {
+    const where = studentSubjectWhere(picked(["s1", "s2"]));
+    expect(where).toEqual({ status: "PUBLISHED", id: { in: ["s1", "s2"] }, course: { status: "PUBLISHED" } });
+    expect(where.OR).toBeUndefined();
+  });
+
+  it("still requires the subject and its program to be published", () => {
+    const where = studentSubjectWhere(picked(["s1"]));
+    expect(where.status).toBe("PUBLISHED");
+    expect(where.course).toEqual({ status: "PUBLISHED" });
+  });
+
+  it("lets a picked subject come from another program than the one the student is enrolled in", () => {
+    // A BBIT student taking ECO401, which lives under BBA, must still see it.
+    expect(json(studentSubjectWhere(picked(["eco401"])))).toContain('"eco401"');
+  });
+
+  it("falls back to the semester rule when nothing is picked", () => {
+    expect(studentSubjectWhere(picked([]))).toEqual(studentSubjectWhere(scope({ courseId: "cs", semester: sem(3) })));
+  });
+
+  it("shows the programs of picked subjects alongside the enrolled one", () => {
+    expect(studentCourseWhere(picked(["s1"]))).toEqual({
+      status: "PUBLISHED",
+      OR: [{ id: { in: ["cs"] } }, { subjects: { some: { id: { in: ["s1"] } } } }],
+    });
+  });
+
+  it("fails closed for a student with no enrolment, even when subjects are picked", () => {
+    const where = studentSubjectWhere({ userId: "u1", enrollments: [], subjectIds: ["s1"] });
+    expect(where).toEqual({ id: { in: [] } });
+  });
+
+  it("restricts materials through the picked subjects", () => {
+    expect(json(studentMaterialWhere(picked(["s1"])))).toContain('"s1"');
+  });
+});

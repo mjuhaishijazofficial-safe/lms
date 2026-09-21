@@ -106,3 +106,21 @@ export async function deleteSubject(actor: SessionUser, id: string) {
   if (subject._count.chapters) throw new ServiceError("This subject still has chapters. Archive it instead, or delete its chapters first.", undefined, "not-empty");
   await db.subject.delete({ where: { id } });
 }
+
+/** Every published subject, grouped by program, for the per-student subject picker. */
+export async function subjectCatalogue() {
+  const rows = await db.subject.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: [{ course: { order: "asc" } }, { semester: { order: "asc" } }, { order: "asc" }, { name: "asc" }],
+    select: { id: true, name: true, course: { select: { id: true, name: true } }, semester: { select: { name: true } } },
+  });
+  const groups = new Map<string, { id: string; name: string; subjects: { id: string; name: string; semester: string | null }[] }>();
+  for (const r of rows) {
+    const g = groups.get(r.course.id) ?? { id: r.course.id, name: r.course.name, subjects: [] };
+    g.subjects.push({ id: r.id, name: r.name, semester: r.semester?.name ?? null });
+    groups.set(r.course.id, g);
+  }
+  return [...groups.values()];
+}
+
+export type SubjectCatalogue = Awaited<ReturnType<typeof subjectCatalogue>>;

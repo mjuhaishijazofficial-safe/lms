@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Trash2, UserRoundCheck, UserRoundX } from "lucide-react";
 import { semesterTree } from "@/server/services/semesters";
-import { getStudent } from "@/server/services/students";
+import { getStudent, studentPresets } from "@/server/services/students";
+import { subjectCatalogue } from "@/server/services/subjects";
 import { idSchema } from "@/server/validation/common";
 import { formatDate, timeAgo } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
@@ -17,7 +18,10 @@ export const metadata: Metadata = { title: "Edit student" };
 
 export default async function EditStudentPage({ params, searchParams }: PageProps<"/admin/students/[id]">) {
   const { id } = await params;
-  const [student, tree] = await Promise.all([idSchema.safeParse(id).success ? getStudent(id) : null, semesterTree()]);
+  const valid = idSchema.safeParse(id).success;
+  const [student, tree, catalogue, presets] = await Promise.all([
+    valid ? getStudent(id) : null, semesterTree(), subjectCatalogue(), valid ? studentPresets(id) : [],
+  ]);
   if (!student) notFound();
   const active = student.status === "ACTIVE";
   const here = `/admin/students/${student.id}`;
@@ -68,6 +72,9 @@ export default async function EditStudentPage({ params, searchParams }: PageProp
       <div className="space-y-6">
         <StudentForm
           tree={tree}
+          catalogue={catalogue}
+          presets={presets}
+          subjectIds={student.studentSubjects.map((s) => s.subjectId)}
           student={{
             id: student.id, name: student.name, email: student.email, status: student.status,
             studentId: student.studentProfile?.studentId ?? "", courseId: student.enrollments[0]?.course.id ?? "", semesterId: student.enrollments[0]?.semester?.id ?? "",

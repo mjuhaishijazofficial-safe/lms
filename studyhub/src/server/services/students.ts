@@ -14,6 +14,7 @@ const studentSelect = {
   id: true, name: true, email: true, status: true, createdAt: true, lastLoginAt: true, mustChangePassword: true,
   studentProfile: { select: { studentId: true } },
   enrollments: { select: { course: { select: { id: true, name: true } }, semester: { select: { id: true, name: true } } }, take: 1, orderBy: { createdAt: "asc" } },
+  studentSubjects: { select: { subjectId: true } },
 } satisfies Prisma.UserSelect;
 
 export type StudentRow = Prisma.UserGetPayload<{ select: typeof studentSelect }>;
@@ -74,6 +75,7 @@ export async function createStudent(actor: SessionUser, data: z.infer<typeof cre
       mustChangePassword: true,
       passwordHash: await hashPassword(data.password),
       studentProfile: { create: { studentId: data.studentId } },
+      studentSubjects: { create: data.subjectIds.map((subjectId) => ({ subjectId })) },
       ...(data.courseId ? { enrollments: { create: { courseId: data.courseId, semesterId } } } : {}),
     },
     select: { id: true },
@@ -94,6 +96,14 @@ export async function updateStudent(actor: SessionUser, data: z.infer<typeof upd
       create: { userId: data.id, studentId: data.studentId },
       update: { studentId: data.studentId },
     });
+    // The picked subjects are replaced wholesale, so unticking one removes it.
+    await tx.studentSubject.deleteMany({ where: { userId: data.id, subjectId: { notIn: data.subjectIds } } });
+    if (data.subjectIds.length) {
+      await tx.studentSubject.createMany({
+        data: data.subjectIds.map((subjectId) => ({ userId: data.id, subjectId })),
+        skipDuplicates: true,
+      });
+    }
     // V1: one program per student. Replace any existing enrolment.
     await tx.enrollment.deleteMany({ where: { userId: data.id, ...(data.courseId ? { NOT: { courseId: data.courseId } } : {}) } });
     if (data.courseId) {
@@ -129,4 +139,14 @@ export async function deleteStudent(actor: SessionUser, id: string) {
   ensureAdmin(actor);
   const { count } = await db.user.deleteMany({ where: { id, role: "STUDENT" } });
   if (!count) throw new ServiceError("This student no longer exists.", undefined, "not-found");
+}
+
+/** Students who already have subjects picked, to offer as a starting point for another student. */
+export async function studentPresets(excludeId?: string) {
+  const rows = await db.user.findMany({
+    where: { role: "STUDENT", ...(excludeId ? { NOT: { id: excludeId } } : {}), studentSubjects: { some: {} } },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, studentSubjects: { select: { subjectId: true } } },
+  });
+  return rows.map((r) => ({ id: r.id, name: r.name, subjectIds: r.studentSubjects.map((s) => s.subjectId) }));
 }

@@ -53,6 +53,7 @@ model User {
   materialBookmarks MaterialBookmark[]
   subjectBookmarks  SubjectBookmark[]
   uploadedMaterials Material[]         @relation("UploadedBy")
+  studentSubjects   StudentSubject[]
 
   @@index([role, status])
 }
@@ -150,6 +151,7 @@ model Subject {
   semester  Semester?         @relation(fields: [semesterId], references: [id], onDelete: SetNull)
   chapters  Chapter[]
   bookmarks SubjectBookmark[]
+  students  StudentSubject[]
 
   @@index([courseId, semesterId, status, order])
 }
@@ -247,4 +249,19 @@ model StoredFile {
   key       String   @id
   data      Bytes
   createdAt DateTime @default(now())
+}
+
+/// Subjects chosen for one student. A student with any of these rows sees exactly those subjects;
+/// a student with none falls back to the semester rule in visibility.ts.
+model StudentSubject {
+  id        String   @id @default(cuid())
+  userId    String
+  subjectId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subjectId])
+  @@index([subjectId])
 }

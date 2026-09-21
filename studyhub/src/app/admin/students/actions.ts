@@ -10,9 +10,16 @@ import { idSchema } from "@/server/validation/common";
 import { createStudent, deleteStudent, resetStudentPassword, setStudentStatus, updateStudent } from "@/server/services/students";
 import { z } from "zod";
 
+/** Object.fromEntries keeps only the last value of a repeated field, so the subject checkboxes are read separately. */
+const studentFields = (formData: FormData) => ({
+  ...Object.fromEntries(formData),
+  // The picker also submits one empty value, so that clearing every box still reaches the server as an empty list.
+  subjectIds: formData.getAll("subjectIds").filter((v) => typeof v === "string" && v !== ""),
+});
+
 export async function createStudentAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = formValues(formData);
-  const parsed = createStudentSchema.safeParse(Object.fromEntries(formData));
+  const parsed = createStudentSchema.safeParse(studentFields(formData));
   if (!parsed.success) return fromZodError(parsed.error, values);
   try {
     await createStudent(await assertAdmin(), parsed.data);
@@ -25,7 +32,7 @@ export async function createStudentAction(_prev: FormState, formData: FormData):
 
 export async function updateStudentAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = formValues(formData);
-  const parsed = updateStudentSchema.safeParse(Object.fromEntries(formData));
+  const parsed = updateStudentSchema.safeParse(studentFields(formData));
   if (!parsed.success) return fromZodError(parsed.error, values);
   try {
     await updateStudent(await assertAdmin(), parsed.data);

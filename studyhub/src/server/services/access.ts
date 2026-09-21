@@ -7,14 +7,18 @@ import { studentMaterialWhere, type StudentScope } from "./visibility";
 export { studentChapterWhere, studentCourseWhere, studentMaterialWhere, studentSubjectWhere } from "./visibility";
 export type { StudentScope } from "./visibility";
 
-/** The programs (and current semesters) an active student is enrolled in. Cached for the length of a request. */
+/** The programs, current semesters and picked subjects of an active student. Cached for the length of a request. */
 export const getStudentScope = cache(async (userId: string): Promise<StudentScope> => {
-  const rows = await db.enrollment.findMany({
-    where: { userId, user: { status: "ACTIVE", role: "STUDENT" }, course: { status: "PUBLISHED" } },
-    orderBy: { createdAt: "asc" },
-    select: { courseId: true, semester: { select: { id: true, name: true, order: true } } },
-  });
-  return { userId, enrollments: rows };
+  const active = { status: "ACTIVE" as const, role: "STUDENT" as const };
+  const [rows, picked] = await Promise.all([
+    db.enrollment.findMany({
+      where: { userId, user: active, course: { status: "PUBLISHED" } },
+      orderBy: { createdAt: "asc" },
+      select: { courseId: true, semester: { select: { id: true, name: true, order: true } } },
+    }),
+    db.studentSubject.findMany({ where: { userId, user: active }, select: { subjectId: true } }),
+  ]);
+  return { userId, enrollments: rows, subjectIds: picked.map((p) => p.subjectId) };
 });
 
 export type MaterialAccess = { exists: false } | { exists: true; allowed: boolean };
