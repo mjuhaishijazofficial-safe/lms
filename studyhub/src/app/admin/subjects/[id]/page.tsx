@@ -2,19 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { semesterTree } from "@/server/services/semesters";
-import { getSubject } from "@/server/services/subjects";
+import { getSubject, subjectOptions } from "@/server/services/subjects";
 import { idSchema } from "@/server/validation/common";
 import { plural } from "@/lib/format";
 import { TERMS } from "@/lib/terms";
 import { PageHeader } from "@/components/ui/page-header";
 import { Notice } from "@/components/ui/notice";
 import { SubjectForm } from "@/components/admin/subject-form";
+import { MergeSubject } from "@/components/admin/merge-subject";
 
 export const metadata: Metadata = { title: "Edit subject" };
 
 export default async function EditSubjectPage({ params, searchParams }: PageProps<"/admin/subjects/[id]">) {
   const { id } = await params;
-  const [subject, tree] = await Promise.all([idSchema.safeParse(id).success ? getSubject(id) : null, semesterTree()]);
+  const [subject, tree, options] = await Promise.all([idSchema.safeParse(id).success ? getSubject(id) : null, semesterTree(), subjectOptions()]);
   if (!subject) notFound();
 
   return (
@@ -30,6 +31,9 @@ export default async function EditSubjectPage({ params, searchParams }: PageProp
         tree={tree}
         subject={{ id: subject.id, courseId: subject.courseId, semesterId: subject.semesterId ?? "", name: subject.name, description: subject.description, icon: subject.icon, status: subject.status }}
       />
+      <div className="mt-6">
+        <MergeSubject subjectId={subject.id} subjectName={subject.name} options={options} />
+      </div>
     </>
   );
 }

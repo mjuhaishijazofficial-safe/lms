@@ -17,6 +17,7 @@ export const NOTICES = {
   "subject-created": "Subject created.",
   "subject-updated": "Subject saved.",
   "subject-deleted": "Subject deleted.",
+  "subject-merged": "Subjects merged. Its chapters, students and bookmarks now belong to this subject.",
   "chapter-created": "Chapter created.",
   "chapter-updated": "Chapter saved.",
   "chapter-deleted": "Chapter deleted.",
