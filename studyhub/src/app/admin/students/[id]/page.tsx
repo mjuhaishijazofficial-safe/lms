@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Trash2, UserRoundCheck, UserRoundX } from "lucide-react";
 import { semesterTree } from "@/server/services/semesters";
 import { getStudent, studentPresets } from "@/server/services/students";
+import { studentView } from "@/server/services/student-view";
 import { subjectCatalogue } from "@/server/services/subjects";
 import { idSchema } from "@/server/validation/common";
 import { formatDate, timeAgo } from "@/lib/format";
@@ -19,8 +20,8 @@ export const metadata: Metadata = { title: "Edit student" };
 export default async function EditStudentPage({ params, searchParams }: PageProps<"/admin/students/[id]">) {
   const { id } = await params;
   const valid = idSchema.safeParse(id).success;
-  const [student, tree, catalogue, presets] = await Promise.all([
-    valid ? getStudent(id) : null, semesterTree(), subjectCatalogue(), valid ? studentPresets(id) : [],
+  const [student, tree, catalogue, presets, view] = await Promise.all([
+    valid ? getStudent(id) : null, semesterTree(), subjectCatalogue(), valid ? studentPresets(id) : [], valid ? studentView(id) : null,
   ]);
   if (!student) notFound();
   const active = student.status === "ACTIVE";
@@ -81,6 +82,39 @@ export default async function EditStudentPage({ params, searchParams }: PageProp
           }}
         />
         <ResetPasswordForm studentId={student.id} />
+
+        <section className="card max-w-2xl p-5">
+          <h2 className="font-semibold">What {student.name} sees</h2>
+          <p className="mt-1 text-sm text-muted">
+            {!active
+              ? "This student is deactivated, so they can see nothing."
+              : view && view.subjects.length > 0
+                ? view.usesPicked ? "Only the subjects you picked for them." : "Subjects from their semester (no subjects picked). Published content only."
+                : "Nothing yet. Pick subjects above, or check that their program, semester and content are published."}
+          </p>
+          {active && view?.subjects.map((s) => (
+            <details key={s.id} className="mt-3 rounded-lg border border-line p-3">
+              <summary className="cursor-pointer text-sm font-medium">
+                {s.name}
+                <span className="ml-2 font-normal text-muted">
+                  {s.semester ? `${s.semester} · ` : ""}{s.picked ? "picked · " : ""}{s.chapters.length} chapters · {s.materialCount} materials
+                </span>
+              </summary>
+              <ul className="mt-2 space-y-2 text-sm">
+                {s.chapters.map((c) => (
+                  <li key={c.id}>
+                    <p className="font-medium">{c.title}</p>
+                    <ul className="ml-4 list-disc text-muted">
+                      {c.materials.map((m) => <li key={m.id}>{m.title} <span className="text-xs">({m.type.toLowerCase()})</span></li>)}
+                      {c.materials.length === 0 && <li>No published materials</li>}
+                    </ul>
+                  </li>
+                ))}
+                {s.chapters.length === 0 && <li className="text-muted">No published chapters</li>}
+              </ul>
+            </details>
+          ))}
+        </section>
       </div>
     </>
   );
