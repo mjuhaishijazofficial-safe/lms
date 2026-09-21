@@ -67,6 +67,7 @@ export default async function EditMaterialPage({ params, searchParams }: PagePro
             id: material.id, type: material.type, chapterId: material.chapterId, title: material.title, description: material.description, status: material.status,
             youtubeUrl: material.youtubeId ? youtubeWatchUrl(material.youtubeId) : "", duration: material.durationSeconds ? formatDuration(material.durationSeconds) : "",
             externalUrl: material.externalUrl ?? "", textContent: material.textContent ?? "",
+            lessonJson: material.lessonData ? JSON.stringify(material.lessonData, null, 2) : "",
             file: material.fileName ? { name: material.fileName, size: material.fileSize } : null,
           }}
         />

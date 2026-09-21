@@ -19,15 +19,23 @@ import { UploadDropzone } from "./upload-dropzone";
 
 export type MaterialInitial = {
   id: string; type: MaterialType; chapterId: string; title: string; description: string; status: string;
-  youtubeUrl: string; duration: string; externalUrl: string; textContent: string; file: { name: string; size: number | null } | null;
+  youtubeUrl: string; duration: string; externalUrl: string; textContent: string; lessonJson: string; file: { name: string; size: number | null } | null;
 };
 
 const TYPE_HELP: Record<MaterialType, string> = {
   FILE: "PDF, Word or PowerPoint",
   YOUTUBE: "An educational video",
   LINK: "A website or resource",
-  TEXT: "Write a lesson or note",
+  TEXT: "Write a note",
+  LESSON: "Summary, definitions and MCQs",
 };
+
+const LESSON_PLACEHOLDER = `{
+  "subtitle": "One line about this chapter",
+  "topics": [{ "ref": "1", "title": "Topic title", "body": "<p>Explanation…</p>" }],
+  "definitions": [{ "term": "Term", "definition": "Meaning", "example": "Everyday example" }],
+  "mcqs": [{ "question": "…?", "options": ["A", "B", "C", "D"], "answer": 1, "explanation": "Why" }]
+}`;
 
 export function MaterialForm({ tree, material, defaultChapterId, maxMb }: {
   tree: PickerTree; material?: MaterialInitial; defaultChapterId?: string; maxMb: number;
@@ -57,7 +65,7 @@ export function MaterialForm({ tree, material, defaultChapterId, maxMb }: {
             </div>
           </>
         ) : (
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {(Object.keys(MATERIAL_TYPES) as MaterialType[]).map((t) => {
               const meta = MATERIAL_TYPES[t];
               return (
@@ -102,6 +110,19 @@ export function MaterialForm({ tree, material, defaultChapterId, maxMb }: {
       )}
 
       {type === "TEXT" && <RichTextEditor name="textContent" initialHtml={v("textContent")} error={e.textContent} />}
+
+      {type === "LESSON" && (
+        <Field
+          id="lessonJson" label="Lesson content" required error={e.lessonJson}
+          hint="Paste the lesson as JSON: topics, definitions and mcqs. Students get it as a lesson they can study in the app, and as a file they can download."
+        >
+          <textarea
+            id="lessonJson" name="lessonJson" defaultValue={v("lessonJson")} required rows={16} spellCheck={false}
+            className={`textarea font-mono text-xs ${invalid(e.lessonJson)}`}
+            placeholder={LESSON_PLACEHOLDER}
+          />
+        </Field>
+      )}
 
       <Field id="status" label="Status" error={e.status} hint="Only published material is visible to students.">
         <select id="status" name="status" defaultValue={v("status", "PUBLISHED")} className="select">

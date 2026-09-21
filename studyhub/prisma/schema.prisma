@@ -30,6 +30,7 @@ enum MaterialType {
   YOUTUBE
   LINK
   TEXT
+  LESSON
 }
 
 model User {
@@ -193,6 +194,8 @@ model Material {
   durationSeconds Int?
   // TEXT (sanitized HTML)
   textContent     String?
+  // LESSON (validated against lib/lesson.ts; bodies sanitized before storing)
+  lessonData      Json?
   order           Int           @default(0)
   status          ContentStatus @default(PUBLISHED)
   uploadedById    String?

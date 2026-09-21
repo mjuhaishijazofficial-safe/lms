@@ -1,4 +1,4 @@
-import { FileText, Link2, NotebookText, Play, type LucideIcon } from "lucide-react";
+import { BookOpenCheck, FileText, Link2, NotebookText, Play, type LucideIcon } from "lucide-react";
 import type { MaterialType } from "@prisma/client";
 import { formatBytes } from "@/lib/format";
 import { formatDuration } from "@/lib/media";
@@ -26,6 +26,7 @@ export const MATERIAL_TYPES: Record<MaterialType, { label: string; icon: LucideI
   YOUTUBE: { label: "Video", icon: Play, tile: "bg-primary text-white", action: "Watch Video" },
   LINK: { label: "Link", icon: Link2, tile: "bg-tile-purple text-violet-800", action: "Open Link" },
   TEXT: { label: "Note", icon: NotebookText, tile: "bg-tile-green text-teal-700", action: "Read" },
+  LESSON: { label: "Lesson", icon: BookOpenCheck, tile: "bg-tile-amber text-amber-800", action: "Study" },
 };
 
 /** The short detail line under a material's title: size, duration, or where a link goes. */
@@ -37,5 +38,6 @@ export function materialMeta(m: { type: MaterialType; fileSize?: number | null; 
       try { return m.externalUrl ? new URL(m.externalUrl).hostname.replace(/^www\./, "") : ""; } catch { return ""; }
     }
     case "TEXT": return "Read online";
+    case "LESSON": return "Summary, definitions & MCQs";
   }
 }

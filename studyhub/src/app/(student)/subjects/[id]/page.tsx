@@ -38,7 +38,7 @@ export default async function SubjectPage({ params, searchParams }: PageProps<"/
 
   const materials = subject.chapters.flatMap((c) => c.materials.map((m) => ({ m, chapter: c })));
   const upNext = materials.filter(({ m }) => !opened.has(m.id)).slice(0, 8);
-  const counts = { FILE: 0, YOUTUBE: 0, LINK: 0, TEXT: 0 };
+  const counts = { FILE: 0, YOUTUBE: 0, LINK: 0, TEXT: 0, LESSON: 0 };
   for (const { m } of materials) counts[m.type]++;
 
   return (
@@ -79,7 +79,7 @@ export default async function SubjectPage({ params, searchParams }: PageProps<"/
           </div>
           <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {[
-              ["Chapters", subject.chapters.length], ["Documents", counts.FILE], ["Videos", counts.YOUTUBE], ["Links", counts.LINK], ["Notes", counts.TEXT],
+              ["Chapters", subject.chapters.length], ["Documents", counts.FILE], ["Videos", counts.YOUTUBE], ["Links", counts.LINK], ["Notes", counts.TEXT], ["Lessons", counts.LESSON],
             ].map(([label, value]) => (
               <div key={label} className="rounded-2xl bg-page p-4">
                 <dt className="text-sm text-muted">{label}</dt>

@@ -158,7 +158,7 @@ export async function getMaterialView(userId: string, materialId: string) {
     where: { AND: [{ id: materialId }, studentMaterialWhere(scope)] },
     select: {
       id: true, type: true, title: true, description: true, fileName: true, fileSize: true, mimeType: true, externalUrl: true, youtubeId: true,
-      durationSeconds: true, textContent: true, createdAt: true, chapterId: true,
+      durationSeconds: true, textContent: true, lessonData: true, createdAt: true, chapterId: true,
       chapter: {
         select: {
           id: true, title: true, chapterNumber: true,

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Download, ExternalLink, Play } from "lucide-react";
+import { BookOpen, BookOpenCheck, Download, ExternalLink, Play } from "lucide-react";
 import type { MaterialType } from "@prisma/client";
 
 /**
@@ -17,5 +17,7 @@ export function MaterialAction({ id, type, className }: { id: string; type: Mate
       return <a href={`/api/materials/${id}/open`} target="_blank" rel="noopener noreferrer" className={className}><ExternalLink className="size-4.5" aria-hidden /> Open Link</a>;
     case "TEXT":
       return <Link href={`/materials/${id}`} prefetch={false} className={className}><BookOpen className="size-4.5" aria-hidden /> Read</Link>;
+    case "LESSON":
+      return <Link href={`/materials/${id}`} prefetch={false} className={className}><BookOpenCheck className="size-4.5" aria-hidden /> Study</Link>;
   }
 }

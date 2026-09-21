@@ -13,6 +13,8 @@ import { PageHeader } from "@/components/ui/page-header";
 import { IconTile } from "@/components/ui/icon-tile";
 import { DocumentCard, LinkCard, NoteReader, PdfViewer, VideoPlayer } from "@/components/student/material-viewers";
 import { MarkCompleteButton, MaterialBookmarkButton } from "@/components/student/toggle-buttons";
+import { LessonReader } from "@/components/student/lesson-reader";
+import { parseLesson } from "@/server/materials/lesson-sanitize";
 
 export const metadata: Metadata = { title: "Study material" };
 
@@ -26,6 +28,8 @@ export default async function MaterialPage({ params }: PageProps<"/materials/[id
   const { chapter } = m;
   const isPdf = m.type === "FILE" && m.mimeType === "application/pdf";
   const returnTo = `/materials/${m.id}`;
+  // Stored lessons were sanitised on the way in and are checked again before being rendered.
+  const lesson = m.type === "LESSON" && m.lessonData ? parseLesson(m.lessonData) : null;
 
   // Visiting this page is what "opened" means. Links to it (cards, previous/next) all disable prefetch, so this
   // only runs on a real navigation, never just because a link scrolled into view.
@@ -65,6 +69,10 @@ export default async function MaterialPage({ params }: PageProps<"/materials/[id
       {m.type === "YOUTUBE" && m.youtubeId && <VideoPlayer videoId={m.youtubeId} title={m.title} durationSeconds={m.durationSeconds} />}
       {m.type === "LINK" && <LinkCard id={m.id} host={materialMeta(m)} />}
       {m.type === "TEXT" && m.textContent && <NoteReader html={m.textContent} />}
+      {lesson?.ok && <LessonReader lesson={lesson.lesson} downloadHref={`/api/materials/${m.id}/lesson`} />}
+      {m.type === "LESSON" && lesson && !lesson.ok && (
+        <div className="card p-6 text-sm text-muted">This lesson could not be displayed. Please tell your admin.</div>
+      )}
 
       <nav aria-label="Other material in this chapter" className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
         {previous ? (

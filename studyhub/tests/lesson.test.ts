@@ -132,3 +132,21 @@ describe("lessonTabs", () => {
       .toEqual(["summary", "mcqs"]);
   });
 });
+
+describe("createMaterialSchema (LESSON)", () => {
+  const base = { type: "LESSON", chapterId: "c".repeat(25), title: "Chapter 1", description: "", status: "PUBLISHED" };
+
+  it("turns pasted JSON into a cleaned lesson", async () => {
+    const { createMaterialSchema } = await import("@/server/validation/materials");
+    const parsed = createMaterialSchema.parse({ ...base, lessonJson: JSON.stringify({ topics: [{ title: "T", body: "<p onclick='x()'>Hi</p>" }] }) });
+    expect(parsed.type === "LESSON" && parsed.lessonJson.topics[0].body).toBe("<p>Hi</p>");
+  });
+
+  it("explains a paste that is not JSON, or not a lesson, in plain words", async () => {
+    const { createMaterialSchema } = await import("@/server/validation/materials");
+    const notJson = createMaterialSchema.safeParse({ ...base, lessonJson: "topics: nothing" });
+    expect(!notJson.success && notJson.error.issues[0].message).toMatch(/not valid JSON/);
+    const empty = createMaterialSchema.safeParse({ ...base, lessonJson: "{}" });
+    expect(!empty.success && empty.error.issues[0].message).toMatch(/at least one/);
+  });
+});

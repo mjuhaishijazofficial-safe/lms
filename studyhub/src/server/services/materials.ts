@@ -1,5 +1,5 @@
 import "server-only";
-import type { MaterialType, Prisma } from "@prisma/client";
+import { Prisma, type MaterialType } from "@prisma/client";
 import { db } from "@/server/db";
 import { ServiceError } from "@/server/action-result";
 import type { SessionUser } from "@/server/auth/session";
@@ -117,7 +117,7 @@ const discardFile = (key: string | null | undefined) =>
 
 /** The type-specific columns for a validated input. Everything not relevant to the type is cleared. */
 function typeColumns(data: CreateMaterialInput | UpdateMaterialInput) {
-  const cleared = { externalUrl: null, youtubeId: null, durationSeconds: null, textContent: null };
+  const cleared = { externalUrl: null, youtubeId: null, durationSeconds: null, textContent: null, lessonData: Prisma.DbNull };
   switch (data.type) {
     case "YOUTUBE": return { ...cleared, youtubeId: data.youtubeUrl, durationSeconds: data.duration }; // youtubeUrl was parsed to the id
     case "LINK": return { ...cleared, externalUrl: data.externalUrl };
@@ -126,6 +126,7 @@ function typeColumns(data: CreateMaterialInput | UpdateMaterialInput) {
       if (!noteText(html)) throw new ServiceError("Write something in the note before saving.", "textContent");
       return { ...cleared, textContent: html };
     }
+    case "LESSON": return { ...cleared, lessonData: data.lessonJson as unknown as Prisma.InputJsonValue }; // already validated and sanitised
     case "FILE": return cleared;
   }
 }

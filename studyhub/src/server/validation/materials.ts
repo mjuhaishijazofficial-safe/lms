@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { parseDuration, parseYouTubeId, safeExternalUrl } from "@/lib/media";
+import { parseLesson } from "@/server/materials/lesson-sanitize";
 import { contentStatusSchema, idSchema, optionalText, trimmed } from "./common";
 
 const common = {
@@ -33,6 +34,24 @@ const duration = z.string().optional().transform((raw, ctx): number | null => {
 
 const textContent = z.string().max(200_000, "This note is too long.");
 
+// The admin pastes lesson content as JSON; it is parsed, validated and sanitised here, so only a clean
+// lesson object ever reaches the service layer.
+const lessonJson = z.string().trim().max(400_000, "This lesson is too long.").transform((raw, ctx) => {
+  let data: unknown;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    ctx.addIssue({ code: "custom", message: "That is not valid JSON. Paste the whole block, including the outer { and }." });
+    return z.NEVER;
+  }
+  const result = parseLesson(data);
+  if (!result.ok) {
+    ctx.addIssue({ code: "custom", message: result.error });
+    return z.NEVER;
+  }
+  return result.lesson;
+});
+
 /** `extra` adds fields shared by every variant (the id, when editing). */
 const build = <E extends z.ZodRawShape>(extra: E) =>
   z.discriminatedUnion("type", [
@@ -40,6 +59,7 @@ const build = <E extends z.ZodRawShape>(extra: E) =>
     z.object({ type: z.literal("YOUTUBE"), ...common, ...extra, youtubeUrl, duration }),
     z.object({ type: z.literal("LINK"), ...common, ...extra, externalUrl }),
     z.object({ type: z.literal("TEXT"), ...common, ...extra, textContent }),
+    z.object({ type: z.literal("LESSON"), ...common, ...extra, lessonJson }),
   ]);
 
 export const createMaterialSchema = build({});
