@@ -10,15 +10,6 @@ const schema = z.object({
   // Capped at 55 because next.config.ts sets the request body limit to 60 MB. Left unset here: the default
   // depends on STORAGE_DRIVER and is filled in below.
   MAX_UPLOAD_MB: z.coerce.number().int().positive().max(55).optional(),
-  // Lesson generation from handouts. Optional: without a key and a model the feature simply reports it is not set up.
-  // An empty value in the hosting dashboard counts as not set.
-  OPENAI_API_KEY: z.string().trim().optional().transform((v) => v || undefined),
-  OPENAI_MODEL: z.string().trim().optional().transform((v) => v || undefined),
-  // Only for testing against a stand-in server or a proxy. Leave empty to use OpenAI itself.
-  OPENAI_BASE_URL: z.string().trim().optional().transform((v) => v || undefined),
-  // What the model costs per million tokens, only used to show the admin an estimate of what a run cost.
-  OPENAI_INPUT_PER_M: z.coerce.number().positive().optional().or(z.literal("").transform(() => undefined)),
-  OPENAI_OUTPUT_PER_M: z.coerce.number().positive().optional().or(z.literal("").transform(() => undefined)),
 });
 
 const parsed = schema.parse(process.env);
