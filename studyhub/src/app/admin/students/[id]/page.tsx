@@ -5,7 +5,9 @@ import { semesterTree } from "@/server/services/semesters";
 import { getStudent, studentPresets } from "@/server/services/students";
 import { studentView } from "@/server/services/student-view";
 import { subjectCatalogue } from "@/server/services/subjects";
+import { studentFees } from "@/server/services/fees";
 import { idSchema } from "@/server/validation/common";
+import { formatAmount } from "@/lib/fees";
 import { formatDate, timeAgo } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { Notice } from "@/components/ui/notice";
@@ -13,6 +15,9 @@ import { Avatar } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ResetPasswordForm, StudentForm } from "@/components/admin/student-form";
+import { StudentFeeForm } from "@/components/admin/student-fee-form";
+import { FeeStatusSelect } from "@/components/admin/fee-status-select";
+import { deleteFeeAction } from "@/app/admin/fees/actions";
 import { deleteStudentAction, setStudentStatusAction } from "../actions";
 
 export const metadata: Metadata = { title: "Edit student" };
@@ -20,8 +25,8 @@ export const metadata: Metadata = { title: "Edit student" };
 export default async function EditStudentPage({ params, searchParams }: PageProps<"/admin/students/[id]">) {
   const { id } = await params;
   const valid = idSchema.safeParse(id).success;
-  const [student, tree, catalogue, presets, view] = await Promise.all([
-    valid ? getStudent(id) : null, semesterTree(), subjectCatalogue(), valid ? studentPresets(id) : [], valid ? studentView(id) : null,
+  const [student, tree, catalogue, presets, view, fees] = await Promise.all([
+    valid ? getStudent(id) : null, semesterTree(), subjectCatalogue(), valid ? studentPresets(id) : [], valid ? studentView(id) : null, valid ? studentFees(id) : [],
   ]);
   if (!student) notFound();
   const active = student.status === "ACTIVE";
@@ -114,6 +119,41 @@ export default async function EditStudentPage({ params, searchParams }: PageProp
               </ul>
             </details>
           ))}
+        </section>
+
+        <section className="card max-w-2xl space-y-4 p-5">
+          <div>
+            <h2 className="font-semibold">Fees</h2>
+            <p className="mt-1 text-sm text-muted">StudyHub usage fees for {student.name}. Payment happens off-platform; mark a fee Paid once it&apos;s received.</p>
+          </div>
+          {fees.length > 0 && (
+            <ul className="divide-y divide-line">
+              {fees.map((f) => (
+                <li key={f.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                  <div className="min-w-0">
+                    <p className="font-medium">{f.period} · {formatAmount(f.amount)}</p>
+                    <p className="text-sm text-muted">
+                      {f.dueDate ? `Due ${formatDate(f.dueDate)}` : "No due date"}{f.note ? ` · ${f.note}` : ""}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <FeeStatusSelect id={f.id} status={f.status} returnTo={here} />
+                    <ConfirmDialog
+                      trigger={<Trash2 className="size-4" aria-hidden />}
+                      triggerClassName="btn-ghost !p-1.5 hover:!bg-red-50 hover:!text-red-600"
+                      triggerLabel={`Delete the ${f.period} fee`}
+                      title={`Delete the ${f.period} fee?`}
+                      description="This can't be undone."
+                      confirmLabel="Delete"
+                      action={deleteFeeAction}
+                      fields={{ id: f.id, returnTo: here }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+          <StudentFeeForm studentId={student.id} />
         </section>
       </div>
     </>

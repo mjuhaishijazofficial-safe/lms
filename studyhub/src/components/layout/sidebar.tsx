@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Bookmark, BookMarked, ListChecks, Megaphone, ShieldCheck, Clock, Files, GraduationCap, Headset, Home, Layers, LayoutDashboard, ListOrdered, Menu, Search, Settings, User, Users, X,
+  Bookmark, BookMarked, ListChecks, Megaphone, ShieldCheck, Clock, Files, GraduationCap, Headset, Home, Layers, LayoutDashboard, ListOrdered, Menu, Search, Settings, User, Users, Wallet, X,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/format";
@@ -24,6 +24,7 @@ const NAV: Record<"admin" | "student", NavItem[]> = {
     { href: "/admin/chapters", label: "Chapters", icon: ListOrdered },
     { href: "/admin/materials", label: "Materials", icon: Files },
     { href: "/admin/tests", label: "Tests", icon: ListChecks },
+    { href: "/admin/fees", label: "Fees", icon: Wallet },
     { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
     { href: "/admin/admins", label: "Admins", icon: ShieldCheck },
     { href: "/admin/settings", label: "Settings", icon: Settings },
@@ -33,6 +34,7 @@ const NAV: Record<"admin" | "student", NavItem[]> = {
     { href: "/courses", label: "My Courses", icon: BookMarked },
     { href: "/subjects", label: "Subjects", icon: Layers },
     { href: "/tests", label: "Tests", icon: ListChecks },
+    { href: "/fee", label: "Fee", icon: Wallet },
     { href: "/search", label: "Search", icon: Search },
     { href: "/recent", label: "Recent Materials", icon: Clock },
     { href: "/bookmarks", label: "Bookmarks", icon: Bookmark },

@@ -33,6 +33,12 @@ enum MaterialType {
   LESSON
 }
 
+enum FeeStatus {
+  PENDING
+  PAID
+  WAIVED
+}
+
 model User {
   id                 String     @id @default(cuid())
   name               String
@@ -57,6 +63,7 @@ model User {
   studentSubjects   StudentSubject[]
   createdTests      Test[]             @relation("CreatedTests")
   testAttempts      TestAttempt[]
+  fees              Fee[]
 
   @@index([role, status])
 }
@@ -312,6 +319,30 @@ model TestAttempt {
 
   @@unique([testId, userId])
   @@index([testId])
+}
+
+/// One StudyHub usage fee for one student for one period (e.g. "September 2026"). This is a record the admin
+/// keeps, not a payment processor: no money moves through the app. Payment happens off-platform (cash, bank
+/// transfer, WhatsApp) and the admin marks it Paid here once received.
+model Fee {
+  id        String    @id @default(cuid())
+  userId    String
+  amount    Int
+  /// Free text naming the period this fee is for, e.g. "September 2026" or "Semester 1". Unique per student so
+  /// generating fees for the same period twice does not double-charge anyone by accident.
+  period    String
+  dueDate   DateTime?
+  status    FeeStatus @default(PENDING)
+  paidAt    DateTime?
+  note      String    @default("")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period])
+  @@index([userId, status])
+  @@index([status, dueDate])
 }
 
 /// A message from the admins on students' dashboards. courseId empty means every student; otherwise only that program.
