@@ -70,11 +70,12 @@ export async function setTestStatus(actor: SessionUser, id: string, status: Cont
   return db.test.update({ where: { id }, data: { status } });
 }
 
+/** Deletes the test outright, attempts and all (TestAttempt cascades) — unlike other content, a test is meant to
+ *  be disposable, so there is no "archive instead" block here. The confirm dialog is the only safety net. */
 export async function deleteTest(actor: SessionUser, id: string) {
   ensureAdmin(actor);
-  const test = await db.test.findUnique({ where: { id }, select: { _count: { select: { attempts: true } } } });
+  const test = await db.test.findUnique({ where: { id }, select: { id: true } });
   if (!test) throw new ServiceError("This test no longer exists.", undefined, "not-found");
-  if (test._count.attempts > 0) throw new ServiceError("Students have already attempted this test. Archive it instead of deleting it.", undefined, "not-empty");
   await db.test.delete({ where: { id } });
 }
 
