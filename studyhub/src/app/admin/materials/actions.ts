@@ -41,6 +41,24 @@ export async function updateMaterialAction(_prev: FormState, formData: FormData)
   redirect(`/admin/materials?chapter=${parsed.data.chapterId}&notice=material-updated`);
 }
 
+export type BulkUploadResult = { ok: true; id: string } | { ok: false; error: string };
+
+/**
+ * Creates one FILE material from one file. Called directly (not bound to a form) once per file from the bulk
+ * upload page, so a folder of files becomes a folder of materials instead of one form submission each.
+ */
+export async function bulkUploadMaterialAction(formData: FormData): Promise<BulkUploadResult> {
+  const parsed = createMaterialSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Something was wrong with this file." };
+  try {
+    const material = await createMaterial(await assertAdmin(), parsed.data, await readFile(formData));
+    revalidatePath("/admin", "layout");
+    return { ok: true, id: material.id };
+  } catch (err) {
+    return { ok: false, error: toFormState(err).error ?? "Something went wrong." };
+  }
+}
+
 export async function moveMaterialAction(formData: FormData) {
   await handleMove("material", formData, moveMaterial, "/admin/materials");
 }

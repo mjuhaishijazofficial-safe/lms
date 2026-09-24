@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ExternalLink, Files, Plus } from "lucide-react";
+import { ExternalLink, FileUp, Files, Plus } from "lucide-react";
 import type { MaterialType } from "@prisma/client";
 import { courseOptions } from "@/server/services/courses";
 import { chapterPickerTree, listMaterials, SORTS, type SortKey } from "@/server/services/materials";
@@ -53,7 +53,12 @@ export default async function MaterialsPage({ searchParams }: PageProps<"/admin/
       <PageHeader
         title="Materials"
         description={`Study files, videos, links and notes, organised by ${TERMS.programLower}, subject and chapter.`}
-        actions={hasChapters && <Link href={`/admin/materials/new${chapterId ? `?chapter=${chapterId}` : ""}`} className="btn-primary"><Plus className="size-4.5" aria-hidden /> New material</Link>}
+        actions={hasChapters && (
+          <>
+            <Link href="/admin/materials/bulk" className="btn-outline"><FileUp className="size-4.5" aria-hidden /> Add multiple</Link>
+            <Link href={`/admin/materials/new${chapterId ? `?chapter=${chapterId}` : ""}`} className="btn-primary"><Plus className="size-4.5" aria-hidden /> New material</Link>
+          </>
+        )}
       />
       <Notice searchParams={sp} />
 
