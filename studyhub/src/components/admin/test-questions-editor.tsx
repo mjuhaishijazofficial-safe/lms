@@ -1,28 +1,35 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { ChevronDown, ChevronUp, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronDown, ChevronUp, FileUp, Plus, Trash2 } from "lucide-react";
 import type { TestQuestion } from "@/lib/test";
 import { OPTION_LETTERS } from "@/lib/lesson";
+import { extractPdfPages, PdfReadError } from "@/lib/pdf-text";
+import { parseMcqText } from "@/lib/mcq-import";
 import { cn } from "@/lib/format";
 
-type Draft = { key: number; question: string; options: string[]; answer: number; explanation: string };
+type Draft = { key: number; question: string; options: string[]; answer: number; explanation: string; needsReview: boolean };
 
-const emptyDraft = (key: number): Draft => ({ key, question: "", options: ["", "", "", ""], answer: 0, explanation: "" });
+const emptyDraft = (key: number): Draft => ({ key, question: "", options: ["", "", "", ""], answer: 0, explanation: "", needsReview: false });
+const isBlank = (d: Draft) => !d.question.trim() && d.options.every((o) => !o.trim());
 
 /**
- * Writes the questions for a test by hand: no AI, nothing generated — an admin types each question, its options
- * and which one is correct. State lives here and is serialised into one hidden field on submit, the same way the
- * subject picker turns its ticked boxes into one field; the server only ever sees the clean, validated result.
+ * Writes the questions for a test: type them by hand, or import them from a PDF that already has them (no AI —
+ * a plain-text reading of numbered questions, lettered options and an answer written after them or collected in
+ * an answer key). Either way, state lives here and is serialised into one hidden field on submit, the same way
+ * the subject picker turns its ticked boxes into one field; the server only ever sees the clean, validated result.
  */
 export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
   const [items, setItems] = useState<Draft[]>(() =>
     initial.length === 0
       ? [emptyDraft(0)]
-      : initial.map((q, i) => ({ key: i, question: q.question, options: [...q.options], answer: q.answer, explanation: q.explanation ?? "" })),
+      : initial.map((q, i) => ({ key: i, question: q.question, options: [...q.options], answer: q.answer, explanation: q.explanation ?? "", needsReview: false })),
   );
   // Only ever read/written from event handlers below (never during render), seeded just past the initial keys.
   const nextKey = useRef(items.length);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState<{ done: number; total: number } | null>(null);
+  const [importMessage, setImportMessage] = useState<{ tone: "info" | "warn" | "error"; text: string } | null>(null);
 
   const patch = (key: number, next: Partial<Draft>) => setItems((prev) => prev.map((it) => (it.key === key ? { ...it, ...next } : it)));
   const patchOption = (key: number, i: number, value: string) =>
@@ -56,6 +63,33 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
     });
   }
 
+  async function importPdf(file: File) {
+    setImportMessage(null);
+    setImporting({ done: 0, total: 1 });
+    try {
+      const pages = await extractPdfPages(file, (done, total) => setImporting({ done, total }));
+      const { questions, skipped } = parseMcqText(pages.join("\n"));
+      if (questions.length === 0) {
+        setImportMessage({ tone: "warn", text: "Couldn't find any numbered questions in that file. You can still add them below by hand." });
+        return;
+      }
+      const reviewCount = questions.filter((q) => q.needsReview).length;
+      setItems((prev) => [
+        ...prev.filter((d) => !isBlank(d)),
+        ...questions.map((q) => ({ key: nextKey.current++, question: q.question, options: q.options, answer: q.answer, explanation: "", needsReview: q.needsReview })),
+      ]);
+      const parts = [`Imported ${questions.length} question${questions.length === 1 ? "" : "s"}.`];
+      if (skipped) parts.push(`${skipped} could not be read and ${skipped === 1 ? "was" : "were"} skipped.`);
+      if (reviewCount) parts.push(`${reviewCount} need you to check the correct answer — look for the highlighted ones below.`);
+      setImportMessage({ tone: reviewCount || skipped ? "warn" : "info", text: parts.join(" ") });
+    } catch (err) {
+      setImportMessage({ tone: "error", text: err instanceof PdfReadError ? err.message : "This file could not be read. Try a different PDF." });
+    } finally {
+      setImporting(null);
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  }
+
   const json = JSON.stringify(items.map((it) => ({
     question: it.question, options: it.options, answer: it.answer,
     ...(it.explanation.trim() ? { explanation: it.explanation.trim() } : {}),
@@ -65,8 +99,30 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
     <div className="space-y-4">
       <input type="hidden" name="questionsJson" value={json} />
 
+      <div className="rounded-2xl border border-dashed border-line bg-page/50 p-4">
+        <label className="flex cursor-pointer items-center gap-3">
+          <input
+            ref={fileInput} type="file" accept=".pdf,application/pdf" className="sr-only"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) void importPdf(f); }}
+            disabled={!!importing}
+          />
+          <span className="btn-outline !py-1.5 text-sm"><FileUp className="size-4" aria-hidden /> Import questions from a PDF</span>
+          <span className="text-sm text-muted">
+            {importing ? `Reading page ${importing.done} of ${importing.total}…` : "Numbered questions, lettered options — no AI, nothing leaves your browser."}
+          </span>
+        </label>
+        {importMessage && (
+          <p className={cn(
+            "mt-2.5 flex items-start gap-1.5 text-sm",
+            importMessage.tone === "error" ? "text-red-600" : importMessage.tone === "warn" ? "text-amber-800" : "text-muted",
+          )}>
+            {importMessage.tone !== "info" && <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />} {importMessage.text}
+          </p>
+        )}
+      </div>
+
       {items.map((it, i) => (
-        <fieldset key={it.key} className="rounded-2xl border border-line bg-page/40 p-4 sm:p-5">
+        <fieldset key={it.key} className={cn("rounded-2xl border p-4 sm:p-5", it.needsReview ? "border-amber-300 bg-amber-50/40" : "border-line bg-page/40")}>
           <div className="mb-3 flex items-center justify-between gap-3">
             <legend className="text-sm font-semibold">Question {i + 1}</legend>
             <div className="flex items-center gap-1">
@@ -85,6 +141,12 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
             </div>
           </div>
 
+          {it.needsReview && (
+            <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-amber-800">
+              <AlertTriangle className="size-4 shrink-0" aria-hidden /> Imported from the PDF — its answer wasn&apos;t clear, so check which option below is correct.
+            </p>
+          )}
+
           <textarea
             value={it.question} onChange={(e) => patch(it.key, { question: e.target.value })}
             placeholder="Type the question…" rows={2} className="textarea" aria-label={`Question ${i + 1} text`}
@@ -95,7 +157,7 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
             {it.options.map((opt, oi) => (
               <div key={oi} className="flex items-center gap-2.5">
                 <input
-                  type="radio" checked={it.answer === oi} onChange={() => patch(it.key, { answer: oi })}
+                  type="radio" checked={it.answer === oi} onChange={() => patch(it.key, { answer: oi, needsReview: false })}
                   aria-label={`Option ${OPTION_LETTERS[oi]} is correct`} className="size-4 shrink-0 accent-[var(--color-primary)]"
                 />
                 <input
