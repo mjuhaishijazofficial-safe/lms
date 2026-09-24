@@ -7,7 +7,7 @@ import { errorKey } from "@/server/action-result";
 import { moveSchema, statusChangeSchema } from "@/server/validation/admin";
 import { idSchema } from "@/server/validation/common";
 
-type Entity = "course" | "subject" | "chapter" | "student" | "material" | "semester" | "announcement";
+type Entity = "course" | "subject" | "chapter" | "student" | "material" | "semester" | "announcement" | "test";
 
 /** Only same-site relative paths are allowed as a post-action return target. */
 export function safeReturn(value: FormDataEntryValue | null, fallback: string): string {

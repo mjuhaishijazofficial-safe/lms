@@ -55,6 +55,8 @@ model User {
   subjectBookmarks  SubjectBookmark[]
   uploadedMaterials Material[]         @relation("UploadedBy")
   studentSubjects   StudentSubject[]
+  createdTests      Test[]             @relation("CreatedTests")
+  testAttempts      TestAttempt[]
 
   @@index([role, status])
 }
@@ -154,6 +156,7 @@ model Subject {
   chapters  Chapter[]
   bookmarks SubjectBookmark[]
   students  StudentSubject[]
+  tests     Test[]
 
   @@index([courseId, semesterId, status, order])
 }
@@ -268,6 +271,47 @@ model StudentSubject {
 
   @@unique([userId, subjectId])
   @@index([subjectId])
+}
+
+/// A timed, MCQ-based test for one subject (e.g. a weekly test). Written by hand by an admin — no AI involved,
+/// so no per-run cost. `questions` is validated against lib/test.ts before it is ever stored.
+model Test {
+  id              String        @id @default(cuid())
+  subjectId       String
+  title           String
+  description     String        @default("")
+  durationMinutes Int
+  questions       Json
+  status          ContentStatus @default(DRAFT)
+  createdById     String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  subject   Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdBy User?         @relation("CreatedTests", fields: [createdById], references: [id], onDelete: SetNull)
+  attempts  TestAttempt[]
+
+  @@index([subjectId, status, createdAt])
+}
+
+/// One student's attempt at one test: one row per (test, user), created the moment they press Start, which is
+/// also what "one attempt only" means here — a second Start for the same test finds this row instead of a new one.
+/// `answers[i]` is the option index the student picked for question i (or null), kept in step with the server's
+/// own clock so nothing they change locally (their clock, the page, a retry) can extend their time or their score.
+model TestAttempt {
+  id          String    @id @default(cuid())
+  testId      String
+  userId      String
+  answers     Json      @default("[]")
+  score       Int?
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+
+  test Test @relation(fields: [testId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, userId])
+  @@index([testId])
 }
 
 /// A message from the admins on students' dashboards. courseId empty means every student; otherwise only that program.

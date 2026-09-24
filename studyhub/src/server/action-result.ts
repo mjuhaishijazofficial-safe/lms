@@ -51,7 +51,7 @@ export function toFormState(err: unknown, values?: Record<string, string>): Form
 }
 
 /** Map a thrown error to one of the fixed ?error= keys used after a redirect (see lib/notices). */
-export function errorKey(err: unknown, entity: "course" | "subject" | "chapter" | "student" | "material" | "semester" | "announcement"): string {
+export function errorKey(err: unknown, entity: "course" | "subject" | "chapter" | "student" | "material" | "semester" | "announcement" | "test"): string {
   if (err instanceof ServiceError && err.code === "last") return "semester-last";
   if (err instanceof AuthError) return "forbidden";
   if (err instanceof ServiceError && err.code === "not-empty") return `${entity}-not-empty`;

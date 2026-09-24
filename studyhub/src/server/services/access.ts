@@ -2,9 +2,9 @@ import "server-only";
 import { cache } from "react";
 import { db } from "@/server/db";
 import type { SessionUser } from "@/server/auth/session";
-import { studentMaterialWhere, type StudentScope } from "./visibility";
+import { studentMaterialWhere, studentTestWhere, type StudentScope } from "./visibility";
 
-export { studentChapterWhere, studentCourseWhere, studentMaterialWhere, studentSubjectWhere } from "./visibility";
+export { studentChapterWhere, studentCourseWhere, studentMaterialWhere, studentSubjectWhere, studentTestWhere } from "./visibility";
 export type { StudentScope } from "./visibility";
 
 /** The programs, current semesters and picked subjects of an active student. Cached for the length of a request. */
@@ -31,5 +31,16 @@ export async function checkMaterialAccess(user: SessionUser, materialId: string)
   if (user.role !== "STUDENT") return { exists: true, allowed: false };
   const scope = await getStudentScope(user.id);
   const visible = await db.material.count({ where: { id: materialId, ...studentMaterialWhere(scope) } });
+  return { exists: true, allowed: visible > 0 };
+}
+
+/** Same rule as checkMaterialAccess, for tests. */
+export async function checkTestAccess(user: SessionUser, testId: string): Promise<MaterialAccess> {
+  const found = await db.test.findUnique({ where: { id: testId }, select: { id: true } });
+  if (!found) return { exists: false };
+  if (user.role === "ADMIN") return { exists: true, allowed: true };
+  if (user.role !== "STUDENT") return { exists: true, allowed: false };
+  const scope = await getStudentScope(user.id);
+  const visible = await db.test.count({ where: { id: testId, ...studentTestWhere(scope) } });
   return { exists: true, allowed: visible > 0 };
 }

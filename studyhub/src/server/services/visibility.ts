@@ -49,3 +49,5 @@ export function studentSubjectWhere(scope: StudentScope): Prisma.SubjectWhereInp
 
 export const studentChapterWhere = (scope: StudentScope): Prisma.ChapterWhereInput => ({ status: "PUBLISHED", subject: studentSubjectWhere(scope) });
 export const studentMaterialWhere = (scope: StudentScope): Prisma.MaterialWhereInput => ({ status: "PUBLISHED", chapter: studentChapterWhere(scope) });
+/** A test follows its subject's own visibility, same as a chapter does: no extra rule needed. */
+export const studentTestWhere = (scope: StudentScope): Prisma.TestWhereInput => ({ status: "PUBLISHED", subject: studentSubjectWhere(scope) });

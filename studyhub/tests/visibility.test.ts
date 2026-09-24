@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { studentCourseWhere, studentMaterialWhere, studentSubjectWhere, type StudentScope } from "@/server/services/visibility";
+import { studentCourseWhere, studentMaterialWhere, studentSubjectWhere, studentTestWhere, type StudentScope } from "@/server/services/visibility";
 
 const sem = (order: number) => ({ id: `sem${order}`, name: `Semester ${order}`, order });
 const scope = (...e: { courseId: string; semester: ReturnType<typeof sem> | null }[]): StudentScope => ({ userId: "u1", enrollments: e });
@@ -100,5 +100,20 @@ describe("subject visibility (subjects picked per student)", () => {
 
   it("restricts materials through the picked subjects", () => {
     expect(json(studentMaterialWhere(picked(["s1"])))).toContain('"s1"');
+  });
+});
+
+describe("test visibility", () => {
+  it("needs the test and its subject to be published", () => {
+    const where = studentTestWhere(scope({ courseId: "cs", semester: sem(3) }));
+    expect(where.status).toBe("PUBLISHED");
+    expect((where.subject as { status: string }).status).toBe("PUBLISHED");
+  });
+  it("follows the same subject rule as materials — the semester or the admin's picks", () => {
+    const scoped = scope({ courseId: "cs", semester: sem(3) });
+    expect(studentTestWhere(scoped).subject).toEqual(studentSubjectWhere(scoped));
+  });
+  it("fails closed with no enrolment", () => {
+    expect(json(studentTestWhere({ userId: "u1", enrollments: [] }))).toContain('"subject":{"id":{"in":[]}}');
   });
 });
