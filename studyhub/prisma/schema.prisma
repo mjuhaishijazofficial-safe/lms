@@ -295,6 +295,9 @@ model Test {
   durationMinutes Int
   questions       Json
   status          ContentStatus @default(DRAFT)
+  /// Same idea as Chapter.publishAt: a DRAFT test with a past publishAt is open to students without anyone
+  /// publishing it (used when a whole chapter, its guide and its test are scheduled together). See lib/schedule.ts.
+  publishAt       DateTime?
   createdById     String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

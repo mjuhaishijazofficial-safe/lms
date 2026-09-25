@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { Field, invalid } from "@/components/ui/field";
 
 /** "YYYY-MM-DDTHH:mm" in the browser's own local time, for the <input type="datetime-local"> value. */
-function toLocalInputValue(iso: string): string {
+export function toLocalInputValue(iso: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   const pad = (n: number) => String(n).padStart(2, "0");

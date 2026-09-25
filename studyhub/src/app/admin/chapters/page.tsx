@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ListOrdered, Plus } from "lucide-react";
+import { FileCode2, ListOrdered, Plus } from "lucide-react";
 import { courseOptions } from "@/server/services/courses";
 import { listChapters } from "@/server/services/chapters";
 import { subjectOptions } from "@/server/services/subjects";
@@ -41,7 +41,12 @@ export default async function ChaptersPage({ searchParams }: PageProps<"/admin/c
       <PageHeader
         title="Chapters"
         description="Chapters organise a subject's study materials."
-        actions={hasSubjects && <Link href={`/admin/chapters/new${subjectId ? `?subject=${subjectId}` : ""}`} className="btn-primary"><Plus className="size-4.5" aria-hidden /> New chapter</Link>}
+        actions={hasSubjects && (
+          <>
+            <Link href={`/admin/chapters/guides${subjectId ? `?subject=${subjectId}` : ""}`} className="btn-outline"><FileCode2 className="size-4.5" aria-hidden /> From study guides</Link>
+            <Link href={`/admin/chapters/new${subjectId ? `?subject=${subjectId}` : ""}`} className="btn-primary"><Plus className="size-4.5" aria-hidden /> New chapter</Link>
+          </>
+        )}
       />
       <Notice searchParams={sp} />
 

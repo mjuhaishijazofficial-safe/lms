@@ -12,6 +12,8 @@ import { Notice } from "@/components/ui/notice";
 import { EmptyState } from "@/components/ui/empty-state";
 import { IconTile } from "@/components/ui/icon-tile";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { effectiveStatus } from "@/lib/schedule";
+import { formatDateTime } from "@/lib/format";
 import { Pagination } from "@/components/ui/pagination";
 import { Table, TableCard, Td, Th, Tr } from "@/components/ui/data-table";
 import { FilterBar, FilterSelect } from "@/components/admin/filter-bar";
@@ -109,7 +111,7 @@ export default async function TestsPage({ searchParams }: PageProps<"/admin/test
                             <div className="min-w-0">
                               <Link href={`/admin/tests/${t.id}`} className="font-semibold hover:text-primary">{t.title}</Link>
                               <p className="text-muted">{count} question{count === 1 ? "" : "s"}</p>
-                              <div className="mt-1 md:hidden"><StatusBadge status={t.status} /></div>
+                              <div className="mt-1 md:hidden"><StatusBadge status={effectiveStatus(t.status, t.publishAt)} /></div>
                               <div className="-ml-2.5 mt-1 md:hidden [&>div]:justify-start">{actions}</div>
                             </div>
                           </div>
@@ -119,7 +121,10 @@ export default async function TestsPage({ searchParams }: PageProps<"/admin/test
                           <p className="text-muted">{[t.subject.course.name, t.subject.semester?.name].filter(Boolean).join(" · ")}</p>
                         </Td>
                         <Td className="hidden whitespace-nowrap md:table-cell">{t.durationMinutes} min</Td>
-                        <Td className="hidden md:table-cell"><StatusBadge status={t.status} /></Td>
+                        <Td className="hidden md:table-cell">
+                          <StatusBadge status={effectiveStatus(t.status, t.publishAt)} />
+                          {t.status === "DRAFT" && t.publishAt && new Date(t.publishAt) > new Date() && <p className="mt-1 whitespace-nowrap text-muted">{formatDateTime(t.publishAt)}</p>}
+                        </Td>
                         <Td className="hidden md:table-cell">
                           {t._count.attempts > 0 ? (
                             <Link href={`/admin/tests/${t.id}/results`} className="text-primary hover:underline">{t._count.attempts} submitted</Link>

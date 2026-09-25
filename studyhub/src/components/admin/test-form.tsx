@@ -11,9 +11,10 @@ import { Field, invalid } from "@/components/ui/field";
 import { STATUS_OPTIONS } from "@/components/ui/status-badge";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { SubjectFieldPicker } from "./subject-field-picker";
+import { ScheduleField } from "./schedule-field";
 import { TestQuestionsEditor } from "./test-questions-editor";
 
-type Initial = { id: string; subjectId: string; title: string; description: string; durationMinutes: number; status: string };
+type Initial = { id: string; subjectId: string; title: string; description: string; durationMinutes: number; status: string; publishAt: string | null };
 
 export function TestForm({ test, tree, questions, attemptCount }: {
   test?: Initial; tree: PickerTree; questions: TestQuestion[]; attemptCount?: number;
@@ -52,6 +53,7 @@ export function TestForm({ test, tree, questions, attemptCount }: {
             </select>
           </Field>
         </div>
+        <ScheduleField initial={state.values?.publishAt ?? test?.publishAt} error={e.publishAt} />
       </div>
 
       <div className="card max-w-2xl space-y-4 p-6 sm:p-8">

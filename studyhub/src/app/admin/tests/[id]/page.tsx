@@ -54,7 +54,7 @@ export default async function EditTestPage({ params, searchParams }: PageProps<"
         attemptCount={attemptCount}
         test={{
           id: test.id, subjectId: test.subjectId, title: test.title, description: test.description,
-          durationMinutes: test.durationMinutes, status: test.status,
+          durationMinutes: test.durationMinutes, status: test.status, publishAt: test.publishAt?.toISOString() ?? null,
         }}
       />
     </>

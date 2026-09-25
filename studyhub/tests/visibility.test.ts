@@ -125,9 +125,10 @@ describe("publishedWhere (scheduled publish)", () => {
 });
 
 describe("test visibility", () => {
-  it("needs the test and its subject to be published", () => {
-    const where = studentTestWhere(scope({ courseId: "cs", semester: sem(3) }));
-    expect(where.status).toBe("PUBLISHED");
+  it("needs the test published (or its scheduled time come) and its subject published", () => {
+    const NOW = new Date("2026-06-15T12:00:00Z");
+    const where = studentTestWhere(scope({ courseId: "cs", semester: sem(3) }), NOW);
+    expect(where.OR).toEqual([{ status: "PUBLISHED" }, { status: "DRAFT", publishAt: { lte: NOW } }]);
     expect((where.subject as { status: string }).status).toBe("PUBLISHED");
   });
   it("follows the same subject rule as materials — the semester or the admin's picks", () => {

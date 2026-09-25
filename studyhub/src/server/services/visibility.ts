@@ -58,5 +58,5 @@ export function publishedWhere(now: Date = new Date()) {
 
 export const studentChapterWhere = (scope: StudentScope, now: Date = new Date()): Prisma.ChapterWhereInput => ({ ...publishedWhere(now), subject: studentSubjectWhere(scope) });
 export const studentMaterialWhere = (scope: StudentScope, now: Date = new Date()): Prisma.MaterialWhereInput => ({ ...publishedWhere(now), chapter: studentChapterWhere(scope, now) });
-/** A test follows its subject's own visibility, same as a chapter does: no extra rule needed. */
-export const studentTestWhere = (scope: StudentScope): Prisma.TestWhereInput => ({ status: "PUBLISHED", subject: studentSubjectWhere(scope) });
+/** A test follows its subject's visibility, and like a chapter it can be scheduled to open on its own. */
+export const studentTestWhere = (scope: StudentScope, now: Date = new Date()): Prisma.TestWhereInput => ({ ...publishedWhere(now), subject: studentSubjectWhere(scope) });

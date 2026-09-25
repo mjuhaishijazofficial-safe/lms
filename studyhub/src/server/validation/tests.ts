@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { testQuestionsSchema } from "@/lib/test";
-import { contentStatusSchema, idSchema, optionalText, trimmed } from "./common";
+import { contentStatusSchema, idSchema, optionalText, publishAtSchema, trimmed } from "./common";
 
 // The question builder keeps its own state client-side and serialises it into this one hidden field, the same
 // way the lesson content textarea works — so only a clean, validated question list ever reaches the service.
@@ -26,6 +26,7 @@ const common = {
   description: optionalText(500),
   durationMinutes: z.coerce.number().int().min(1, "Give at least 1 minute.").max(300, "Keep it under 5 hours."),
   status: contentStatusSchema,
+  publishAt: publishAtSchema,
   questionsJson,
 };
 

@@ -45,7 +45,7 @@ export async function createTest(actor: SessionUser, data: CreateTestInput) {
   return db.test.create({
     data: {
       subjectId: data.subjectId, title: data.title, description: data.description,
-      durationMinutes: data.durationMinutes, questions: data.questionsJson, status: data.status,
+      durationMinutes: data.durationMinutes, questions: data.questionsJson, status: data.status, publishAt: data.publishAt,
       createdById: actor.id,
     },
   });
@@ -60,7 +60,7 @@ export async function updateTest(actor: SessionUser, data: UpdateTestInput) {
     where: { id: data.id },
     data: {
       subjectId: data.subjectId, title: data.title, description: data.description,
-      durationMinutes: data.durationMinutes, questions: data.questionsJson, status: data.status,
+      durationMinutes: data.durationMinutes, questions: data.questionsJson, status: data.status, publishAt: data.publishAt,
     },
   });
 }

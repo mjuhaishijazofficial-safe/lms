@@ -83,7 +83,9 @@ check("students created (Alpha, Beta, and one with a pending password change)", 
 
 // ---- access to the admin pages -------------------------------------------------------------------------------
 { const r = await get("/admin/materials", null); check("signed-out /admin/materials -> /login", loc(r) === "/login", `${r.status} ${loc(r)}`); }
-for (const p of ["/admin/materials", "/admin/materials/new"]) { const r = await get(p, s1.jar); check(`student blocked from ${p}`, r.status === 307 && loc(r) === "/dashboard", `${r.status} ${loc(r)}`); }
+for (const p of ["/admin/materials", "/admin/materials/new", "/admin/chapters/guides"]) { const r = await get(p, s1.jar); check(`student blocked from ${p}`, r.status === 307 && loc(r) === "/dashboard", `${r.status} ${loc(r)}`); }
+{ const t = await pageText(`/admin/chapters/guides?subject=${A.sid}`);
+  check("chapters-from-guides page opens for the admin with the three steps", t.includes("Chapters from study guides") && t.includes("Which course?") && t.includes("Drop the study guides") && t.includes("When do students get them?")); }
 { const t = await pageText("/admin/materials"); check("materials page has filters and the empty/list state", t.includes("Materials")); }
 
 // ---- create: FILE -------------------------------------------------------------------------------------------
