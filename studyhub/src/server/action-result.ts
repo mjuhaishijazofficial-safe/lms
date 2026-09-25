@@ -10,6 +10,8 @@ export type FormState = {
   success?: string;
   /** Echo of submitted values so fields keep their input after a failed submit. */
   values?: Record<string, string>;
+  /** Different on every result, for forms that remount an input after each submit (even two identical errors). */
+  key?: number;
 };
 
 /** A user-facing error thrown by services (e.g. "Move or delete its chapters first"). */

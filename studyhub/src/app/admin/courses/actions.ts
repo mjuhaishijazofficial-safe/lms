@@ -12,13 +12,15 @@ export async function createCourseAction(_prev: FormState, formData: FormData): 
   const values = formValues(formData);
   const parsed = courseSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return fromZodError(parsed.error, values);
+  let id: string;
   try {
-    await createCourse(await assertAdmin(), parsed.data);
+    id = (await createCourse(await assertAdmin(), parsed.data)).id;
   } catch (err) {
     return toFormState(err, values);
   }
   revalidatePath("/admin", "layout");
-  redirect("/admin/courses?notice=course-created");
+  // Straight to the new program, where its semesters and courses are added.
+  redirect(`/admin/courses/${id}?notice=course-created`);
 }
 
 export async function updateCourseAction(_prev: FormState, formData: FormData): Promise<FormState> {
@@ -32,7 +34,7 @@ export async function updateCourseAction(_prev: FormState, formData: FormData): 
     return toFormState(err, values);
   }
   revalidatePath("/admin", "layout");
-  redirect("/admin/courses?notice=course-updated");
+  redirect(`/admin/courses/${id}?notice=course-updated`);
 }
 
 export async function moveCourseAction(formData: FormData) {

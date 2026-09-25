@@ -64,16 +64,18 @@ const semRows = async () => [...(await (await get(semPage, admin)).text()).match
   .map((m) => m[0]).filter((t) => /id="sem-c/.test(t))
   .map((t) => [/id="sem-([a-z0-9]+)"/.exec(t)[1], dec(/value="([^"]*)"/.exec(t)?.[1] ?? "")]);
 const semNames = async () => (await semRows()).map(([, name]) => name);
-{ const t = text((await get(semPage, admin).then((r) => r.text()))); check("program page: empty semester list explains itself", t.includes("No semesters yet") && /Add several at once/.test(t)); }
+{ const t = text((await get(semPage, admin).then((r) => r.text()))); check("program page: empty semester list explains itself", t.includes("No semesters yet") && /Add VU courses/.test(t) && /Add 8 empty semesters/.test(t)); }
 { const r = await submit(semPage, admin, hasField("count"), { count: "13" }); check("generate: more than 12 at once is refused", loc(r).includes("error=failed"), loc(r)); }
 { const r = await submit(semPage, admin, hasField("count"), { count: "4" });
   check("generate: adds Semester 1-4 in one step", loc(r).includes("notice=semesters-generated"), loc(r));
   const first = await semNames();
   const second = await semNames();
   check("...named and ordered", first.join() === "Semester 1,Semester 2,Semester 3,Semester 4", `first read=${JSON.stringify(first)} second read=${JSON.stringify(second)}`); }
-{ const r = await submit(semPage, admin, (f) => f.includes('name="courseId"') && hasField("name")(f), { name: "Summer Term" });
+// The "add a semester" form, not a semester's own "add a course" box (which also has courseId + name, plus semesterId).
+const addSemesterForm = (f) => f.includes('name="courseId"') && hasField("name")(f) && !f.includes('name="semesterId"');
+{ const r = await submit(semPage, admin, addSemesterForm, { name: "Summer Term" });
   check("add one: appended at the end", loc(r).includes("notice=semester-created") && (await semNames()).at(-1) === "Summer Term", loc(r)); }
-{ const r = await submit(semPage, admin, (f) => f.includes('name="courseId"') && hasField("name")(f), { name: "  " }); check("add one: blank name refused", loc(r).includes("error=failed")); }
+{ const r = await submit(semPage, admin, addSemesterForm, { name: "  " }); check("add one: blank name refused", loc(r).includes("error=failed")); }
 
 const semIds = async () => Object.fromEntries((await semRows()).map(([id, name]) => [name, id]));
 let S = await semIds();
@@ -232,12 +234,35 @@ const E = await makeStudent("Eve", "smoketest.sem.eve", { courseId: uni, semeste
   const r = await submitDialog(semPage, admin, "Delete “Semester 1”");
   check("once its subjects and students are moved out, the semester can be deleted", loc(r).includes("notice=semester-deleted") && !(await semNames()).includes("Semester 1"), loc(r)); }
 
-// ---- 8. permissions -------------------------------------------------------------------------------------------
+// ---- 8. Programs page: courses from VU's scheme of study, and the "add a course" box ------------------------------
+{ // Into the SmokeTest "Other" program (so cleanup removes it). The required courses are ticked in the served HTML.
+  const vuPage = `/admin/courses/vu?scheme=psychology&program=${other}`;
+  const picker = text(await (await get(vuPage, admin)).text());
+  check("VU picker lists the degree's courses by semester", picker.includes("PSY101") && picker.includes("Introduction to Psychology") && /Semester 8/.test(picker));
+  const r = await submit(vuPage, admin, hasField("slug"), { target: other, status: "PUBLISHED" });
+  const n = Number(/[?&]n=(\d+)/.exec(loc(r))?.[1] ?? 0);
+  check("VU import: adds the ticked courses and opens the program with a count", loc(r).startsWith(`/admin/courses/${other}?notice=vu-imported`) && n >= 20, loc(r));
+  const html = await (await get(`/admin/courses/${other}`, admin)).text();
+  const t = text(html);
+  check("...each inside its semester, code first", /Semester 1[\s\S]*PSY101 Introduction to Psychology[\s\S]*Semester 2/.test(t) && /Semester 8/.test(t), t.slice(0, 300));
+  check("...the page grew to eight semesters", (html.match(/aria-label="More actions for Semester \d"/g) ?? []).length === 8);
+  const again = await submit(vuPage, admin, hasField("slug"), { target: other, status: "PUBLISHED" });
+  check("VU import twice: nothing is ticked the second time, so nothing is duplicated", again.status === 200 && text(await again.text()).includes("Tick at least one course"), `${again.status} ${loc(again)}`);
+  const forged = await submit(vuPage, admin, hasField("slug"), { target: other, status: "PUBLISHED", codes: "PSY101" });
+  check("...and a replayed code is skipped, not copied", loc(forged).includes("n=0"), loc(forged)); }
+{ const progPage = `/admin/courses/${other}`;
+  const quick = (f) => f.includes('name="semesterId"') && hasField("name")(f) && f.includes('name="courseId"');
+  const r = await submit(progPage, admin, quick, { name: `${P} Quick Course` });
+  check("add-a-course box: adds the course without leaving the page", r.status === 200 && text(await (await get(progPage, admin)).text()).includes(`${P} Quick Course`), `${r.status} ${loc(r)}`);
+  const dup = await submit(progPage, admin, quick, { name: `${P.toLowerCase()} quick-course` });
+  check("...and refuses a second copy of it", text(await dup.text()).includes("already has a subject called")); }
+
+// ---- 9. permissions -------------------------------------------------------------------------------------------
 { const r = await get(semPage, A.jar); check("students can't open the semester manager", r.status === 307 && loc(r) === "/dashboard", `${r.status} ${loc(r)}`); }
 { const doc = await (await get(semPage, admin)).text();
   const before = await semNames();
-  const r = await submit(semPage, A.jar, hasField("count"), { count: "3" }, { rawHtml: doc });
-  check("a student replaying the 'add semesters' action changes nothing", (await semNames()).length === before.length, `${r.status} ${loc(r)}`); }
+  const r = await submit(semPage, A.jar, addSemesterForm, { name: "Hacked Term" }, { rawHtml: doc });
+  check("a student replaying the 'add semester' action changes nothing", (await semNames()).length === before.length, `${r.status} ${loc(r)}`); }
 { const block = (await (await get(semPage, admin)).text()).split("<dialog").slice(1).find((b) => dec(b).includes("Move Semester 2 students up?"));
   const before = text((await page("/dashboard", Bb.jar)).h);
   await submit(semPage, A.jar, () => true, {}, { rawHtml: block });

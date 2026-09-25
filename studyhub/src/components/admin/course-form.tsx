@@ -19,6 +19,7 @@ export function CourseForm({ course }: { course?: Initial }) {
 
   return (
     <form action={action} className="card max-w-2xl space-y-5 p-6 sm:p-8" noValidate>
+      {!course && <p className="text-sm text-muted">Next you&apos;ll add its {TERMS.semesters.toLowerCase()} and courses, or fill them from Virtual University&apos;s scheme of study.</p>}
       {course && <input type="hidden" name="id" value={course.id} />}
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
@@ -36,7 +37,7 @@ export function CourseForm({ course }: { course?: Initial }) {
 
       <div className="flex items-center gap-3 pt-2">
         <SubmitButton pendingText="Saving…">{course ? "Save changes" : `Create ${TERMS.programLower}`}</SubmitButton>
-        <Link href="/admin/courses" className="btn-outline">Cancel</Link>
+        <Link href={course ? `/admin/courses/${course.id}` : "/admin/courses"} className="btn-outline">Cancel</Link>
       </div>
     </form>
   );

@@ -43,8 +43,9 @@ const pageText = async (path, jar = admin) => text(await (await get(path, jar)).
 { const r = await submit("/admin/courses/new", admin, hasField("name"), { name: "", description: "", status: "PUBLISHED" });
   check("course: empty name shows validation error", r.status === 200 && (await r.text()).includes("Name is required") || /required/i.test(text(await (await get("/admin/courses/new", admin)).text())) === false, `status ${r.status}`); }
 { const r = await submit("/admin/courses/new", admin, hasField("name"), { name: `${P} Class 10`, description: "Secondary", status: "PUBLISHED" });
-  check("course: create -> redirect with notice", loc(r) === "/admin/courses?notice=course-created", `${r.status} ${loc(r)}`); }
-{ const t = await pageText("/admin/courses?notice=course-created"); check("course: appears in list with success message", t.includes(`${P} Class 10`) && t.includes("Program created.")); }
+  check("course: create -> opens the new program with a notice", /^\/admin\/courses\/c[a-z0-9]{20,}\?notice=course-created$/.test(loc(r)), `${r.status} ${loc(r)}`);
+  const t = await pageText(loc(r)); check("course: its page shows the success message", t.includes(`${P} Class 10`) && t.includes("Program created.")); }
+{ const t = await pageText("/admin/courses"); check("course: appears in the list", t.includes(`${P} Class 10`)); }
 { await submit("/admin/courses/new", admin, hasField("name"), { name: `${P} Class 9`, description: "", status: "PUBLISHED" });
   const html = await (await get("/admin/courses", admin)).text();
   const order = [...html.matchAll(/SmokeTest Class (\d+)/g)].map((m) => m[1]).filter((v, i, a) => a.indexOf(v) === i);
@@ -91,8 +92,12 @@ check("chapter ids found", !!ch1 && !!ch2 && !!ch3);
   check("chapter: archive changes status", /Real Numbers[\s\S]{0,300}Archived/.test(t)); }
 
 // ---------- delete guards ----------
-{ const html = await (await get("/admin/courses", admin)).text();
-  const r = await submit("/admin/courses", admin, (f) => hidden("id", courseId)(f) && !f.includes('name="status"') && !f.includes('name="direction"'), {}, { rawHtml: html });
+{ // Delete lives on the Edit page and is only offered while a program is empty, so check both halves:
+  // no button for a program with subjects, and the server still refuses a replayed delete for it.
+  const t0 = await pageText(`/admin/courses/${courseId}/edit`);
+  check("course with subjects: no delete button, and the page says why", !t0.includes("Delete program") && t0.includes("can't be deleted"));
+  const html = await (await get(`/admin/courses/${course9}/edit`, admin)).text();
+  const r = await submit(`/admin/courses/${course9}/edit`, admin, (f) => hidden("id", course9)(f) && !f.includes('name="status"'), { id: courseId }, { rawHtml: html });
   check("course with subjects can't be deleted", loc(r).includes("error=course-not-empty"), loc(r));
   const t = await pageText("/admin/courses?error=course-not-empty"); check("...and says why", t.includes("still has subjects or students")); }
 { const html = await (await get("/admin/subjects", admin)).text();

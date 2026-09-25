@@ -51,7 +51,8 @@ export const courseSchema = z.object({
 export const subjectSchema = z.object({
   courseId: idSchema,
   semesterId: z.preprocess(emptyToNull, idSchema.nullable()),
-  name: trimmed(80, "Subject name"),
+  // 120, not 80: VU course names with their code in front run to about 90 characters.
+  name: trimmed(120, "Subject name"),
   description: optionalText(500),
   icon: z.enum(SUBJECT_ICON_KEYS, { error: "Choose an icon." }),
   status: contentStatusSchema,
@@ -76,7 +77,22 @@ export const changePasswordSchema = z
   .refine((d) => d.password === d.confirm, { message: "Passwords don't match.", path: ["confirm"] })
   .refine((d) => d.password !== d.current, { message: "Choose a password different from the current one.", path: ["password"] });
 
-export const semesterNameSchema = z.object({ courseId: idSchema, name: trimmed(60, "Semester name") });
+/** The one-line "add a course" box inside a semester on the program page. */
+export const quickCourseSchema = z.object({
+  courseId: idSchema,
+  semesterId: z.preprocess(emptyToNull, idSchema.nullable()),
+  name: trimmed(120, "Course name"),
+});
+
+/** Adding courses from a VU scheme: into an existing program, or a new one ("new"). Codes are checked against the catalog. */
+export const vuImportSchema = z.object({
+  slug: z.string().trim().min(1).max(60),
+  target: z.union([z.literal("new"), idSchema]),
+  status: z.enum(["PUBLISHED", "DRAFT"]),
+  codes: z.array(z.string().trim().min(1).max(20)).min(1, "Tick at least one course.").max(400),
+});
+
+export const semesterNameSchema =z.object({ courseId: idSchema, name: trimmed(60, "Semester name") });
 export const semesterRenameSchema = z.object({ id: idSchema, name: trimmed(60, "Semester name") });
 export const generateSemestersSchema = z.object({
   courseId: idSchema,

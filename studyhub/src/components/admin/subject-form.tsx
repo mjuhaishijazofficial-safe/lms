@@ -37,7 +37,7 @@ export function SubjectForm({ subject, tree, defaultCourseId, defaultSemesterId 
         semesterHint={`Students see this subject from this ${TERMS.semesterLower} onwards. “Every ${TERMS.semesterLower}” shows it from the start.`}
       />
       <Field id="name" label="Subject name" required error={e.name}>
-        <input id="name" name="name" defaultValue={v("name")} required maxLength={80} className={`input ${invalid(e.name)}`} placeholder="Data Structures" />
+        <input id="name" name="name" defaultValue={v("name")} required maxLength={120} className={`input ${invalid(e.name)}`} placeholder="CS301 - Data Structures" />
       </Field>
       <Field id="description" label="Description" error={e.description} hint="Shown to students on the subject page.">
         <textarea id="description" name="description" defaultValue={v("description")} maxLength={500} className={`textarea ${invalid(e.description)}`} />

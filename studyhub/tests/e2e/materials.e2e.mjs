@@ -240,7 +240,18 @@ async function chainCheck(label, listPath, id) {
 await chainCheck("material", `/admin/materials?chapter=${A.ch1}`, pdfId);
 await chainCheck("chapter", `/admin/chapters?subject=${A.sid}`, A.ch1);
 await chainCheck("subject", `/admin/subjects?course=${A.cid}`, A.sid);
-await chainCheck("class", "/admin/courses", A.cid);
+{ // A program's status is chosen on its Edit page (the Programs page is cards, without per-row status buttons).
+  const edit = `/admin/courses/${A.cid}/edit`;
+  const html = await (await get(edit, admin)).text();
+  const nameTag = html.match(/<input[^>]*name="name"[^>]*>/)?.[0] ?? "";
+  const name = dec(/value="([^"]*)"/.exec(nameTag)?.[1] ?? "");
+  const setProgram = (status) => submit(edit, admin, (f) => hidden("id", A.cid)(f) && hasField("name")(f), { name, description: "", status });
+  await setProgram("ARCHIVED");
+  const hidden403 = (await dl(pdfId, s1.jar)).r.status;
+  const adminStill = (await dl(pdfId, admin)).r.status;
+  await setProgram("PUBLISHED");
+  const back = (await dl(pdfId, s1.jar)).r.status;
+  check("publish chain: archiving the program hides the file from the student (admin unaffected), restoring brings it back", !!name && hidden403 === 403 && adminStill === 200 && back === 200, `name "${name}", student ${hidden403}, admin ${adminStill}, restored ${back}`); }
 { // DRAFT is chosen in the edit form (the row button only toggles publish/archive)
   const setViaForm = (status) => submit(`/admin/materials/${pdfId}`, admin, hasField("title"), { title: `${P} Chapter 1 Notes`, description: "Complete notes", chapterId: A.ch1, status, file: file(new Uint8Array(0), "") });
   await setViaForm("DRAFT");
