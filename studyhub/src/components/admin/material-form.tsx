@@ -46,6 +46,7 @@ export function MaterialForm({ tree, material, defaultChapterId, maxMb }: {
   const type = material?.type ?? chosen;
   const e = state.fieldErrors ?? {};
   const v = <K extends keyof MaterialInitial>(k: K, fallback = "") => (state.values?.[k] ?? (material?.[k] as string | undefined) ?? fallback) as string;
+  const [status, setStatus] = useState(v("status", "PUBLISHED"));
 
   return (
     <form action={action} className="card max-w-3xl space-y-6 p-6 sm:p-8" noValidate>
@@ -126,11 +127,11 @@ export function MaterialForm({ tree, material, defaultChapterId, maxMb }: {
       )}
 
       <Field id="status" label="Status" error={e.status} hint="Only published material is visible to students.">
-        <select id="status" name="status" defaultValue={v("status", "PUBLISHED")} className="select">
+        <select id="status" name="status" value={status} onChange={(e) => setStatus(e.target.value)} className="select">
           {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </Field>
-      <ScheduleField initial={v("publishAt")} error={e.publishAt} />
+      <ScheduleField status={status} initial={v("publishAt")} error={e.publishAt} />
 
       <div className="flex items-center gap-3 pt-2">
         <SubmitButton pendingText={type === "FILE" ? "Uploading…" : "Saving…"}>{material ? "Save changes" : "Add material"}</SubmitButton>

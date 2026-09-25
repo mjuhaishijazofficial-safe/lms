@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import type { FormState } from "@/server/action-result";
 import { createChapterAction, updateChapterAction } from "@/app/admin/chapters/actions";
@@ -19,6 +19,7 @@ export function ChapterForm({ chapter, groups, defaultSubjectId, suggestedNumber
   const [state, action] = useActionState<FormState, FormData>(chapter ? updateChapterAction : createChapterAction, {});
   const v = (k: keyof Initial, fallback: string | number = "") => String(state.values?.[k] ?? chapter?.[k] ?? fallback);
   const e = state.fieldErrors ?? {};
+  const [status, setStatus] = useState(v("status", "PUBLISHED"));
 
   return (
     <form action={action} className="card max-w-2xl space-y-5 p-6 sm:p-8" noValidate>
@@ -49,11 +50,11 @@ export function ChapterForm({ chapter, groups, defaultSubjectId, suggestedNumber
         <textarea id="description" name="description" defaultValue={v("description")} maxLength={500} className={`textarea ${invalid(e.description)}`} />
       </Field>
       <Field id="status" label="Status" error={e.status}>
-        <select id="status" name="status" defaultValue={v("status", "PUBLISHED")} className="select">
+        <select id="status" name="status" value={status} onChange={(e) => setStatus(e.target.value)} className="select">
           {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </Field>
-      <ScheduleField initial={v("publishAt")} error={e.publishAt} />
+      <ScheduleField status={status} initial={v("publishAt")} error={e.publishAt} />
 
       <div className="flex items-center gap-3 pt-2">
         <SubmitButton pendingText="Saving…">{chapter ? "Save changes" : "Create chapter"}</SubmitButton>

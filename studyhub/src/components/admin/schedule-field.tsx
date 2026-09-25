@@ -16,14 +16,20 @@ export function toLocalInputValue(iso: string): string {
  * Lets the admin pick "publish automatically at this moment" in their own local time, but submits it as a full
  * ISO string (computed in the browser, where "local" correctly means the admin's own timezone) so the meaning
  * does not shift depending on which timezone the server happens to run in.
+ *
+ * A schedule only ever takes effect while Status is Draft, so the field only shows then — otherwise "publish
+ * automatically on" sitting under an already-Published status reads as broken. The chosen time is kept in state
+ * (and still submitted) even while hidden, so switching Status back to Draft brings it straight back.
  */
-export function ScheduleField({ initial, error }: { initial?: string | null; error?: string[] }) {
+export function ScheduleField({ status, initial, error }: { status: string; initial?: string | null; error?: string[] }) {
   const [local, setLocal] = useState(() => (initial ? toLocalInputValue(initial) : ""));
   const iso = (() => {
     if (!local) return "";
     const d = new Date(local);
     return Number.isNaN(d.getTime()) ? "" : d.toISOString();
   })();
+
+  if (status !== "DRAFT") return <input type="hidden" name="publishAt" value={iso} />;
 
   return (
     <Field

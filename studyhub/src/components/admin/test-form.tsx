@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import type { FormState } from "@/server/action-result";
 import type { PickerTree } from "@/server/services/materials";
@@ -22,6 +22,7 @@ export function TestForm({ test, tree, questions, attemptCount }: {
   const [state, action] = useActionState<FormState, FormData>(test ? updateTestAction : createTestAction, {});
   const v = (k: keyof Initial, fallback = "") => state.values?.[k] ?? test?.[k]?.toString() ?? fallback;
   const e = state.fieldErrors ?? {};
+  const [status, setStatus] = useState(v("status", "DRAFT"));
 
   return (
     <form action={action} className="space-y-6">
@@ -48,12 +49,12 @@ export function TestForm({ test, tree, questions, attemptCount }: {
             <input id="durationMinutes" name="durationMinutes" type="number" min={1} max={300} defaultValue={v("durationMinutes", "20")} required className={`input ${invalid(e.durationMinutes)}`} />
           </Field>
           <Field id="status" label="Status" error={e.status}>
-            <select id="status" name="status" defaultValue={v("status", "DRAFT")} className="select">
+            <select id="status" name="status" value={status} onChange={(e) => setStatus(e.target.value)} className="select">
               {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </Field>
         </div>
-        <ScheduleField initial={state.values?.publishAt ?? test?.publishAt} error={e.publishAt} />
+        <ScheduleField status={status} initial={state.values?.publishAt ?? test?.publishAt} error={e.publishAt} />
       </div>
 
       <div className="card max-w-2xl space-y-4 p-6 sm:p-8">
