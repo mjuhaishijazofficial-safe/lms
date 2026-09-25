@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { assertAdmin } from "@/server/auth/guards";
 import { errorKey, fromZodError, toFormState, type FormState } from "@/server/action-result";
 import { quickCourseSchema, vuImportSchema } from "@/server/validation/admin";
-import { assignSemesters, importVuCourses, quickAddCourse, removeTrailingEmptySemesters } from "@/server/services/programs";
+import { assignSemesters, importVuCourses, quickAddCourse, removeEmptySemesters } from "@/server/services/programs";
 import { idSchema } from "@/server/validation/common";
 
 /** The "add a course" box inside a semester. Returns instead of redirecting so the page keeps its scroll position. */
@@ -53,7 +53,7 @@ export async function removeEmptySemestersAction(formData: FormData) {
   if (!courseId.success) redirect("/admin/courses?error=failed");
   let param: string;
   try {
-    param = `notice=semesters-removed&n=${await removeTrailingEmptySemesters(await assertAdmin(), courseId.data)}`;
+    param = `notice=semesters-removed&n=${await removeEmptySemesters(await assertAdmin(), courseId.data)}`;
   } catch (err) {
     param = `error=${errorKey(err, "semester")}`;
   }

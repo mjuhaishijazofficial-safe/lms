@@ -35,12 +35,11 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
     return [c.id, i === null ? undefined : semesters[i]?.id];
   }));
 
-  // Empty semesters at the end (no courses, no students), e.g. made in advance. Offered for removal in one click,
-  // but only when some earlier semester is in use — a brand-new program's first semester is left alone.
+  // Empty semesters (no courses, no students) — made in advance, or left behind once their courses and students moved
+  // elsewhere. Offered for removal in one click, unless every semester is empty (a program still being set up).
   const isEmpty = (s: (typeof semesters)[number]) => s.subjects.length === 0 && s._count.enrollments === 0;
-  let firstTrailingEmpty = semesters.length;
-  while (firstTrailingEmpty > 0 && isEmpty(semesters[firstTrailingEmpty - 1])) firstTrailingEmpty--;
-  const trailingEmpty = firstTrailingEmpty > 0 ? semesters.slice(firstTrailingEmpty) : [];
+  const emptySemesters = semesters.filter(isEmpty);
+  const showRemoveEmpty = emptySemesters.length > 0 && emptySemesters.length < semesters.length;
 
   return (
     <>
@@ -87,15 +86,15 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
             />
           )}
 
-          {trailingEmpty.length > 0 && (
+          {showRemoveEmpty && (
             <form action={removeEmptySemestersAction} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm">
               <input type="hidden" name="courseId" value={program.id} />
               <span className="text-muted">
-                {trailingEmpty.length === 1
-                  ? `${trailingEmpty[0].name} is empty (no courses, no students).`
-                  : `${trailingEmpty[0].name} to ${trailingEmpty.at(-1)!.name} are empty (no courses, no students).`}
+                {emptySemesters.length === 1
+                  ? `${emptySemesters[0].name} has no courses or students yet.`
+                  : `${plural(emptySemesters.length, TERMS.semesterLower)} have no courses or students yet.`}
               </span>
-              <button className="font-semibold text-primary hover:underline">{trailingEmpty.length === 1 ? "Remove it" : "Remove them"}</button>
+              <button className="font-semibold text-primary hover:underline">{emptySemesters.length === 1 ? "Remove it" : "Remove them"}</button>
             </form>
           )}
 

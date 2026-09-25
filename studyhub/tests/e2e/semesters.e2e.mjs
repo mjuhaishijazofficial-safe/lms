@@ -271,18 +271,34 @@ const E = await makeStudent("Eve", "smoketest.sem.eve", { courseId: uni, semeste
   check("add-a-course box: adds the course without leaving the page", r.status === 200 && text(await (await get(progPage, admin)).text()).includes(`${P} Quick Course`), `${r.status} ${loc(r)}`);
   const dup = await submit(progPage, admin, quick, { name: `${P.toLowerCase()} quick-course` });
   check("...and refuses a second copy of it", text(await dup.text()).includes("already has a subject called")); }
-{ // Empty semesters at the end get a one-click "Remove them"; semesters in use are never touched.
+{ // Empty semesters get a one-click "Remove them", wherever they sit; semesters in use are never touched.
   const progPage = `/admin/courses/${other}`;
   const count = async () => ((await (await get(progPage, admin)).text()).match(/aria-label="More actions for /g) ?? []).length;
+  const removeForm = (f) => f.includes('name="courseId"') && !hasField("name")(f) && !f.includes('name="count"') && !f.includes("semester_") && /Remove (it|them)/.test(f);
   const before = await count();
-  check("no 'empty' notice while every semester is in use", !text(await (await get(progPage, admin)).text()).includes("are empty") && !text(await (await get(progPage, admin)).text()).includes("is empty ("));
+  check("no 'empty' notice while every semester is in use", !text(await (await get(progPage, admin)).text()).includes("have no courses"));
+
+  // Two empty semesters at the end.
   for (const name of ["Spare A", "Spare B"]) await submit(progPage, admin, addSemesterForm, { name });
-  const t = text(await (await get(progPage, admin)).text());
-  check("two spare semesters at the end are flagged in one line", t.includes("Spare A to Spare B are empty") && t.includes("Remove them"), t.slice(t.indexOf("Spare A") - 20, t.indexOf("Spare A") + 80));
-  const removeForm = (f) => f.includes('name="courseId"') && !hasField("name")(f) && !f.includes('name="count"') && !f.includes("semester_") && f.includes("Remove them");
-  const r = await submit(progPage, admin, removeForm, {});
-  check("'Remove them' deletes just the empty ones and says how many", loc(r).includes("notice=semesters-removed&n=2") && (await count()) === before, `${loc(r)} ${before}`);
-  check("...and the notice is gone", !text(await (await get(progPage, admin)).text()).includes("Remove them")); }
+  { const t = text(await (await get(progPage, admin)).text());
+    check("two empty semesters at the end are flagged as one count", t.includes("2 semesters have no courses or students yet") && t.includes("Remove them"), t.slice(t.indexOf("Spare"), t.indexOf("Spare") + 80)); }
+  { const r = await submit(progPage, admin, removeForm, {});
+    check("'Remove them' deletes just the empty ones and says how many", loc(r).includes("notice=semesters-removed&n=2") && (await count()) === before, `${loc(r)} ${before}`);
+    check("...and the notice is gone", !text(await (await get(progPage, admin)).text()).includes("Remove them")); }
+
+  // An empty semester in the middle (a gap), followed by a populated one: also flagged, and only the gap is removed.
+  await submit(progPage, admin, addSemesterForm, { name: "Gap" });
+  await submit(progPage, admin, addSemesterForm, { name: "After Gap" });
+  const progHtml = await (await get(progPage, admin)).text();
+  const afterGapId = progHtml.match(/id="sem-([a-z0-9]+)"[^>]*value="After Gap"/)?.[1] ?? progHtml.match(/value="After Gap"[^>]*id="sem-([a-z0-9]+)"/)?.[1];
+  const quickInAfterGap = (f) => f.includes('name="semesterId"') && hasField("name")(f) && f.includes(`value="${afterGapId}"`);
+  await submit(progPage, admin, quickInAfterGap, { name: `${P} Filled After Gap` });
+  { const t = text(await (await get(progPage, admin)).text());
+    check("a single empty semester mid-list (before a populated one) is flagged too", /Gap[\s\S]{0,40}has no courses or students yet/.test(t) && t.includes("Remove it"), t.slice(t.indexOf("has no courses") - 60, t.indexOf("has no courses") + 20)); }
+  { const r = await submit(progPage, admin, removeForm, {});
+    check("removing it leaves the populated semester right after it untouched", loc(r).includes("notice=semesters-removed&n=1") && (await count()) === before + 1, `${loc(r)} ${before}`);
+    const t = text(await (await get(progPage, admin)).text());
+    check("...'After Gap' (with its course) is still there, 'Gap' is gone", t.includes(`${P} Filled After Gap`) && !t.includes(">Gap<")); } }
 
 // ---- 9. permissions -------------------------------------------------------------------------------------------
 { const r = await get(semPage, A.jar); check("students can't open the semester manager", r.status === 307 && loc(r) === "/dashboard", `${r.status} ${loc(r)}`); }

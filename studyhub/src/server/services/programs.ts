@@ -61,24 +61,21 @@ export function quickAddCourse(actor: SessionUser, input: z.infer<typeof quickCo
 }
 
 /**
- * Deletes the empty semesters at the end of a program (no courses and no students), e.g. Semester 5-8 made in advance
- * while students are only in Semester 3. Stops at the first semester in use, so nothing in use is ever touched.
- * Returns how many were removed.
+ * Deletes every empty semester of a program (no courses and no students) — whether made in advance at the end
+ * (Semester 5-8 while students are only in Semester 3) or left behind in the middle (Semester 1, once its students
+ * and subjects moved on). A semester with courses or students, wherever it sits, is never touched. Returns how many
+ * were removed.
  */
-export async function removeTrailingEmptySemesters(actor: SessionUser, courseId: string) {
+export async function removeEmptySemesters(actor: SessionUser, courseId: string) {
   ensureAdmin(actor);
   return db.$transaction(async (tx) => {
     const semesters = await tx.semester.findMany({
-      where: { courseId }, orderBy: ORDER,
+      where: { courseId },
       select: { id: true, _count: { select: { subjects: true, enrollments: true } } },
     });
-    const empty: string[] = [];
-    for (const s of [...semesters].reverse()) {
-      if (s._count.subjects || s._count.enrollments) break;
-      empty.push(s.id);
-    }
+    const empty = semesters.filter((s) => !s._count.subjects && !s._count.enrollments).map((s) => s.id);
     // Keep at least one semester: a program whose semesters are all empty is just being set up.
-    if (empty.length === semesters.length) return 0;
+    if (!empty.length || empty.length === semesters.length) return 0;
     await tx.semester.deleteMany({ where: { id: { in: empty }, subjects: { none: {} }, enrollments: { none: {} } } });
     return empty.length;
   });
