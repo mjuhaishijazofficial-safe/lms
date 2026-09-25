@@ -11,6 +11,7 @@ import { Notice } from "@/components/ui/notice";
 import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { SemesterJump } from "@/components/admin/semester-jump";
 import { SemesterSection, WholeProgramSection } from "@/components/admin/semester-section";
 import { createSemesterAction, generateSemestersAction } from "../semester-actions";
 
@@ -61,14 +62,8 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
         </div>
       ) : (
         <div className="space-y-5">
-          {semesters.length > 1 && (
-            <nav aria-label={`Jump to a ${TERMS.semesterLower}`} className="sticky top-0 z-10 -mx-1 flex gap-2 overflow-x-auto bg-page/90 px-1 py-2 backdrop-blur">
-              {semesters.map((s, i) => (
-                <a key={s.id} href={`#semester-${i + 1}`} className="shrink-0 rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm font-medium text-ink transition hover:border-primary/40 hover:text-primary">
-                  {s.name} <span className="text-muted">· {s.subjects.length}</span>
-                </a>
-              ))}
-            </nav>
+          {semesters.length > 2 && (
+            <SemesterJump semesters={semesters.map((s) => ({ id: s.id, name: s.name, courseCount: s.subjects.length }))} />
           )}
 
           <div className="grid items-start gap-5 xl:grid-cols-2">
