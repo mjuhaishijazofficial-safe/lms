@@ -80,11 +80,18 @@ async function assertNoDuplicate(courseId: string, name: string, exceptId?: stri
   if (clash) throw new ServiceError(`This program already has a subject called "${clash.name}". Use that one, or choose a different name.`, "name");
 }
 
+/** Every course sits in a semester of its own program (see subjectSchema). */
+async function requireSemester(semesterId: string | null | undefined, courseId: string): Promise<string> {
+  const found = await assertSemesterInCourse(semesterId, courseId);
+  if (!found) throw new ServiceError("Choose a semester.", "semesterId");
+  return found;
+}
+
 export async function createSubject(actor: SessionUser, data: SubjectInput) {
   ensureAdmin(actor);
   await assertCourse(data.courseId);
   await assertNoDuplicate(data.courseId, data.name);
-  const semesterId = await assertSemesterInCourse(data.semesterId, data.courseId);
+  const semesterId = await requireSemester(data.semesterId, data.courseId);
   return db.subject.create({ data: { ...data, semesterId, order: await appendOrder(data.courseId, semesterId) } });
 }
 
@@ -97,8 +104,8 @@ export async function updateSubject(actor: SessionUser, id: string, data: Subjec
   if (current.courseId !== data.courseId || normalizeCode(current.name) !== normalizeCode(data.name)) {
     await assertNoDuplicate(data.courseId, data.name, id);
   }
-  const semesterId = await assertSemesterInCourse(data.semesterId, data.courseId);
-  const moved = current.courseId !== data.courseId || current.semesterId !== semesterId;
+  const semesterId = await requireSemester(data.semesterId, data.courseId);
+  const moved =current.courseId !== data.courseId || current.semesterId !== semesterId;
   return db.subject.update({ where: { id }, data: { ...data, semesterId, ...(moved ? { order: await appendOrder(data.courseId, semesterId) } : {}) } });
 }
 

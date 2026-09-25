@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, ChevronDown, ChevronUp, Layers, Pencil, Trash2 } from "lucide-react";
+import { ArrowUpRight, ChevronDown, ChevronUp, Layers, Pencil, Trash2, TriangleAlert } from "lucide-react";
 import type { ProgramStructure } from "@/server/services/programs";
 import { subjectIcon } from "@/lib/subject-icons";
 import { plural } from "@/lib/format";
@@ -14,6 +14,7 @@ import { QuickAddCourse } from "./quick-add-course";
 import {
   deleteSemesterAction, moveSemesterAction, promoteSemesterAction, renameSemesterAction,
 } from "@/app/admin/courses/semester-actions";
+import { assignSemestersAction } from "@/app/admin/courses/program-actions";
 
 type Semester = ProgramStructure["semesters"][number];
 type CourseRow = Semester["subjects"][number];
@@ -128,18 +129,60 @@ export function SemesterSection({ courseId, semester, index, total }: { courseId
   );
 }
 
-/** Courses that belong to the whole program instead of one semester. Only shown when there are some. */
-export function WholeProgramSection({ courseId, courses }: { courseId: string; courses: CourseRow[] }) {
+/**
+ * Courses that have no semester yet (made before every course needed one). Shown at the top of the program page only
+ * while there are some: pick a semester for each, press Save once, and the panel disappears.
+ */
+export function UnplacedCourses({ courseId, courses, semesters, suggested, suggestedFrom }: {
+  courseId: string; courses: CourseRow[]; semesters: { id: string; name: string }[];
+  /** Pre-picked semester per course id, from VU's scheme of study. */
+  suggested: Record<string, string | undefined>; suggestedFrom?: string;
+}) {
+  const anySuggested = courses.some((c) => suggested[c.id]);
   return (
-    <section aria-labelledby="whole-program-h" className="card">
-      <header className="border-b border-line px-4 py-3.5 sm:px-5">
-        <h2 id="whole-program-h" className="font-semibold">Every {TERMS.semesterLower}</h2>
-        <p className="text-sm text-muted">Not tied to one {TERMS.semesterLower}: students see these from their first {TERMS.semesterLower}. To move one into a {TERMS.semesterLower}, edit it.</p>
+    <section aria-labelledby="unplaced-h" className="card overflow-hidden border-amber-300">
+      <header className="flex items-start gap-3 border-b border-amber-200 bg-amber-50 px-4 py-3.5 sm:px-5">
+        <TriangleAlert className="mt-0.5 size-5 shrink-0 text-amber-600" aria-hidden />
+        <div className="min-w-0">
+          <h2 id="unplaced-h" className="font-semibold">{plural(courses.length, "course")} {courses.length === 1 ? "needs" : "need"} a {TERMS.semesterLower}</h2>
+          <p className="text-sm text-muted">
+            {courses.length === 1 ? "It was" : "These were"} added without one. Choose the right {TERMS.semesterLower} and press Save.
+            {anySuggested && suggestedFrom && <> Where VU&apos;s {suggestedFrom} scheme lists a course, its {TERMS.semesterLower} is already chosen. Check it before saving.</>}
+          </p>
+        </div>
       </header>
-      <CourseList courses={courses} />
-      <div className="rounded-b-card border-t border-line bg-page/60 px-4 py-3 sm:px-5">
-        <QuickAddCourse courseId={courseId} semesterId={null} semesterName={`every ${TERMS.semesterLower}`} />
-      </div>
+      <form action={assignSemestersAction}>
+        <input type="hidden" name="courseId" value={courseId} />
+        <ul className="divide-y divide-line">
+          {courses.map((c) => {
+            const icon = subjectIcon(c.icon);
+            const { code, title } = splitName(c.name);
+            return (
+              <li key={c.id} className="flex flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-center sm:gap-3 sm:py-2.5 sm:px-5">
+                <div className="flex min-w-0 items-center gap-3">
+                  <IconTile icon={icon.icon} size="sm" className={icon.tile} />
+                  <div className="min-w-0 flex-1">
+                    <Link href={`/admin/subjects/${c.id}`} className="flex min-w-0 items-baseline gap-2 font-medium hover:text-primary">
+                      {code && <span className="shrink-0 rounded-md bg-page px-1.5 py-0.5 font-mono text-xs font-semibold text-muted">{code}</span>}
+                      <span className="truncate">{title}</span>
+                    </Link>
+                    <p className="text-xs text-muted">{plural(c._count.chapters, "chapter")}{c._count.students ? ` · ${plural(c._count.students, "student")}` : ""}</p>
+                  </div>
+                </div>
+                <label htmlFor={`place-${c.id}`} className="sr-only">{TERMS.semester} for {c.name}</label>
+                <select id={`place-${c.id}`} name={`semester_${c.id}`} defaultValue={suggested[c.id] ?? ""} className="select w-full !py-1.5 text-sm sm:!w-auto sm:shrink-0">
+                  <option value="">Choose a {TERMS.semesterLower}…</option>
+                  {semesters.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </li>
+            );
+          })}
+        </ul>
+        <div className="flex items-center justify-between gap-3 border-t border-line bg-page/60 px-4 py-3 sm:px-5">
+          <p className="text-xs text-muted">Courses left on “Choose…” stay here for later.</p>
+          <SubmitButton pendingText="Saving…">Save</SubmitButton>
+        </div>
+      </form>
     </section>
   );
 }

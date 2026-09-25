@@ -1,5 +1,9 @@
 // Semester end-to-end test: setting up a degree program, and what students at different semesters can see.
 // Run with the app up, from the project root:  node tests/e2e/semesters.e2e.mjs
+// (uses Prisma directly for one thing the UI can no longer create: a course with no semester, to check that
+//  courses left over from before that rule still behave correctly and can still be placed into one)
+import { PrismaClient } from "@prisma/client";
+const db = new PrismaClient();
 const B = process.argv[2] ?? "http://localhost:3200";
 const P = "SmokeTest";
 const ADMIN_PW = process.env.SEED_ADMIN_PASSWORD;
@@ -106,7 +110,11 @@ async function makeSubject(name, semesterId, courseId = uni) {
 }
 const subj = {};
 for (const [name, n] of [["Programming", 1], ["Algorithms", 2], ["Databases", 3], ["Networks", 4]]) subj[name] = (await makeSubject(name, sem(n))).id;
-subj.Writing = (await makeSubject("Writing", null)).id;
+{ const { r } = await makeSubject("No Semester", null);
+  check("a course now needs a semester: the form refuses one left blank", r.status === 200 && text(await r.text()).includes("Choose a semester"), `${r.status}`); }
+// "Writing" applies to the whole program (no semester) — created directly, since the form no longer allows that; it
+// represents a course made before this rule, which visibility.ts and the program page still need to handle.
+subj.Writing = (await db.subject.create({ data: { courseId: uni, name: `${P} Writing`, description: "About Writing", icon: "code", status: "PUBLISHED", order: 999 } })).id;
 check("subjects created in semesters 1-4 and one for the whole program", Object.values(subj).every(Boolean));
 { const { r } = await makeSubject("Tamper", otherSem1);
   check("a semester from another program is refused for a subject", r.status === 200 && text(await r.text()).includes("belongs to this program"), `${r.status}`);
@@ -114,7 +122,7 @@ check("subjects created in semesters 1-4 and one for the whole program", Object.
 { const t = text(await (await get(`/admin/subjects?semester=${sem(3)}`, admin)).text());
   check("admin subject filter by semester", t.includes(`${P} Databases`) && !t.includes(`${P} Networks`) && !t.includes(`${P} Programming`)); }
 { const t = text(await (await get(`/admin/subjects?course=${uni}`, admin)).text());
-  check("admin subject list shows each subject's semester (and 'Every semester' when none)", /Databases[\s\S]{0,120}Semester 3/.test(t) && /Writing[\s\S]{0,120}Every semester/.test(t)); }
+  check("admin subject list shows each subject's semester (and flags one with none)", /Databases[\s\S]{0,120}Semester 3/.test(t) && /Writing[\s\S]{0,120}No semester yet/.test(t)); }
 
 const chapter = {};
 for (const [name, id] of Object.entries(subj)) {
@@ -198,11 +206,18 @@ check("earlier semester: material page opens", (await view(material.Programming,
   check("...it disappears for the semester 3 student", !(await subjectsOn(A.jar)).includes("Databases") && (await view(material.Databases, A.jar)) === 404);
   await submit(`/admin/subjects/${subj.Databases}`, admin, hasField("name"), { courseId: uni, semesterId: sem(3), name: `${P} Databases`, description: "About Databases", icon: "code", status: "PUBLISHED" });
   check("...and returns when moved back", (await subjectsOn(A.jar)).includes("Databases")); }
-{ // a subject with no semester becomes visible to everyone in the program
-  await submit(`/admin/subjects/${subj.Networks}`, admin, hasField("name"), { courseId: uni, semesterId: "", name: `${P} Networks`, description: "About Networks", icon: "code", status: "PUBLISHED" });
-  check("clearing a subject's semester makes it visible from the start", (await subjectsOn(Bb.jar)).includes("Networks"));
-  await submit(`/admin/subjects/${subj.Networks}`, admin, hasField("name"), { courseId: uni, semesterId: sem(4), name: `${P} Networks`, description: "About Networks", icon: "code", status: "PUBLISHED" });
-  check("...and setting it again hides it", !(await subjectsOn(Bb.jar)).includes("Networks")); }
+{ // the edit form can no longer clear a subject's semester (that's what made "Every semester" confusing)
+  const r = await submit(`/admin/subjects/${subj.Networks}`, admin, hasField("name"), { courseId: uni, semesterId: "", name: `${P} Networks`, description: "About Networks", icon: "code", status: "PUBLISHED" });
+  check("clearing a subject's semester via edit is refused", r.status === 200 && text(await r.text()).includes("Choose a semester") && (await subjectsOn(Bb.jar)).includes("Networks") === false, `${r.status}`); }
+{ // a legacy course with no semester (created directly above, as "Writing") is still visible to everyone in the program
+  check("a legacy no-semester course is visible from the start", (await subjectsOn(Bb.jar)).includes("Writing"));
+  // ...and the admin can place it into a semester from the program page's "needs a semester" panel:
+  const html = await (await get(semPage, admin)).text();
+  const r = await submit(semPage, admin, (f) => f.includes(`name="semester_${subj.Writing}"`), { [`semester_${subj.Writing}`]: sem(4) }, { rawHtml: html });
+  check("placing it from the panel moves it into that semester", loc(r).includes("notice=semesters-assigned") && !(await subjectsOn(Bb.jar)).includes("Writing"), `${r.status} ${loc(r)}`);
+  check("...and a semester-4 student now sees it", (await subjectsOn(C.jar)).includes("Writing"));
+  await submit(`/admin/subjects/${subj.Writing}`, admin, hasField("name"), { courseId: uni, semesterId: "", name: `${P} Writing`, description: "About Writing", icon: "code", status: "PUBLISHED" });
+  check("once placed, the edit form can't blank it out again either", (await subjectsOn(C.jar)).includes("Writing")); }
 
 // ---- 6. promotion ---------------------------------------------------------------------------------------------
 const E = await makeStudent("Eve", "smoketest.sem.eve", { courseId: uni, semesterId: sem(3) });
@@ -215,7 +230,7 @@ const E = await makeStudent("Eve", "smoketest.sem.eve", { courseId: uni, semeste
   check("...and the dashboard shows Semester 4", /Semester\s+Semester 4/.test(text((await page("/dashboard", A.jar)).h)));
   const eve = text(await (await get(`/admin/students?q=${E.email}`, admin)).text());
   check("inactive students are not promoted", /Semester 3/.test(eve), eve.slice(eve.indexOf("Eve"), eve.indexOf("Eve") + 160));
-  check("students in other semesters are untouched", (await subjectsOn(Bb.jar)).sort().join() === ["Programming", "Writing"].join()); }
+  check("students in other semesters are untouched", (await subjectsOn(Bb.jar)).sort().join() === ["Programming"].join()); }
 { // The page hides the button for the last semester, so replay a promote form against Semester 4 directly.
   const block = (await (await get(semPage, admin)).text()).split("<dialog").slice(1).find((b) => dec(b).includes("Move Semester 1 students up?"));
   const r = await submit(semPage, admin, () => true, { id: sem(4) }, { rawHtml: block });
@@ -269,5 +284,6 @@ const E = await makeStudent("Eve", "smoketest.sem.eve", { courseId: uni, semeste
   check("a student replaying the 'promote' action moves nobody", text((await page("/dashboard", Bb.jar)).h) === before); }
 for (const p of [semPage, "/admin/courses"]) { const r = await get(p, null); check(`signed-out ${p.replace(/c[a-z0-9]{20,}/, ":id")} -> /login`, r.status === 307 && loc(r) === "/login"); }
 
+await db.$disconnect();
 console.log(fails ? `\n${fails} FAILED` : "\nALL PASSED");
 process.exit(fails ? 1 : 0);

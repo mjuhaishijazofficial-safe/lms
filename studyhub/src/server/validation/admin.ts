@@ -48,9 +48,19 @@ export const courseSchema = z.object({
   status: contentStatusSchema,
 });
 
+/**
+ * Every course (subject) sits in one semester: the admin always gives students a semester, so a course "for every
+ * semester" only caused confusion. The database still allows none, for courses made before this rule; the program page
+ * lists those until the admin places them (see assignSemesters).
+ */
+const requiredSemester = z.preprocess(
+  (v) => (typeof v === "string" && v.trim() === "" ? undefined : v),
+  z.string({ error: "Choose a semester." }).regex(/^[a-z0-9]{20,40}$/i, "Choose a semester."),
+);
+
 export const subjectSchema = z.object({
   courseId: idSchema,
-  semesterId: z.preprocess(emptyToNull, idSchema.nullable()),
+  semesterId: requiredSemester,
   // 120, not 80: VU course names with their code in front run to about 90 characters.
   name: trimmed(120, "Subject name"),
   description: optionalText(500),
@@ -80,7 +90,7 @@ export const changePasswordSchema = z
 /** The one-line "add a course" box inside a semester on the program page. */
 export const quickCourseSchema = z.object({
   courseId: idSchema,
-  semesterId: z.preprocess(emptyToNull, idSchema.nullable()),
+  semesterId: requiredSemester,
   name: trimmed(120, "Course name"),
 });
 

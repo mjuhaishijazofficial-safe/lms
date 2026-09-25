@@ -31,10 +31,10 @@ export function SubjectForm({ subject, tree, defaultCourseId, defaultSemesterId 
       {state.error && <Alert tone="error">{state.error}</Alert>}
 
       <ProgramSemesterFields
-        tree={tree} programRequired errors={e}
+        tree={tree} programRequired semesterRequired errors={e}
         courseId={v("courseId", defaultCourseId ?? "")} semesterId={v("semesterId", defaultSemesterId ?? "")}
-        noProgramLabel={`Choose a ${TERMS.programLower}…`} noSemesterLabel={`Every ${TERMS.semesterLower}`}
-        semesterHint={`Students see this subject from this ${TERMS.semesterLower} onwards. “Every ${TERMS.semesterLower}” shows it from the start.`}
+        noProgramLabel={`Choose a ${TERMS.programLower}…`} noSemesterLabel={`Choose a ${TERMS.semesterLower}…`}
+        semesterHint={`Students see this subject from this ${TERMS.semesterLower} onwards.`}
       />
       <Field id="name" label="Subject name" required error={e.name}>
         <input id="name" name="name" defaultValue={v("name")} required maxLength={120} className={`input ${invalid(e.name)}`} placeholder="CS301 - Data Structures" />

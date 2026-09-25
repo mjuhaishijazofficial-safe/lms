@@ -7,7 +7,7 @@ import { quickAddCourseAction } from "@/app/admin/courses/program-actions";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 /** Type a course name, press Enter, and it appears in this semester. The box empties itself for the next one. */
-export function QuickAddCourse({ courseId, semesterId, semesterName }: { courseId: string; semesterId: string | null; semesterName: string }) {
+export function QuickAddCourse({ courseId, semesterId, semesterName }: { courseId: string; semesterId: string; semesterName: string }) {
   // The server action itself (not a wrapper), so the box also works before JavaScript loads.
   // Its result carries a `key` that changes on every submit, used to remount the input below.
   const [state, action] = useActionState<FormState, FormData>(quickAddCourseAction, {});
@@ -18,11 +18,11 @@ export function QuickAddCourse({ courseId, semesterId, semesterName }: { courseI
   }, [state]);
 
   const error = state.fieldErrors?.name?.[0] ?? state.error;
-  const id = `add-${semesterId ?? "all"}`;
+  const id = `add-${semesterId}`;
   return (
     <form action={action} className="space-y-1.5">
       <input type="hidden" name="courseId" value={courseId} />
-      <input type="hidden" name="semesterId" value={semesterId ?? ""} />
+      <input type="hidden" name="semesterId" value={semesterId} />
       <label htmlFor={id} className="sr-only">Add a course to {semesterName}</label>
       <div className="flex gap-2">
         <input

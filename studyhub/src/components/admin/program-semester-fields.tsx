@@ -9,8 +9,11 @@ import { Field, invalid } from "@/components/ui/field";
  * A program select and the semester select that follows it. Only ids are submitted; the server
  * re-checks that the semester really belongs to the program, so tampering with the form changes nothing.
  */
-export function ProgramSemesterFields({ tree, courseId: initialCourse = "", semesterId: initialSemester = "", programRequired, noProgramLabel, noSemesterLabel, errors = {}, semesterHint }: {
-  tree: SemesterTree; courseId?: string; semesterId?: string; programRequired?: boolean; noProgramLabel: string; noSemesterLabel: string;
+export function ProgramSemesterFields({ tree, courseId: initialCourse = "", semesterId: initialSemester = "", programRequired, semesterRequired, noProgramLabel, noSemesterLabel, errors = {}, semesterHint }: {
+  tree: SemesterTree; courseId?: string; semesterId?: string; programRequired?: boolean;
+  /** No "none" choice: the empty option is only a prompt (courses always sit in a semester; students may default). */
+  semesterRequired?: boolean;
+  noProgramLabel: string; noSemesterLabel: string;
   errors?: { courseId?: string[]; semesterId?: string[] }; semesterHint?: string;
 }) {
   const [courseId, setCourseId] = useState(initialCourse);
@@ -28,12 +31,18 @@ export function ProgramSemesterFields({ tree, courseId: initialCourse = "", seme
           {tree.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
       </Field>
-      <Field id="semesterId" label={TERMS.semester} error={errors.semesterId} hint={errors.semesterId ? undefined : semesterHint}>
+      <Field
+        id="semesterId" label={TERMS.semester} required={semesterRequired} error={errors.semesterId}
+        hint={errors.semesterId ? undefined : semesterRequired && courseId && semesters.length === 0
+          ? `This ${TERMS.programLower} has no ${TERMS.semesters.toLowerCase()} yet. Add them on its ${TERMS.programLower} page first.`
+          : semesterHint}
+      >
         <select
-          id="semesterId" name="semesterId" value={semesterId} disabled={!courseId || semesters.length === 0} className={`select ${invalid(errors.semesterId)}`}
+          id="semesterId" name="semesterId" value={semesterId} required={semesterRequired} disabled={!courseId || semesters.length === 0}
+          className={`select ${invalid(errors.semesterId)}`}
           onChange={(e) => setSemesterId(e.target.value)}
         >
-          <option value="">{courseId && semesters.length === 0 ? `No ${TERMS.semesters.toLowerCase()} yet` : noSemesterLabel}</option>
+          <option value="" disabled={semesterRequired}>{courseId && semesters.length === 0 ? `No ${TERMS.semesters.toLowerCase()} yet` : noSemesterLabel}</option>
           {semesters.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
         </select>
       </Field>

@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { moveInList } from "@/server/services/_shared";
 import {
-  changePasswordSchema, chapterSchema, createStudentSchema, generateSemestersSchema, loginHandleSchema, resetPasswordSchema, semesterNameSchema, subjectSchema,
+  changePasswordSchema, chapterSchema, createStudentSchema, generateSemestersSchema, loginHandleSchema, quickCourseSchema, resetPasswordSchema,
+  semesterNameSchema, subjectSchema,
 } from "@/server/validation/admin";
 import { safeReturn } from "@/server/action-helpers";
 import { formValues } from "@/server/action-result";
@@ -62,15 +63,25 @@ describe("student validation", () => {
 
 describe("semester fields", () => {
   const student = { name: "Ali Khan", email: "ali@x.com", studentId: "", courseId: ID, status: "ACTIVE", password: "longenough1" };
-  const subject = { courseId: ID, name: "Data Structures", description: "", icon: "code", status: "PUBLISHED" };
+  const subject = { courseId: ID, semesterId: ID, name: "Data Structures", description: "", icon: "code", status: "PUBLISHED" };
+  const semesterError = (r: { success: boolean; error?: { issues: { path: PropertyKey[]; message: string }[] } }) =>
+    r.error?.issues.find((i) => i.path[0] === "semesterId")?.message;
 
-  it("a missing semester is fine: a disabled select is not submitted by the browser", () => {
+  it("a student may leave the semester out (they start in the first one); a disabled select is not submitted", () => {
     expect(createStudentSchema.parse(student).semesterId).toBeNull();
-    expect(subjectSchema.parse(subject).semesterId).toBeNull();
-  });
-  it("an empty semester means none", () => {
     expect(createStudentSchema.parse({ ...student, semesterId: "" }).semesterId).toBeNull();
-    expect(subjectSchema.parse({ ...subject, semesterId: "  " }).semesterId).toBeNull();
+  });
+  it("a course must have a semester: missing or blank is refused with a plain message", () => {
+    const { semesterId: _drop, ...noSemester } = subject;
+    void _drop;
+    expect(semesterError(subjectSchema.safeParse(noSemester))).toBe("Choose a semester.");
+    expect(semesterError(subjectSchema.safeParse({ ...subject, semesterId: "  " }))).toBe("Choose a semester.");
+    expect(subjectSchema.parse(subject).semesterId).toBe(ID);
+  });
+  it("the quick add-a-course box needs a semester too", () => {
+    expect(quickCourseSchema.safeParse({ courseId: ID, name: "CS101" }).success).toBe(false);
+    expect(quickCourseSchema.safeParse({ courseId: ID, semesterId: "", name: "CS101" }).success).toBe(false);
+    expect(quickCourseSchema.parse({ courseId: ID, semesterId: ID, name: "CS101" }).semesterId).toBe(ID);
   });
   it("a chosen semester must look like an id", () => {
     expect(createStudentSchema.parse({ ...student, semesterId: ID }).semesterId).toBe(ID);
@@ -96,7 +107,7 @@ describe("password change validation", () => {
 
 describe("content validation", () => {
   it("subject: requires a known icon and a program", () => {
-    const ok = { courseId: ID, name: "Maths", description: "", icon: "calculator", status: "PUBLISHED" };
+    const ok = { courseId: ID, semesterId: ID, name: "Maths", description: "", icon: "calculator", status: "PUBLISHED" };
     expect(subjectSchema.safeParse(ok).success).toBe(true);
     expect(subjectSchema.safeParse({ ...ok, icon: "<script>" }).success).toBe(false);
     expect(subjectSchema.safeParse({ ...ok, name: "   " }).success).toBe(false);

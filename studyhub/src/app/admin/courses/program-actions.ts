@@ -3,9 +3,10 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { assertAdmin } from "@/server/auth/guards";
-import { fromZodError, toFormState, type FormState } from "@/server/action-result";
+import { errorKey, fromZodError, toFormState, type FormState } from "@/server/action-result";
 import { quickCourseSchema, vuImportSchema } from "@/server/validation/admin";
-import { importVuCourses, quickAddCourse } from "@/server/services/programs";
+import { assignSemesters, importVuCourses, quickAddCourse } from "@/server/services/programs";
+import { idSchema } from "@/server/validation/common";
 
 /** The "add a course" box inside a semester. Returns instead of redirecting so the page keeps its scroll position. */
 export async function quickAddCourseAction(prev: FormState, formData: FormData): Promise<FormState> {
@@ -19,6 +20,31 @@ export async function quickAddCourseAction(prev: FormState, formData: FormData):
   } catch (err) {
     return { ...toFormState(err, { name: parsed.data.name }), key };
   }
+}
+
+/**
+ * The "these courses need a semester" form: one select per course, named `semester_<courseId>`. Selects left on
+ * "Choose…" are skipped. Plain redirect, so it works without JavaScript.
+ */
+export async function assignSemestersAction(formData: FormData) {
+  const courseId = idSchema.safeParse(formData.get("courseId"));
+  if (!courseId.success) redirect("/admin/courses?error=failed");
+  const back = `/admin/courses/${courseId.data}`;
+  const picks: { subjectId: string; semesterId: string }[] = [];
+  for (const [key, value] of formData) {
+    if (!key.startsWith("semester_") || typeof value !== "string" || !value) continue;
+    const subjectId = idSchema.safeParse(key.slice("semester_".length));
+    const semesterId = idSchema.safeParse(value);
+    if (subjectId.success && semesterId.success) picks.push({ subjectId: subjectId.data, semesterId: semesterId.data });
+  }
+  let param: string;
+  try {
+    param = `notice=semesters-assigned&n=${await assignSemesters(await assertAdmin(), courseId.data, picks)}`;
+  } catch (err) {
+    param = `error=${errorKey(err, "subject")}`;
+  }
+  revalidatePath("/admin", "layout");
+  redirect(`${back}?${param}`);
 }
 
 export async function importVuAction(_prev: FormState, formData: FormData): Promise<FormState> {

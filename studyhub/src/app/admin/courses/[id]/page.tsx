@@ -12,7 +12,9 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { SemesterJump } from "@/components/admin/semester-jump";
-import { SemesterSection, WholeProgramSection } from "@/components/admin/semester-section";
+import { SemesterSection, UnplacedCourses } from "@/components/admin/semester-section";
+import { VU_PROGRAMS } from "@/lib/vu-catalog";
+import { guessVuProgram, vuSemesterIndex } from "@/lib/vu-import";
 import { createSemesterAction, generateSemestersAction } from "../semester-actions";
 
 export const metadata: Metadata = { title: TERMS.program };
@@ -23,6 +25,14 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
   if (!program) notFound();
   const semesters = program.semesters;
   const returnTo = `/admin/courses/${program.id}`;
+
+  // Courses without a semester: pre-pick each one's semester from the VU degree this program follows, when known.
+  const unplaced = program.subjects;
+  const vu = unplaced.length ? guessVuProgram(VU_PROGRAMS, program.name, [...semesters.flatMap((s) => s.subjects), ...unplaced].map((c) => c.name)) : undefined;
+  const suggested = Object.fromEntries(unplaced.map((c) => {
+    const i = vu ? vuSemesterIndex(vu, c.name) : null;
+    return [c.id, i === null ? undefined : semesters[i]?.id];
+  }));
 
   return (
     <>
@@ -46,7 +56,7 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
           <EmptyState
             icon={CalendarRange}
             title={`No ${TERMS.semesters.toLowerCase()} yet`}
-            description={`Fill ${program.name} from Virtual University's scheme of study in one step, or add empty ${TERMS.semesters.toLowerCase()} and type the courses yourself.`}
+            description={`Fill ${program.name} from Virtual University's scheme of study in one step, or add empty ${TERMS.semesters.toLowerCase()} and type the courses yourself.${unplaced.length ? ` ${plural(unplaced.length, "course")} already here will then ask for their ${TERMS.semesterLower}.` : ""}`}
             action={
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Link href={`/admin/courses/vu?program=${program.id}`} className="btn-primary"><Download className="size-4.5" aria-hidden /> Add VU courses</Link>
@@ -62,13 +72,19 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
         </div>
       ) : (
         <div className="space-y-5">
+          {unplaced.length > 0 && (
+            <UnplacedCourses
+              courseId={program.id} courses={unplaced} semesters={semesters.map((s) => ({ id: s.id, name: s.name }))}
+              suggested={suggested} suggestedFrom={vu?.name}
+            />
+          )}
+
           {semesters.length > 2 && (
             <SemesterJump semesters={semesters.map((s) => ({ id: s.id, name: s.name, courseCount: s.subjects.length }))} />
           )}
 
           <div className="grid items-start gap-5 xl:grid-cols-2">
             {semesters.map((s, i) => <SemesterSection key={s.id} courseId={program.id} semester={s} index={i} total={semesters.length} />)}
-            {program.subjects.length > 0 && <WholeProgramSection courseId={program.id} courses={program.subjects} />}
           </div>
 
           <form action={createSemesterAction} className="card flex w-full flex-col gap-2 border-dashed p-4 sm:flex-row sm:items-center sm:gap-3 sm:p-5">

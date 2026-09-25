@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { SUBJECT_ICON_KEYS } from "@/lib/subject-icons";
 import { findVuProgram, VU_PROGRAMS } from "@/lib/vu-catalog";
-import { existingCodes, iconForCode, leadingCode, matchProgram, planVuImport, vuSubjectName } from "@/lib/vu-import";
+import { existingCodes, guessVuProgram, iconForCode, leadingCode, matchProgram, planVuImport, vuSemesterIndex, vuSubjectName } from "@/lib/vu-import";
 
 const cs = findVuProgram("computer-science")!;
 
@@ -79,6 +79,34 @@ describe("planVuImport", () => {
   it("ignores codes that are not in the scheme, and accepts any spelling of a real one", () => {
     const { create } = planVuImport(cs, ["HACK999", "cs 101"], []);
     expect(create.map((c) => c.code)).toEqual(["CS101"]);
+  });
+});
+
+describe("vuSemesterIndex (suggesting a semester for a course that has none)", () => {
+  it("finds the VU semester from the code at the start of the name, however it is written", () => {
+    expect(vuSemesterIndex(cs, "cs304")).toBe(1);
+    expect(vuSemesterIndex(cs, "CS304 - Object Oriented Programming")).toBe(1);
+    expect(vuSemesterIndex(cs, "Cs101")).toBe(0);
+    expect(vuSemesterIndex(cs, "cs301p")).toBe(2);
+  });
+  it("gives nothing for a code the scheme doesn't have, or a name with no code", () => {
+    expect(vuSemesterIndex(cs, "ZZZ999")).toBeNull();
+    expect(vuSemesterIndex(cs, "Academic Writing")).toBeNull();
+  });
+});
+
+describe("guessVuProgram", () => {
+  it("goes by the program's name first", () => {
+    expect(guessVuProgram(VU_PROGRAMS, "BSCS", [])?.slug).toBe("computer-science");
+    expect(guessVuProgram(VU_PROGRAMS, "BBA", ["cs101"])?.slug).toBe("business-administration");
+  });
+  it("otherwise picks the degree sharing the most course codes", () => {
+    expect(guessVuProgram(VU_PROGRAMS, "My Degree", ["CS101", "CS201", "CS304", "CS301", "CS403", "CS604"])?.slug).toBe("computer-science");
+    expect(guessVuProgram(VU_PROGRAMS, "My Degree", ["PSY101", "PSY502", "PSY404", "PSY405"])?.slug).toBe("psychology");
+  });
+  it("makes no guess from too few codes", () => {
+    expect(guessVuProgram(VU_PROGRAMS, "phsycology", ["CS101", "ENG101"])).toBeUndefined();
+    expect(guessVuProgram(VU_PROGRAMS, "Something", [])).toBeUndefined();
   });
 });
 

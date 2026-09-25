@@ -23,7 +23,7 @@ export default async function EditSubjectPage({ params, searchParams }: PageProp
     <>
       <PageHeader
         title={subject.name}
-        description={[subject.course.name, subject.semester?.name ?? `Every ${TERMS.semesterLower}`, plural(subject._count.chapters, "chapter")].join(" · ")}
+        description={[subject.course.name, subject.semester?.name ?? `No ${TERMS.semesterLower} yet: choose one below`, plural(subject._count.chapters, "chapter")].join(" · ")}
         crumbs={[{ label: "Subjects", href: "/admin/subjects" }, { label: subject.name }]}
         actions={<Link href={`/admin/chapters?subject=${subject.id}`} className="btn-outline">Manage chapters</Link>}
       />

@@ -51,9 +51,16 @@ const docx = new File([Uint8Array.from(Buffer.concat([Buffer.from([0x50, 0x4b, 0
 const noFile = () => new File([], "");
 
 async function idOf(path, re) { return (await (await get(path, admin)).text()).match(re)?.[1]; }
-async function makeCourse(name) { await submit("/admin/courses/new", admin, hasField("name"), { name, description: "Course description", status: "PUBLISHED" }); return idOf("/admin/courses", new RegExp(`href="/admin/courses/(${CUID})"[^>]*>${name}<`)); }
-async function makeSubject(courseId, name, status = "PUBLISHED") {
-  await submit("/admin/subjects/new", admin, hasField("name"), { courseId, name, description: `About ${name}`, icon: "calculator", status });
+async function makeCourse(name) {
+  await submit("/admin/courses/new", admin, hasField("name"), { name, description: "Course description", status: "PUBLISHED" });
+  const id = await idOf("/admin/courses", new RegExp(`href="/admin/courses/(${CUID})"[^>]*>${name}<`));
+  // Every course needs a semester now.
+  await submit(`/admin/courses/${id}`, admin, hasField("count"), { count: "1" });
+  const semesterId = await idOf(`/admin/courses/${id}`, new RegExp(`id="sem-(${CUID})"`));
+  return { id, semesterId };
+}
+async function makeSubject({ id: courseId, semesterId }, name, status = "PUBLISHED") {
+  await submit("/admin/subjects/new", admin, hasField("name"), { courseId, semesterId, name, description: `About ${name}`, icon: "calculator", status });
   return idOf(`/admin/subjects?course=${courseId}`, new RegExp(`href="/admin/subjects/(${CUID})"[^>]*>${name}<`));
 }
 async function makeChapter(subjectId, number, title, status = "PUBLISHED") {
@@ -76,7 +83,7 @@ const ch3 = await makeChapter(sA1, 3, `${P} Draft Chapter`, "DRAFT");
 const ch4 = await makeChapter(sA1, 4, `${P} Empty Chapter`);
 const chHid = await makeChapter(sA2, 1, `${P} Archived Subject Chapter`);
 const chB = await makeChapter(sB1, 1, `${P} Cells`);
-check("library scaffolded (2 classes, 4 subjects, 6 chapters)", [alpha, beta, sA1, sA2, sA3, sB1, ch1, ch2, ch3, ch4, chHid, chB].every(Boolean));
+check("library scaffolded (2 classes, 4 subjects, 6 chapters)", [alpha.id, beta.id, sA1, sA2, sA3, sB1, ch1, ch2, ch3, ch4, chHid, chB].every(Boolean));
 
 const mPdf = await makeMaterial(ch1, { type: "FILE", title: `${P} Chapter Notes`, file: pdf });
 const mYt = await makeMaterial(ch1, { type: "YOUTUBE", title: `${P} Intro Video`, youtubeUrl: "https://youtu.be/dQw4w9WgXcQ", duration: "24:15" });
@@ -97,13 +104,13 @@ async function makeStudent(name, email, courseId, { changePw = true } = {}) {
   const id = (await (await get(`/admin/students?q=${email}`, admin)).text()).match(new RegExp(`href="/admin/students/(${CUID})"`))?.[1];
   return { jar, id, email };
 }
-const s1 = await makeStudent("Ali Khan", "smoketest.stu.ali", alpha);
-const s2 = await makeStudent("Bea Ray", "smoketest.stu.bea", beta);
+const s1 = await makeStudent("Ali Khan", "smoketest.stu.ali", alpha.id);
+const s2 = await makeStudent("Bea Ray", "smoketest.stu.bea", beta.id);
 const s3 = await makeStudent("Cy Noclass", "smoketest.stu.cy", "");
 check("students created", !!s1.id && !!s2.id && !!s3.id);
 
 // ---- access control on every student page ----------------------------------------------------------------------
-const STUDENT_PAGES = ["/dashboard", "/courses", "/subjects", "/recent", "/profile", `/courses/${alpha}`, `/subjects/${sA1}`, `/materials/${mPdf}`];
+const STUDENT_PAGES = ["/dashboard", "/courses", "/subjects", "/recent", "/profile", `/courses/${alpha.id}`, `/subjects/${sA1}`, `/materials/${mPdf}`];
 for (const p of STUDENT_PAGES) { const r = await get(p, null); check(`signed-out ${p.replace(/c[a-z0-9]{20,}/, ":id")} -> /login`, r.status === 307 && loc(r) === "/login", `${r.status} ${loc(r)}`); }
 for (const p of ["/dashboard", `/subjects/${sA1}`, `/materials/${mPdf}`, "/recent"]) { const r = await get(p, admin); check(`admin is sent away from student page ${p.replace(/c[a-z0-9]{20,}/, ":id")}`, r.status === 307 && loc(r) === "/admin", `${r.status} ${loc(r)}`); }
 
@@ -125,9 +132,9 @@ for (const p of ["/dashboard", `/subjects/${sA1}`, `/materials/${mPdf}`, "/recen
 
 // ---- my courses / class page / subjects list ------------------------------------------------------------------
 { const t = text((await html("/courses", s1.jar)).h); check("my courses: lists only their class, with counts", t.includes(`${P} Alpha`) && !t.includes(`${P} Beta`) && /2 subjects/.test(t) && /5 materials/.test(t), t.slice(0, 250)); }
-{ const { r, h } = await html(`/courses/${alpha}`, s1.jar); const t = text(h);
+{ const { r, h } = await html(`/courses/${alpha.id}`, s1.jar); const t = text(h);
   check("program page: subjects + breadcrumb", r.status === 200 && t.includes(`${P} Algebra`) && t.includes(`${P} Empty Subject`) && !t.includes("Hidden Archived Subject") && t.includes("My Courses")); }
-{ const r = await get(`/courses/${beta}`, s1.jar); const raw = await r.text(); check("program page: another program -> 404 with the permission message", r.status === 404 && raw.includes("permission to access it"), `${r.status}`); }
+{ const r = await get(`/courses/${beta.id}`, s1.jar); const raw = await r.text(); check("program page: another program -> 404 with the permission message", r.status === 404 && raw.includes("permission to access it"), `${r.status}`); }
 { const t = text((await html("/subjects", s1.jar)).h); check("subjects list: their visible subjects only", t.includes(`${P} Algebra`) && t.includes(`${P} Empty Subject`) && !t.includes("Hidden Archived") && !t.includes("Beta Biology")); }
 { const t = text((await html("/courses", s3.jar)).h); check("no class: /courses shows the friendly empty state", t.includes("You haven't been assigned to a program yet")); }
 { const t = text((await html("/subjects", s3.jar)).h); check("no class: /subjects shows the friendly empty state", t.includes("You haven't been assigned to a program yet")); }
@@ -135,7 +142,7 @@ for (const p of ["/dashboard", `/subjects/${sA1}`, `/materials/${mPdf}`, "/recen
 // ---- subject page ----------------------------------------------------------------------------------------------
 { const { r, h } = await html(`/subjects/${sA1}`, s1.jar); const t = text(h);
   check("subject: header with name, class and description", r.status === 200 && t.includes(`${P} Algebra`) && t.includes(`${P} Alpha`) && t.includes(`About ${P} Algebra`));
-  check("subject: breadcrumb My Courses > Class > Subject", t.includes("My Courses") && h.includes(`href="/courses/${alpha}"`));
+  check("subject: breadcrumb My Courses > Class > Subject", t.includes("My Courses") && h.includes(`href="/courses/${alpha.id}"`));
   check("subject: shows published chapters, hides the draft chapter", t.includes(`${P} Real Numbers`) && t.includes(`${P} Polynomials`) && t.includes(`${P} Empty Chapter`) && !t.includes("Draft Chapter") && !t.includes("In Draft Chapter"));
   check("subject: chapter material counts are right (4, 1, 0)", /Real Numbers[^]*?4 materials/.test(t) && /Polynomials[^]*?1 material\b/.test(t) && /Empty Chapter[^]*?0 materials/.test(t));
   check("subject: hides draft/archived materials", !t.includes("Draft Material") && !t.includes("Archived Material"));

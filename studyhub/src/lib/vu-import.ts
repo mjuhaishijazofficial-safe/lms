@@ -70,6 +70,33 @@ export function planVuImport(program: VuProgram, chosenCodes: readonly string[],
   return { create, skipped };
 }
 
+/**
+ * Which semester (0-based) a VU scheme puts a course in, going by the code its name starts with: "cs304" and
+ * "CS304 - Object Oriented Programming" both give BSCS semester 2 (index 1). Null when the scheme has no such code.
+ */
+export function vuSemesterIndex(program: VuProgram, subjectName: string): number | null {
+  const code = leadingCode(subjectName) ?? normalizeCode(subjectName);
+  const i = program.semesters.findIndex((courses) => courses.some((c) => normalizeCode(c.code) === code));
+  return i === -1 ? null : i;
+}
+
+/**
+ * The VU degree a program most likely follows: by name first ("BSCS" → BS Computer Science), otherwise the degree that
+ * lists the most of the program's course codes (at least 3, so two shared first-semester courses don't decide it).
+ */
+export function guessVuProgram(programs: readonly VuProgram[], programName: string, subjectNames: readonly string[]): VuProgram | undefined {
+  const byName = programs.find((p) => matchProgram(p, [{ id: "", name: programName }]));
+  if (byName) return byName;
+  const codes = new Set(subjectNames.map((n) => leadingCode(n)).filter((c): c is string => !!c));
+  let best: VuProgram | undefined;
+  let bestHits = 2;
+  for (const p of programs) {
+    const hits = p.semesters.flat().filter((c) => codes.has(normalizeCode(c.code))).length;
+    if (hits > bestHits) { best = p; bestHits = hits; }
+  }
+  return best;
+}
+
 /** The existing program a VU scheme most likely belongs to, by name ("BSCS", "BS Computer Science" …). */
 export function matchProgram<T extends { id: string; name: string }>(vu: VuProgram, programs: readonly T[]): T | undefined {
   const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();

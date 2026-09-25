@@ -42,7 +42,7 @@ export function programStructure(id: string) {
           subjects: { orderBy: ORDER, select: courseRow },
         },
       },
-      // Courses that apply to the whole program rather than one semester.
+      // Courses made before every course needed a semester. Listed on the program page until the admin places them.
       subjects: { where: { semesterId: null }, orderBy: ORDER, select: courseRow },
     },
   });
@@ -61,8 +61,35 @@ export function quickAddCourse(actor: SessionUser, input: z.infer<typeof quickCo
 }
 
 /**
+ * Puts courses that have no semester into the semester the admin picked for each. Only courses of this program that
+ * still have no semester are touched, and only semesters of this program are accepted; anything else is ignored.
+ * Each course goes to the end of its new semester. Returns how many were placed.
+ */
+export async function assignSemesters(actor: SessionUser, courseId: string, picks: { subjectId: string; semesterId: string }[]) {
+  ensureAdmin(actor);
+  if (!picks.length) return 0;
+  return db.$transaction(async (tx) => {
+    const semesters = new Set((await tx.semester.findMany({ where: { courseId }, select: { id: true } })).map((s) => s.id));
+    const waiting = new Set((await tx.subject.findMany({ where: { courseId, semesterId: null, id: { in: picks.map((p) => p.subjectId) } }, select: { id: true } })).map((s) => s.id));
+    const maxima = await tx.subject.groupBy({ by: ["semesterId"], where: { courseId }, _max: { order: true } });
+    const nextIn = new Map(maxima.map((m) => [m.semesterId, nextOrder(m._max.order)]));
+    let placed = 0;
+    for (const { subjectId, semesterId } of picks) {
+      if (!waiting.has(subjectId) || !semesters.has(semesterId)) continue;
+      const order = nextIn.get(semesterId) ?? 0;
+      nextIn.set(semesterId, order + 1);
+      await tx.subject.update({ where: { id: subjectId }, data: { semesterId, order } });
+      waiting.delete(subjectId);
+      placed++;
+    }
+    return placed;
+  });
+}
+
+/**
  * Adds the chosen courses of a VU scheme to a program (creating the program first when target is "new"), each in
- * its VU semester. Missing semesters are created; courses the program already has are skipped, never duplicated.
+ * its VU semester. Missing semesters (up to the degree's full count) are created; courses the program already has are
+ * skipped, never duplicated.
  */
 export async function importVuCourses(actor: SessionUser, input: z.infer<typeof vuImportSchema>) {
   ensureAdmin(actor);
@@ -84,7 +111,8 @@ export async function importVuCourses(actor: SessionUser, input: z.infer<typeof 
     const { create, skipped } = planVuImport(vu, input.codes, have.map((s) => s.name));
 
     let semesters = await tx.semester.findMany({ where: { courseId }, orderBy: ORDER, select: { id: true, order: true } });
-    const needed = create.reduce((n, c) => Math.max(n, c.semesterIndex + 1), 0);
+    // All of the degree's semesters, even one whose courses weren't ticked (BSCS semester 8 is all electives).
+    const needed = Math.max(vu.semesters.length, create.reduce((n, c) => Math.max(n, c.semesterIndex + 1), 0));
     if (semesters.length < needed) {
       const start = nextOrder(semesters.at(-1)?.order);
       await tx.semester.createMany({

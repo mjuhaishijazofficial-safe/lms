@@ -56,7 +56,9 @@ const pageText = async (path, jar = admin) => text(await (await get(path, jar)).
 async function scaffold(label) {
   await submit("/admin/courses/new", admin, hasField("name"), { name: `${P} ${label}`, description: "", status: "PUBLISHED" });
   const cid = (await (await get("/admin/courses", admin)).text()).match(new RegExp(`href="/admin/courses/([a-z0-9]+)"[^>]*>${P} ${label}<`))?.[1];
-  await submit("/admin/subjects/new", admin, hasField("name"), { courseId: cid, name: `${P} ${label} Maths`, description: "", icon: "calculator", status: "PUBLISHED" });
+  await submit(`/admin/courses/${cid}`, admin, hasField("count"), { count: "1" }); // every course needs a semester now
+  const semesterId = (await (await get(`/admin/courses/${cid}`, admin)).text()).match(/id="sem-([a-z0-9]+)"/)?.[1];
+  await submit("/admin/subjects/new", admin, hasField("name"), { courseId: cid, semesterId, name: `${P} ${label} Maths`, description: "", icon: "calculator", status: "PUBLISHED" });
   const sid = (await (await get(`/admin/subjects?course=${cid}`, admin)).text()).match(/href="\/admin\/subjects\/([a-z0-9]+)"/)?.[1];
   for (const n of [1, 2]) await submit("/admin/chapters/new", admin, hasField("title"), { subjectId: sid, chapterNumber: String(n), title: `${P} ${label} Chapter ${n}`, description: "", status: "PUBLISHED" });
   const html = await (await get(`/admin/chapters?subject=${sid}`, admin)).text();

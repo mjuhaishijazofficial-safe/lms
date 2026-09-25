@@ -61,13 +61,21 @@ check("course ids found", !!courseId && !!course9);
   const order = [...after.matchAll(/SmokeTest Class (\d+)/g)].map((m) => m[1]).filter((v, i, a) => a.indexOf(v) === i);
   check("course: move up reorders", order.join() === "9,10", order.join()); }
 
+// Every course needs a semester now, so give SmokeTest Class 10 one before adding subjects to it.
+await submit(`/admin/courses/${courseId}`, admin, hasField("count"), { count: "1" });
+const semesterId = (await (await get(`/admin/courses/${courseId}`, admin)).text()).match(/id="sem-(c[a-z0-9]{20,})"/)?.[1];
+check("class 10 semester id found", !!semesterId);
+const FAKE_ID = "clxxxxxxxxxxxxxxxxxxxxxxx"; // right shape, matches nothing
+
 // ---------- subjects ----------
-{ const r = await submit("/admin/subjects/new", admin, hasField("name"), { courseId, name: `${P} Mathematics`, description: "Numbers", icon: "calculator", status: "PUBLISHED" });
+{ const r = await submit("/admin/subjects/new", admin, hasField("name"), { courseId, semesterId, name: `${P} Mathematics`, description: "Numbers", icon: "calculator", status: "PUBLISHED" });
   check("subject: create", loc(r).endsWith("notice=subject-created"), `${r.status} ${loc(r)}`); }
-{ const r = await submit("/admin/subjects/new", admin, hasField("name"), { courseId, name: `${P} Physics`, description: "", icon: "<script>", status: "PUBLISHED" });
+{ const r = await submit("/admin/subjects/new", admin, hasField("name"), { courseId, semesterId, name: `${P} Physics`, description: "", icon: "<script>", status: "PUBLISHED" });
   check("subject: invalid icon rejected", r.status === 200 && (await r.text()).includes("Choose an icon"), `${r.status}`); }
-{ const r = await submit("/admin/subjects/new", admin, hasField("name"), { courseId: "clxxxxxxxxxxxxxxxxxxxxxxx", name: `${P} Ghost`, description: "", icon: "book", status: "PUBLISHED" });
+{ const r = await submit("/admin/subjects/new", admin, hasField("name"), { courseId: "clxxxxxxxxxxxxxxxxxxxxxxx", semesterId: FAKE_ID, name: `${P} Ghost`, description: "", icon: "book", status: "PUBLISHED" });
   check("subject: nonexistent class rejected", r.status === 200 && text(await r.text()).includes("Choose a program that exists"), `${r.status}`); }
+{ const r = await submit("/admin/subjects/new", admin, hasField("name"), { courseId, name: `${P} No Semester`, description: "", icon: "book", status: "PUBLISHED" });
+  check("subject: a course needs a semester", r.status === 200 && text(await r.text()).includes("Choose a semester"), `${r.status}`); }
 const subjectId = (await (await get(`/admin/subjects?course=${courseId}`, admin)).text()).match(/href="\/admin\/subjects\/([a-z0-9]+)"[^>]*>SmokeTest Mathematics</)?.[1];
 check("subject id found", !!subjectId);
 
