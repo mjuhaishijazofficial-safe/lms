@@ -88,7 +88,8 @@ export async function assignSemesters(actor: SessionUser, courseId: string, pick
 
 /**
  * Adds the chosen courses of a VU scheme to a program (creating the program first when target is "new"), each in
- * its VU semester. Missing semesters (up to the degree's full count) are created; courses the program already has are
+ * its VU semester. Only the semesters those courses need are created (not the degree's full count) — running the
+ * import again later, once more courses are ticked, adds any further semesters. Courses the program already has are
  * skipped, never duplicated.
  */
 export async function importVuCourses(actor: SessionUser, input: z.infer<typeof vuImportSchema>) {
@@ -111,8 +112,9 @@ export async function importVuCourses(actor: SessionUser, input: z.infer<typeof 
     const { create, skipped } = planVuImport(vu, input.codes, have.map((s) => s.name));
 
     let semesters = await tx.semester.findMany({ where: { courseId }, orderBy: ORDER, select: { id: true, order: true } });
-    // All of the degree's semesters, even one whose courses weren't ticked (BSCS semester 8 is all electives).
-    const needed = Math.max(vu.semesters.length, create.reduce((n, c) => Math.max(n, c.semesterIndex + 1), 0));
+    // Only as many semesters as the ticked courses actually need — not the degree's full count. An admin whose
+    // students are in semester 3 shouldn't see empty semester 5-8 cards; running this again later adds them.
+    const needed = create.reduce((n, c) => Math.max(n, c.semesterIndex + 1), 0);
     if (semesters.length < needed) {
       const start = nextOrder(semesters.at(-1)?.order);
       await tx.semester.createMany({
