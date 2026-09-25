@@ -61,6 +61,30 @@ export function quickAddCourse(actor: SessionUser, input: z.infer<typeof quickCo
 }
 
 /**
+ * Deletes the empty semesters at the end of a program (no courses and no students), e.g. Semester 5-8 made in advance
+ * while students are only in Semester 3. Stops at the first semester in use, so nothing in use is ever touched.
+ * Returns how many were removed.
+ */
+export async function removeTrailingEmptySemesters(actor: SessionUser, courseId: string) {
+  ensureAdmin(actor);
+  return db.$transaction(async (tx) => {
+    const semesters = await tx.semester.findMany({
+      where: { courseId }, orderBy: ORDER,
+      select: { id: true, _count: { select: { subjects: true, enrollments: true } } },
+    });
+    const empty: string[] = [];
+    for (const s of [...semesters].reverse()) {
+      if (s._count.subjects || s._count.enrollments) break;
+      empty.push(s.id);
+    }
+    // Keep at least one semester: a program whose semesters are all empty is just being set up.
+    if (empty.length === semesters.length) return 0;
+    await tx.semester.deleteMany({ where: { id: { in: empty }, subjects: { none: {} }, enrollments: { none: {} } } });
+    return empty.length;
+  });
+}
+
+/**
  * Puts courses that have no semester into the semester the admin picked for each. Only courses of this program that
  * still have no semester are touched, and only semesters of this program are accepted; anything else is ignored.
  * Each course goes to the end of its new semester. Returns how many were placed.

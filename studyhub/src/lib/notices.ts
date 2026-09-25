@@ -34,6 +34,7 @@ export const NOTICES = {
   "fee-created": "Fee added.",
   "fees-created": "Fees created. {n} student(s) already had one for this period and were skipped.",
   "fee-deleted": "Fee deleted.",
+  "semesters-removed": `Removed {n} empty ${TERMS.semesterLower}(s). Add one again any time with “Add a ${TERMS.semesterLower}”.`,
   "semesters-assigned": `Placed {n} course(s) in their ${TERMS.semesterLower}.`,
   "vu-imported": "Added {n} course(s) from the VU scheme of study. Any the program already had were skipped, not copied.",
   "semester-created": `${TERMS.semester} added.`,

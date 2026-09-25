@@ -16,6 +16,7 @@ import { SemesterSection, UnplacedCourses } from "@/components/admin/semester-se
 import { VU_PROGRAMS } from "@/lib/vu-catalog";
 import { guessVuProgram, vuSemesterIndex } from "@/lib/vu-import";
 import { createSemesterAction, generateSemestersAction } from "../semester-actions";
+import { removeEmptySemestersAction } from "../program-actions";
 
 export const metadata: Metadata = { title: TERMS.program };
 
@@ -33,6 +34,13 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
     const i = vu ? vuSemesterIndex(vu, c.name) : null;
     return [c.id, i === null ? undefined : semesters[i]?.id];
   }));
+
+  // Empty semesters at the end (no courses, no students), e.g. made in advance. Offered for removal in one click,
+  // but only when some earlier semester is in use — a brand-new program's first semester is left alone.
+  const isEmpty = (s: (typeof semesters)[number]) => s.subjects.length === 0 && s._count.enrollments === 0;
+  let firstTrailingEmpty = semesters.length;
+  while (firstTrailingEmpty > 0 && isEmpty(semesters[firstTrailingEmpty - 1])) firstTrailingEmpty--;
+  const trailingEmpty = firstTrailingEmpty > 0 ? semesters.slice(firstTrailingEmpty) : [];
 
   return (
     <>
@@ -56,15 +64,15 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
           <EmptyState
             icon={CalendarRange}
             title={`No ${TERMS.semesters.toLowerCase()} yet`}
-            description={`Fill ${program.name} from Virtual University's scheme of study in one step, or add empty ${TERMS.semesters.toLowerCase()} and type the courses yourself.${unplaced.length ? ` ${plural(unplaced.length, "course")} already here will then ask for their ${TERMS.semesterLower}.` : ""}`}
+            description={`Fill ${program.name} from Virtual University's scheme of study, or add ${TERMS.semesters.toLowerCase()} one at a time as your students need them.${unplaced.length ? ` ${plural(unplaced.length, "course")} already here will then ask for their ${TERMS.semesterLower}.` : ""}`}
             action={
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <Link href={`/admin/courses/vu?program=${program.id}`} className="btn-primary"><Download className="size-4.5" aria-hidden /> Add VU courses</Link>
                 <form action={generateSemestersAction} className="flex items-center gap-2">
                   <input type="hidden" name="courseId" value={program.id} />
                   <input type="hidden" name="returnTo" value={returnTo} />
-                  <input type="hidden" name="count" value={8} />
-                  <SubmitButton variant="soft" pendingText="Adding…">Add 8 empty {TERMS.semesters.toLowerCase()}</SubmitButton>
+                  <input type="hidden" name="count" value={1} />
+                  <SubmitButton variant="soft" pendingText="Adding…"><Plus className="size-4.5" aria-hidden /> Add {TERMS.semester} 1</SubmitButton>
                 </form>
               </div>
             }
@@ -77,6 +85,18 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
               courseId={program.id} courses={unplaced} semesters={semesters.map((s) => ({ id: s.id, name: s.name }))}
               suggested={suggested} suggestedFrom={vu?.name}
             />
+          )}
+
+          {trailingEmpty.length > 0 && (
+            <form action={removeEmptySemestersAction} className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border border-line bg-surface px-4 py-2.5 text-sm">
+              <input type="hidden" name="courseId" value={program.id} />
+              <span className="text-muted">
+                {trailingEmpty.length === 1
+                  ? `${trailingEmpty[0].name} is empty (no courses, no students).`
+                  : `${trailingEmpty[0].name} to ${trailingEmpty.at(-1)!.name} are empty (no courses, no students).`}
+              </span>
+              <button className="font-semibold text-primary hover:underline">{trailingEmpty.length === 1 ? "Remove it" : "Remove them"}</button>
+            </form>
           )}
 
           {semesters.length > 2 && (

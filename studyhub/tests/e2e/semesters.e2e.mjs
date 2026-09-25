@@ -68,7 +68,7 @@ const semRows = async () => [...(await (await get(semPage, admin)).text()).match
   .map((m) => m[0]).filter((t) => /id="sem-c/.test(t))
   .map((t) => [/id="sem-([a-z0-9]+)"/.exec(t)[1], dec(/value="([^"]*)"/.exec(t)?.[1] ?? "")]);
 const semNames = async () => (await semRows()).map(([, name]) => name);
-{ const t = text((await get(semPage, admin).then((r) => r.text()))); check("program page: empty semester list explains itself", t.includes("No semesters yet") && /Add VU courses/.test(t) && /Add 8 empty semesters/.test(t)); }
+{ const t = text((await get(semPage, admin).then((r) => r.text()))); check("program page: empty semester list explains itself", t.includes("No semesters yet") && /Add VU courses/.test(t) && /Add Semester 1/.test(t) && !/Add 8/.test(t)); }
 { const r = await submit(semPage, admin, hasField("count"), { count: "13" }); check("generate: more than 12 at once is refused", loc(r).includes("error=failed"), loc(r)); }
 { const r = await submit(semPage, admin, hasField("count"), { count: "4" });
   check("generate: adds Semester 1-4 in one step", loc(r).includes("notice=semesters-generated"), loc(r));
@@ -271,6 +271,18 @@ const E = await makeStudent("Eve", "smoketest.sem.eve", { courseId: uni, semeste
   check("add-a-course box: adds the course without leaving the page", r.status === 200 && text(await (await get(progPage, admin)).text()).includes(`${P} Quick Course`), `${r.status} ${loc(r)}`);
   const dup = await submit(progPage, admin, quick, { name: `${P.toLowerCase()} quick-course` });
   check("...and refuses a second copy of it", text(await dup.text()).includes("already has a subject called")); }
+{ // Empty semesters at the end get a one-click "Remove them"; semesters in use are never touched.
+  const progPage = `/admin/courses/${other}`;
+  const count = async () => ((await (await get(progPage, admin)).text()).match(/aria-label="More actions for /g) ?? []).length;
+  const before = await count();
+  check("no 'empty' notice while every semester is in use", !text(await (await get(progPage, admin)).text()).includes("are empty") && !text(await (await get(progPage, admin)).text()).includes("is empty ("));
+  for (const name of ["Spare A", "Spare B"]) await submit(progPage, admin, addSemesterForm, { name });
+  const t = text(await (await get(progPage, admin)).text());
+  check("two spare semesters at the end are flagged in one line", t.includes("Spare A to Spare B are empty") && t.includes("Remove them"), t.slice(t.indexOf("Spare A") - 20, t.indexOf("Spare A") + 80));
+  const removeForm = (f) => f.includes('name="courseId"') && !hasField("name")(f) && !f.includes('name="count"') && !f.includes("semester_") && f.includes("Remove them");
+  const r = await submit(progPage, admin, removeForm, {});
+  check("'Remove them' deletes just the empty ones and says how many", loc(r).includes("notice=semesters-removed&n=2") && (await count()) === before, `${loc(r)} ${before}`);
+  check("...and the notice is gone", !text(await (await get(progPage, admin)).text()).includes("Remove them")); }
 
 // ---- 9. permissions -------------------------------------------------------------------------------------------
 { const r = await get(semPage, A.jar); check("students can't open the semester manager", r.status === 307 && loc(r) === "/dashboard", `${r.status} ${loc(r)}`); }

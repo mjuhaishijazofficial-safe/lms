@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { assertAdmin } from "@/server/auth/guards";
 import { errorKey, fromZodError, toFormState, type FormState } from "@/server/action-result";
 import { quickCourseSchema, vuImportSchema } from "@/server/validation/admin";
-import { assignSemesters, importVuCourses, quickAddCourse } from "@/server/services/programs";
+import { assignSemesters, importVuCourses, quickAddCourse, removeTrailingEmptySemesters } from "@/server/services/programs";
 import { idSchema } from "@/server/validation/common";
 
 /** The "add a course" box inside a semester. Returns instead of redirecting so the page keeps its scroll position. */
@@ -45,6 +45,20 @@ export async function assignSemestersAction(formData: FormData) {
   }
   revalidatePath("/admin", "layout");
   redirect(`${back}?${param}`);
+}
+
+/** The "Remove them" link for empty semesters at the end of a program. */
+export async function removeEmptySemestersAction(formData: FormData) {
+  const courseId = idSchema.safeParse(formData.get("courseId"));
+  if (!courseId.success) redirect("/admin/courses?error=failed");
+  let param: string;
+  try {
+    param = `notice=semesters-removed&n=${await removeTrailingEmptySemesters(await assertAdmin(), courseId.data)}`;
+  } catch (err) {
+    param = `error=${errorKey(err, "semester")}`;
+  }
+  revalidatePath("/admin", "layout");
+  redirect(`/admin/courses/${courseId.data}?${param}`);
 }
 
 export async function importVuAction(_prev: FormState, formData: FormData): Promise<FormState> {
