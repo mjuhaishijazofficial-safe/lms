@@ -11,7 +11,7 @@ import { describeMaterial, materialMeta } from "@/lib/material-types";
 import { timeAgo } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { IconTile } from "@/components/ui/icon-tile";
-import { DocumentCard, LinkCard, NoteReader, PdfViewer, VideoPlayer } from "@/components/student/material-viewers";
+import { DocumentCard, HtmlGuideViewer, LinkCard, NoteReader, PdfViewer, VideoPlayer } from "@/components/student/material-viewers";
 import { MarkCompleteButton, MaterialBookmarkButton } from "@/components/student/toggle-buttons";
 import { LessonReader } from "@/components/student/lesson-reader";
 import { parseLesson } from "@/server/materials/lesson-sanitize";
@@ -27,6 +27,7 @@ export default async function MaterialPage({ params }: PageProps<"/materials/[id
   const d = describeMaterial(m);
   const { chapter } = m;
   const isPdf = m.type === "FILE" && m.mimeType === "application/pdf";
+  const isHtml = m.type === "FILE" && m.mimeType === "text/html";
   const returnTo = `/materials/${m.id}`;
   // Stored lessons were sanitised on the way in and are checked again before being rendered.
   const lesson = m.type === "LESSON" && m.lessonData ? parseLesson(m.lessonData) : null;
@@ -65,7 +66,8 @@ export default async function MaterialPage({ params }: PageProps<"/materials/[id
       </div>
 
       {isPdf && <PdfViewer id={m.id} title={m.title} />}
-      {m.type === "FILE" && !isPdf && <DocumentCard id={m.id} fileName={m.fileName} fileSize={m.fileSize} type="FILE" />}
+      {isHtml && <HtmlGuideViewer id={m.id} title={m.title} />}
+      {m.type === "FILE" && !isPdf && !isHtml &&<DocumentCard id={m.id} fileName={m.fileName} fileSize={m.fileSize} type="FILE" />}
       {m.type === "YOUTUBE" && m.youtubeId && <VideoPlayer videoId={m.youtubeId} title={m.title} durationSeconds={m.durationSeconds} />}
       {m.type === "LINK" && <LinkCard id={m.id} host={materialMeta(m)} />}
       {m.type === "TEXT" && m.textContent && <NoteReader html={m.textContent} />}

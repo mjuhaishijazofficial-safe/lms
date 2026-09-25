@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkUpload, cleanFileName, extensionOf } from "@/server/materials/upload";
+import { ALLOWED_EXTENSIONS, checkUpload, cleanFileName, extensionOf } from "@/server/materials/upload";
 import { noteText, sanitizeNoteHtml } from "@/server/materials/sanitize";
 import { formatDuration, parseDuration, parseYouTubeId, safeExternalUrl } from "@/lib/media";
 import { STORAGE_KEY_PATTERN } from "@/server/storage/types";
@@ -35,6 +35,18 @@ describe("checkUpload: spreadsheets, text and images", () => {
     expect(checkUpload({ name: "a.txt", data: bytes(0x41, 0x42, 0x00, 0x43) }, 50 * MB).ok).toBe(false);
     const exe = bytes(0x4d, 0x5a, 0x90, 0, 3, 0, 0, 0);
     for (const name of ["a.txt", "a.png", "a.jpg", "a.xlsx", "a.xls"]) expect(checkUpload({ name, data: exe }, 50 * MB).ok, name).toBe(false);
+  });
+
+  it("accepts an HTML study guide only when it really is an HTML page", () => {
+    const page = text("<!DOCTYPE html>\n<html lang=\"en\"><head><title>PSY101</title></head><body><script>const mcqs=[]</script></body></html>");
+    expect(checkUpload({ name: "PSY101_Lesson 1.html", data: page }, 50 * MB)).toMatchObject({ ok: true, ext: "html", mime: "text/html" });
+    expect(checkUpload({ name: "guide.HTM", data: page }, 50 * MB)).toMatchObject({ ok: true, ext: "htm", mime: "text/html" });
+    // A byte-order mark or a leading comment is fine; plain text, a PDF or an executable named .html is not.
+    expect(checkUpload({ name: "a.html", data: text("﻿<!-- saved from NotebookLM -->\n<html><body>x</body></html>") }, 50 * MB).ok).toBe(true);
+    expect(checkUpload({ name: "a.html", data: text("just some notes") }, 50 * MB).ok).toBe(false);
+    expect(checkUpload({ name: "a.html", data: pdf() }, 50 * MB).ok).toBe(false);
+    expect(checkUpload({ name: "a.html", data: bytes(0x4d, 0x5a, 0x90, 0) }, 50 * MB).ok).toBe(false);
+    expect(checkUpload({ name: "a.html", data: bytes(0x3c, 0x68, 0x74, 0x6d, 0x6c, 0x3e, 0x00) }, 50 * MB).ok).toBe(false); // "<html>" then a zero byte
   });
 
   it("names the rejected type in the error so the admin can see what went wrong", () => {
@@ -107,6 +119,8 @@ describe("file names", () => {
 describe("storage keys", () => {
   it("only accept generated-looking keys, so paths cannot be smuggled in", () => {
     expect(STORAGE_KEY_PATTERN.test(`${"a1".repeat(24)}.pdf`)).toBe(true);
+    // Every uploadable type must also be storable (an HTML guide once passed the upload check but failed to store).
+    for (const ext of ALLOWED_EXTENSIONS) expect(STORAGE_KEY_PATTERN.test(`${"a1".repeat(24)}.${ext}`), ext).toBe(true);
     for (const bad of ["../secret.pdf", "a/b.pdf", "abc.pdf", `${"a1".repeat(24)}.exe`, `${"a1".repeat(24)}.pdf/../x`, "", `${"A1".repeat(24)}.pdf`, `..${"a".repeat(46)}.pdf`]) {
       expect(STORAGE_KEY_PATTERN.test(bad), bad).toBe(false);
     }

@@ -34,13 +34,29 @@ export async function GET(request: Request, { params }: RouteContext<"/api/mater
 
   const forceDownload = new URL(request.url).searchParams.has("download");
   const isPdf = material.mimeType === "application/pdf";
+  const isHtml = material.mimeType === "text/html";
   return new Response(file.stream, {
     headers: {
-      "Content-Type": material.mimeType ?? "application/octet-stream",
+      "Content-Type": isHtml ? "text/html; charset=utf-8" : material.mimeType ?? "application/octet-stream",
       "Content-Length": String(file.size),
-      "Content-Disposition": contentDisposition(isPdf && !forceDownload ? "inline" : "attachment", material.fileName ?? "file"),
+      "Content-Disposition": contentDisposition((isPdf || isHtml) && !forceDownload ? "inline" : "attachment", material.fileName ?? "file"),
       "X-Content-Type-Options": "nosniff",
       "Cache-Control": "private, no-store",
+      // An HTML study guide runs its own scripts (tabs, "mark as read"), so it is locked in a sandbox: a unique
+      // origin with no access to StudyHub's cookies, storage or pages, no network requests, no forms, and it may
+      // only be framed by StudyHub itself. Fonts and images may still come from the web or be inlined.
+      ...(isHtml ? {
+        "Content-Security-Policy": [
+          "sandbox allow-scripts allow-popups",
+          "default-src 'none'",
+          "script-src 'unsafe-inline'",
+          "style-src 'unsafe-inline' https:",
+          "font-src https: data:",
+          "img-src https: data:",
+          "form-action 'none'",
+          "frame-ancestors 'self'",
+        ].join("; "),
+      } : {}),
     },
   });
 }

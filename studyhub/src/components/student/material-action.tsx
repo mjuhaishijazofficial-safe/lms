@@ -7,9 +7,13 @@ import type { MaterialType } from "@prisma/client";
  * Files download straight from the permission-checked route; videos and notes open the reader page;
  * links go through a redirect route so the click is checked (and, later, counted) before leaving the site.
  */
-export function MaterialAction({ id, type, className }: { id: string; type: MaterialType; className?: string }) {
+export function MaterialAction({ id, type, fileName, className }: { id: string; type: MaterialType; fileName?: string | null; className?: string }) {
   switch (type) {
     case "FILE":
+      // An HTML study guide is read inside StudyHub (and counted as opened), not downloaded.
+      if (/\.html?$/i.test(fileName ?? "")) {
+        return <Link href={`/materials/${id}`} prefetch={false} className={className}><BookOpenCheck className="size-4.5" aria-hidden /> Study</Link>;
+      }
       return <a href={`/api/materials/${id}/file?download=1`} className={className}><Download className="size-4.5" aria-hidden /> Download</a>;
     case "YOUTUBE":
       return <Link href={`/materials/${id}`} prefetch={false} className={className}><Play className="size-4.5" aria-hidden /> Watch Video</Link>;

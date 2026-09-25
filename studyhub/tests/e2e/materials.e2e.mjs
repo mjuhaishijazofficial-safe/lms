@@ -99,6 +99,33 @@ let pdfId, pdfKey;
   pdfId = html.match(/href="\/admin\/materials\/([a-z0-9]+)"[^>]*>SmokeTest Chapter 1 Notes</)?.[1];
   check("file: listed with original name and size", !!pdfId && text(html).includes("Chapter 1 Notes.pdf")); }
 
+// ---- HTML study guide: uploaded as it is, shown to students inside a sandbox ------------------------------------
+{ const GUIDE = `<!DOCTYPE html>\n<html><head><title>Guide</title><style>h1{color:#6C4AB6}</style></head><body><h1>Lesson 1</h1><div id="mcqList"></div>\n<script>const mcqs = [{q:"2+2?",o:["3","4"],c:1,e:"Basic sums."}]; document.getElementById("mcqList").textContent = mcqs[0].q;</script></body></html>`;
+  const n = files().length;
+  const r = await NEW({ type: "FILE", chapterId: A.ch1, title: `${P} HTML Guide`, file: file(enc(GUIDE), "PSY101_Lesson 1.html", "text/html") });
+  check("html guide: accepted as a file material", loc(r).endsWith("notice=material-created") && files().length === n + 1, `${r.status} ${loc(r)}`);
+  check("html guide: stored under a random key ending .html", /^[a-f0-9]{48}\.html$/.test(files().filter((f) => f.endsWith(".html")).at(-1) ?? ""));
+  const listHtml = await (await get(`/admin/materials?chapter=${A.ch1}`, admin)).text();
+  const guideId = listHtml.match(/href="\/admin\/materials\/([a-z0-9]+)"[^>]*>SmokeTest HTML Guide</)?.[1];
+  check("html guide: listed", !!guideId);
+
+  const page = await (await get(`/materials/${guideId}`, s1.jar)).text();
+  check("html guide: the student page shows it inside a sandboxed frame",
+    new RegExp(`<iframe[^>]*src="/api/materials/${guideId}/file"`).test(page) && /<iframe[^>]*sandbox="allow-scripts allow-popups"/.test(page), page.match(/<iframe[^>]*>/)?.[0]);
+  const res = await get(`/api/materials/${guideId}/file`, s1.jar);
+  const csp = res.headers.get("content-security-policy") ?? "";
+  check("html guide: served inline as HTML", res.status === 200 && (res.headers.get("content-type") ?? "").startsWith("text/html") && (res.headers.get("content-disposition") ?? "").startsWith("inline"), `${res.status} ${res.headers.get("content-type")} ${res.headers.get("content-disposition")}`);
+  check("html guide: locked in a sandbox (own origin, no network, framed only by StudyHub)",
+    /sandbox allow-scripts/.test(csp) && !/allow-same-origin/.test(csp) && /default-src 'none'/.test(csp) && /frame-ancestors 'self'/.test(csp) && res.headers.get("x-content-type-options") === "nosniff", csp);
+  check("html guide: the file is served byte for byte", (await res.text()) === GUIDE);
+  { const r2 = await get(`/api/materials/${guideId}/file`, s2.jar); check("html guide: a student of another program can't open it", r2.status === 403, String(r2.status)); }
+  { const subj = await (await get(`/subjects/${A.sid}`, s1.jar)).text();
+    check("html guide: its card says Study (opens in StudyHub), not Download", !subj.includes(`/api/materials/${guideId}/file?download=1`) && subj.includes(`href="/materials/${guideId}"`)); }
+
+  // Then remove it again, so the rest of this suite sees the chapter exactly as before.
+  const del = await submit(`/admin/materials?chapter=${A.ch1}`, admin, (f) => hidden("id", guideId)(f) && !f.includes('name="status"') && !f.includes('name="direction"'), {}, { rawHtml: listHtml });
+  check("html guide: deleted again (file removed too)", loc(del).includes("notice=material-deleted") && files().length === n, loc(del)); }
+
 // ---- create: FILE rejections ---------------------------------------------------------------------------------
 async function expectRejected(label, fields, needle) {
   const n = files().length;
@@ -112,7 +139,8 @@ await expectRejected(".exe extension", { file: file(enc("MZ\x90\x00"), "setup.ex
 await expectRejected("executable renamed to .pdf", { file: file(Uint8Array.from([0x4d, 0x5a, 0x90, 0, 3, 0, 0, 0, 4, 0]), "notes.pdf", "application/pdf") }, "don't match");
 await expectRejected("HTML renamed to .pdf", { file: file(enc("<html><script>alert(1)</script></html>"), "notes.pdf", "application/pdf") }, "don't match");
 await expectRejected("shell script renamed to .docx", { file: file(enc("#!/bin/sh\nrm -rf /\n"), "notes.docx") }, "don't match");
-await expectRejected("SVG image", { file: file(enc("<svg xmlns='http://www.w3.org/2000/svg'/>"), "x.svg", "image/svg+xml") }, "isn't allowed");
+await expectRejected("plain text named .html", { file: file(enc("just my notes, not a web page"), "notes.html", "text/html") }, "don't match");
+await expectRejected("SVG image",{ file: file(enc("<svg xmlns='http://www.w3.org/2000/svg'/>"), "x.svg", "image/svg+xml") }, "isn't allowed");
 await expectRejected("double extension", { file: file(PDF_BYTES, "notes.pdf.exe") }, "isn't allowed");
 await expectRejected("pdf content with a .docx name", { file: file(PDF_BYTES, "notes.docx") }, "don't match");
 { const big = new Uint8Array(51 * 1024 * 1024); big.set(PDF_BYTES);

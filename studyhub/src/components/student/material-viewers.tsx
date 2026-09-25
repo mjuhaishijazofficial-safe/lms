@@ -15,6 +15,24 @@ export function PdfViewer({ id, title }: { id: string; title: string }) {
   );
 }
 
+/**
+ * An HTML study guide, shown as the admin designed it (tabs, diagrams, "mark as read"). The file route already locks
+ * it in a sandbox; the iframe's own sandbox repeats that, so it never shares StudyHub's origin either way.
+ */
+export function HtmlGuideViewer({ id, title }: { id: string; title: string }) {
+  return (
+    <div className="space-y-3">
+      <iframe
+        src={`/api/materials/${id}/file`} title={title} sandbox="allow-scripts allow-popups"
+        className="h-[80vh] min-h-96 w-full rounded-2xl border border-line bg-white"
+      />
+      <p className="text-sm text-muted">
+        Easier on a big screen? <a href={`/api/materials/${id}/file`} target="_blank" rel="noopener" className="font-medium text-primary hover:underline">Open it full screen</a>.
+      </p>
+    </div>
+  );
+}
+
 /** Word and PowerPoint files can't be previewed reliably in a browser, so they are offered as a download. */
 export function DocumentCard({ id, fileName, fileSize, type }: { id: string; fileName: string | null; fileSize: number | null; type: "FILE" }) {
   const d = describeMaterial({ type, fileName });

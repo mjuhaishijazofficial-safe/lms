@@ -10,5 +10,10 @@ export interface StorageProvider {
   delete(key: string): Promise<void>;
 }
 
-/** Storage keys are random, extension-suffixed and never derived from user input. */
-export const STORAGE_KEY_PATTERN = /^[a-f0-9]{48}\.(pdf|doc|docx|ppt|pptx|xls|xlsx|txt|jpg|jpeg|png)$/;
+import { ALLOWED_EXTENSIONS } from "@/server/materials/upload";
+
+/**
+ * Storage keys are random, extension-suffixed and never derived from user input. The extensions come from the
+ * upload allow-list itself, so a newly allowed type can never pass the upload check and then fail to store.
+ */
+export const STORAGE_KEY_PATTERN = new RegExp(`^[a-f0-9]{48}\\.(${ALLOWED_EXTENSIONS.join("|")})$`);

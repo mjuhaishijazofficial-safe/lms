@@ -22,7 +22,7 @@ export function MaterialCard({ material: m, completed, context }: { material: Ma
         {completed && <CircleCheck className="size-5 shrink-0 text-emerald-600" aria-label="Completed" />}
       </div>
       <div className="mt-auto pt-4">
-        <MaterialAction id={m.id} type={m.type} className="btn-soft w-full" />
+        <MaterialAction id={m.id} type={m.type} fileName={m.fileName} className="btn-soft w-full" />
       </div>
     </article>
   );

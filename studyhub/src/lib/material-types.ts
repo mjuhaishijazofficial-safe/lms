@@ -11,6 +11,7 @@ export function describeMaterial(m: { type: MaterialType; fileName?: string | nu
   if (m.type === "FILE") {
     const ext = (m.fileName ?? "").split(".").pop()?.toLowerCase();
     if (ext === "pdf") return { label: "PDF", icon: FileText, tile: "bg-tile-red text-rose-800", action: "Download" };
+    if (ext === "html" || ext === "htm") return { label: "Study guide", icon: BookOpenCheck, tile: "bg-tile-amber text-amber-800", action: "Study" };
     if (ext === "doc" || ext === "docx") return { label: "Word document", icon: FileText, tile: "bg-tile-blue text-primary", action: "Download" };
     if (ext === "ppt" || ext === "pptx") return { label: "Slides", icon: FileText, tile: "bg-tile-amber text-amber-800", action: "Download" };
     if (ext === "xls" || ext === "xlsx") return { label: "Spreadsheet", icon: FileText, tile: "bg-tile-green text-teal-700", action: "Download" };

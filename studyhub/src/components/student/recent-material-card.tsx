@@ -21,7 +21,7 @@ export function RecentMaterialCard({ material: m }: { material: RecentMaterial }
         </p>
       </div>
       <p className="text-sm text-muted">Added {timeAgo(m.createdAt)}</p>
-      <MaterialAction id={m.id} type={m.type} className="btn-soft !px-4 !py-2" />
+      <MaterialAction id={m.id} type={m.type} fileName={m.fileName} className="btn-soft !px-4 !py-2" />
     </article>
   );
 }

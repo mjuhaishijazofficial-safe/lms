@@ -6,6 +6,8 @@ import type { TestQuestion } from "@/lib/test";
 import { OPTION_LETTERS } from "@/lib/lesson";
 import { extractPdfPages, PdfReadError } from "@/lib/pdf-text";
 import { parseMcqText } from "@/lib/mcq-import";
+import { questionsFromArrays } from "@/lib/html-mcq-import";
+import { HtmlReadError, readHtmlArrays } from "@/lib/html-sandbox";
 import { cn } from "@/lib/format";
 
 type Draft = { key: number; question: string; options: string[]; answer: number; explanation: string; needsReview: boolean };
@@ -63,6 +65,36 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
     });
   }
 
+  /** A study-guide HTML file: its own question list, with the right answers and explanations, nothing to review. */
+  async function importHtml(file: File) {
+    setImportMessage(null);
+    setImporting({ done: 0, total: 1 });
+    try {
+      const { questions, skipped } = questionsFromArrays(await readHtmlArrays(file));
+      if (questions.length === 0) {
+        setImportMessage({ tone: "warn", text: "Couldn't find any MCQs in that file. You can still add them below by hand." });
+        return;
+      }
+      setItems((prev) => [
+        ...prev.filter((d) => !isBlank(d)),
+        ...questions.map((q) => ({ key: nextKey.current++, question: q.question, options: q.options, answer: q.answer, explanation: q.explanation, needsReview: false })),
+      ]);
+      const parts = [`Imported ${questions.length} question${questions.length === 1 ? "" : "s"} with their answers${questions.some((q) => q.explanation) ? " and explanations" : ""}.`];
+      if (skipped) parts.push(`${skipped} had no clear answer and ${skipped === 1 ? "was" : "were"} left out.`);
+      setImportMessage({ tone: skipped ? "warn" : "info", text: parts.join(" ") });
+    } catch (err) {
+      setImportMessage({ tone: "error", text: err instanceof HtmlReadError ? err.message : "This file could not be read. Try a different HTML file." });
+    } finally {
+      setImporting(null);
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  }
+
+  function importFile(file: File) {
+    if (/\.html?$/i.test(file.name) || file.type === "text/html") void importHtml(file);
+    else void importPdf(file);
+  }
+
   async function importPdf(file: File) {
     setImportMessage(null);
     setImporting({ done: 0, total: 1 });
@@ -102,13 +134,13 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
       <div className="rounded-2xl border border-dashed border-line bg-page/50 p-4">
         <label className="flex cursor-pointer items-center gap-3">
           <input
-            ref={fileInput} type="file" accept=".pdf,application/pdf" className="sr-only"
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) void importPdf(f); }}
+            ref={fileInput} type="file" accept=".pdf,application/pdf,.html,.htm,text/html" className="sr-only"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); }}
             disabled={!!importing}
           />
-          <span className="btn-outline !py-1.5 text-sm"><FileUp className="size-4" aria-hidden /> Import questions from a PDF</span>
+          <span className="btn-outline !py-1.5 text-sm"><FileUp className="size-4" aria-hidden /> Import questions from a file</span>
           <span className="text-sm text-muted">
-            {importing ? `Reading page ${importing.done} of ${importing.total}…` : "Numbered questions, lettered options — no AI, nothing leaves your browser."}
+            {importing ? (importing.total > 1 ? `Reading page ${importing.done} of ${importing.total}…` : "Reading the file…") :"Your chapter's HTML study guide (answers included) or a PDF of MCQs. No AI, nothing leaves your browser."}
           </span>
         </label>
         {importMessage && (
