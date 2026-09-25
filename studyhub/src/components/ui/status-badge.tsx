@@ -5,6 +5,7 @@ const STYLES: Record<string, { label: string; cls: string }> = {
   INACTIVE: { label: "Inactive", cls: "bg-slate-100 text-slate-600 ring-slate-500/15" },
   PUBLISHED: { label: "Published", cls: "bg-emerald-50 text-emerald-700 ring-emerald-600/15" },
   DRAFT: { label: "Draft", cls: "bg-amber-50 text-amber-700 ring-amber-600/20" },
+  SCHEDULED: { label: "Scheduled", cls: "bg-blue-50 text-blue-700 ring-blue-600/15" },
   ARCHIVED: { label: "Archived", cls: "bg-slate-100 text-slate-600 ring-slate-500/15" },
   PENDING: { label: "Pending", cls: "bg-amber-50 text-amber-700 ring-amber-600/20" },
   PAID: { label: "Paid", cls: "bg-emerald-50 text-emerald-700 ring-emerald-600/15" },

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { SUBJECT_ICON_KEYS } from "@/lib/subject-icons";
-import { contentStatusSchema, idSchema, optionalText, passwordSchema, trimmed } from "./common";
+import { contentStatusSchema, idSchema, optionalText, passwordSchema, publishAtSchema, trimmed } from "./common";
 
 /** Login handle: an email address or a simple username. Stored lower-case. */
 export const loginHandleSchema = z
@@ -63,6 +63,7 @@ export const chapterSchema = z.object({
   chapterNumber: z.coerce.number({ error: "Enter a number." }).int("Use a whole number.").min(0).max(999),
   description: optionalText(500),
   status: contentStatusSchema,
+  publishAt: publishAtSchema,
 });
 
 export const withId = <T extends z.ZodRawShape>(schema: z.ZodObject<T>) => schema.extend({ id: idSchema });

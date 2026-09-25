@@ -25,7 +25,10 @@ export default async function EditChapterPage({ params, searchParams }: PageProp
       <Notice searchParams={await searchParams} />
       <ChapterForm
         groups={groups}
-        chapter={{ id: chapter.id, subjectId: chapter.subjectId, title: chapter.title, chapterNumber: chapter.chapterNumber, description: chapter.description, status: chapter.status }}
+        chapter={{
+          id: chapter.id, subjectId: chapter.subjectId, title: chapter.title, chapterNumber: chapter.chapterNumber, description: chapter.description,
+          status: chapter.status, publishAt: chapter.publishAt?.toISOString() ?? null,
+        }}
       />
     </>
   );

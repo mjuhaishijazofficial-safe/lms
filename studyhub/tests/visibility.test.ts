@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { studentCourseWhere, studentMaterialWhere, studentSubjectWhere, studentTestWhere, type StudentScope } from "@/server/services/visibility";
+import { publishedWhere, studentChapterWhere, studentCourseWhere, studentMaterialWhere, studentSubjectWhere, studentTestWhere, type StudentScope } from "@/server/services/visibility";
 
 const sem = (order: number) => ({ id: `sem${order}`, name: `Semester ${order}`, order });
 const scope = (...e: { courseId: string; semester: ReturnType<typeof sem> | null }[]): StudentScope => ({ userId: "u1", enrollments: e });
@@ -46,10 +46,10 @@ describe("fails closed with no enrolment", () => {
 
 describe("material visibility chain", () => {
   const where = studentMaterialWhere(scope({ courseId: "cs", semester: sem(3) }));
-  it("needs the material, its chapter, its subject and its program to be published", () => {
-    expect(where.status).toBe("PUBLISHED");
-    const chapter = where.chapter as { status: string; subject: { status: string } };
-    expect(chapter.status).toBe("PUBLISHED");
+  it("needs the material, its chapter, its subject and its program to be published (or the material/chapter's schedule to have come due)", () => {
+    expect(where.OR).toEqual([{ status: "PUBLISHED" }, { status: "DRAFT", publishAt: { lte: expect.any(Date) } }]);
+    const chapter = where.chapter as { OR: unknown; subject: { status: string } };
+    expect(chapter.OR).toEqual([{ status: "PUBLISHED" }, { status: "DRAFT", publishAt: { lte: expect.any(Date) } }]);
     expect(chapter.subject.status).toBe("PUBLISHED");
   });
   it("carries the semester rule down to the material", () => {
@@ -100,6 +100,27 @@ describe("subject visibility (subjects picked per student)", () => {
 
   it("restricts materials through the picked subjects", () => {
     expect(json(studentMaterialWhere(picked(["s1"])))).toContain('"s1"');
+  });
+});
+
+describe("publishedWhere (scheduled publish)", () => {
+  const NOW = new Date("2026-06-15T12:00:00Z");
+
+  it("always matches a truly published row, whatever publishAt says", () => {
+    expect(publishedWhere(NOW)).toEqual({ OR: [{ status: "PUBLISHED" }, { status: "DRAFT", publishAt: { lte: NOW } }] });
+  });
+
+  it("a draft's chapter visibility now includes 'draft but its time has come'", () => {
+    const where = studentChapterWhere(scope({ courseId: "cs", semester: sem(1) }), NOW);
+    expect(where.OR).toEqual([{ status: "PUBLISHED" }, { status: "DRAFT", publishAt: { lte: NOW } }]);
+    expect(where.subject).toEqual(studentSubjectWhere(scope({ courseId: "cs", semester: sem(1) })));
+  });
+
+  it("threads the same clock through to materials, via their chapter", () => {
+    const where = studentMaterialWhere(scope({ courseId: "cs", semester: sem(1) }), NOW);
+    expect(where.OR).toEqual([{ status: "PUBLISHED" }, { status: "DRAFT", publishAt: { lte: NOW } }]);
+    const chapter = where.chapter as { OR: unknown };
+    expect(chapter.OR).toEqual([{ status: "PUBLISHED" }, { status: "DRAFT", publishAt: { lte: NOW } }]);
   });
 });
 

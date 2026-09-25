@@ -4,7 +4,7 @@ import { db } from "@/server/db";
 import type { SessionUser } from "@/server/auth/session";
 import { studentMaterialWhere, studentTestWhere, type StudentScope } from "./visibility";
 
-export { studentChapterWhere, studentCourseWhere, studentMaterialWhere, studentSubjectWhere, studentTestWhere } from "./visibility";
+export { publishedWhere, studentChapterWhere, studentCourseWhere, studentMaterialWhere, studentSubjectWhere, studentTestWhere } from "./visibility";
 export type { StudentScope } from "./visibility";
 
 /** The programs, current semesters and picked subjects of an active student. Cached for the length of a request. */

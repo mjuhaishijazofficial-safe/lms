@@ -8,8 +8,9 @@ import { Alert } from "@/components/ui/notice";
 import { Field, invalid } from "@/components/ui/field";
 import { STATUS_OPTIONS } from "@/components/ui/status-badge";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { ScheduleField } from "./schedule-field";
 
-type Initial = { id: string; subjectId: string; title: string; chapterNumber: number | string; description: string; status: string };
+type Initial = { id: string; subjectId: string; title: string; chapterNumber: number | string; description: string; status: string; publishAt: string | null };
 type Group = { courseId: string; course: string; subjects: { id: string; name: string }[] };
 
 export function ChapterForm({ chapter, groups, defaultSubjectId, suggestedNumber }: {
@@ -52,6 +53,7 @@ export function ChapterForm({ chapter, groups, defaultSubjectId, suggestedNumber
           {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </Field>
+      <ScheduleField initial={v("publishAt")} error={e.publishAt} />
 
       <div className="flex items-center gap-3 pt-2">
         <SubmitButton pendingText="Saving…">{chapter ? "Save changes" : "Create chapter"}</SubmitButton>

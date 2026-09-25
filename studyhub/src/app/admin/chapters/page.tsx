@@ -6,7 +6,8 @@ import { listChapters } from "@/server/services/chapters";
 import { subjectOptions } from "@/server/services/subjects";
 import { PAGE_SIZE } from "@/server/services/_shared";
 import { idParam, one, pageParam } from "@/lib/params";
-import { plural } from "@/lib/format";
+import { effectiveStatus } from "@/lib/schedule";
+import { formatDateTime, plural } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { Notice } from "@/components/ui/notice";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -97,7 +98,12 @@ export default async function ChaptersPage({ searchParams }: PageProps<"/admin/c
                         <p className="text-muted">{[c.subject.course.name, c.subject.semester?.name].filter(Boolean).join(" · ")}</p>
                       </Td>
                       <Td className="hidden whitespace-nowrap md:table-cell"><Link href={`/admin/materials?chapter=${c.id}`} className="text-primary hover:underline">{plural(c._count.materials, "material")}</Link></Td>
-                      <Td><StatusBadge status={c.status} /></Td>
+                      <Td>
+                        <StatusBadge status={effectiveStatus(c.status, c.publishAt)} />
+                        {c.status === "DRAFT" && c.publishAt && new Date(c.publishAt) > new Date() && (
+                          <p className="mt-1 whitespace-nowrap text-xs text-muted">{formatDateTime(c.publishAt)}</p>
+                        )}
+                      </Td>
                       <Td>
                         <RowActions id={c.id} name={c.title} status={c.status} editHref={`/admin/chapters/${c.id}`} returnTo={returnTo}
                           setStatus={setChapterStatusAction} remove={deleteChapterAction}

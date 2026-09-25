@@ -4,7 +4,7 @@ import type { MaterialType } from "@prisma/client";
 import { db } from "@/server/db";
 import { computeProgress, type Progress } from "@/lib/progress";
 import { PAGE_SIZE } from "./_shared";
-import { getStudentScope, studentCourseWhere, studentMaterialWhere, studentSubjectWhere } from "./access";
+import { getStudentScope, publishedWhere, studentCourseWhere, studentMaterialWhere, studentSubjectWhere } from "./access";
 
 /** Everything a student can see, as one tree: their program, its semesters up to the current one, subjects, chapters. */
 export type SemesterRef = { id: string; name: string; order: number };
@@ -26,8 +26,8 @@ const ORDER = [{ order: "asc" as const }, { createdAt: "asc" as const }];
 const subjectTreeSelect = {
   id: true, name: true, description: true, icon: true, semester: { select: { id: true, name: true, order: true } },
   chapters: {
-    where: { status: "PUBLISHED" as const }, orderBy: ORDER,
-    select: { id: true, title: true, description: true, chapterNumber: true, materials: { where: { status: "PUBLISHED" as const }, orderBy: ORDER, select: { id: true } } },
+    where: publishedWhere(), orderBy: ORDER,
+    select: { id: true, title: true, description: true, chapterNumber: true, materials: { where: publishedWhere(), orderBy: ORDER, select: { id: true } } },
   },
 } as const;
 
@@ -136,8 +136,8 @@ export async function getSubjectView(userId: string, subjectId: string) {
       course: { select: { id: true, name: true } },
       semester: { select: { id: true, name: true } },
       chapters: {
-        where: { status: "PUBLISHED" }, orderBy: ORDER,
-        select: { id: true, title: true, description: true, chapterNumber: true, materials: { where: { status: "PUBLISHED" }, orderBy: ORDER, select: cardSelect } },
+        where: publishedWhere(), orderBy: ORDER,
+        select: { id: true, title: true, description: true, chapterNumber: true, materials: { where: publishedWhere(), orderBy: ORDER, select: cardSelect } },
       },
     },
   });
@@ -168,7 +168,7 @@ export async function getMaterialView(userId: string, materialId: string) {
     },
   });
   if (!material) return null;
-  const siblings = await db.material.findMany({ where: { chapterId: material.chapterId, status: "PUBLISHED" }, orderBy: ORDER, select: { id: true, title: true } });
+  const siblings = await db.material.findMany({ where: { chapterId: material.chapterId, ...publishedWhere() }, orderBy: ORDER, select: { id: true, title: true } });
   const at = siblings.findIndex((s) => s.id === material.id);
   return { material, previous: siblings[at - 1] ?? null, next: siblings[at + 1] ?? null, position: at + 1, total: siblings.length };
 }

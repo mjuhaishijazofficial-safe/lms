@@ -65,6 +65,7 @@ export default async function EditMaterialPage({ params, searchParams }: PagePro
           maxMb={env.MAX_UPLOAD_MB}
           material={{
             id: material.id, type: material.type, chapterId: material.chapterId, title: material.title, description: material.description, status: material.status,
+            publishAt: material.publishAt?.toISOString() ?? null,
             youtubeUrl: material.youtubeId ? youtubeWatchUrl(material.youtubeId) : "", duration: material.durationSeconds ? formatDuration(material.durationSeconds) : "",
             externalUrl: material.externalUrl ?? "", textContent: material.textContent ?? "",
             lessonJson: material.lessonData ? JSON.stringify(material.lessonData, null, 2) : "",

@@ -8,7 +8,8 @@ import { subjectOptions } from "@/server/services/subjects";
 import { PAGE_SIZE } from "@/server/services/_shared";
 import { idParam, one, pageParam } from "@/lib/params";
 import { MATERIAL_TYPES } from "@/lib/material-types";
-import { formatBytes, timeAgo } from "@/lib/format";
+import { effectiveStatus } from "@/lib/schedule";
+import { formatBytes, formatDateTime, timeAgo } from "@/lib/format";
 import { formatDuration } from "@/lib/media";
 import { PageHeader } from "@/components/ui/page-header";
 import { Notice } from "@/components/ui/notice";
@@ -152,7 +153,7 @@ export default async function MaterialsPage({ searchParams }: PageProps<"/admin/
                             <div className="min-w-0">
                               <Link href={`/admin/materials/${m.id}`} className="font-semibold hover:text-primary">{m.title}</Link>
                               <p className="max-w-xs truncate text-muted">{detail}</p>
-                              <div className="mt-1 md:hidden"><StatusBadge status={m.status} /></div>
+                              <div className="mt-1 md:hidden"><StatusBadge status={effectiveStatus(m.status, m.publishAt)} /></div>
                               <div className="-ml-2.5 mt-1 md:hidden [&>div]:justify-start">{actions}</div>
                             </div>
                           </div>
@@ -161,7 +162,12 @@ export default async function MaterialsPage({ searchParams }: PageProps<"/admin/
                           <p className="whitespace-nowrap">{m.chapter.subject.name} · <span className="text-muted">{[m.chapter.subject.course.name, m.chapter.subject.semester?.name].filter(Boolean).join(" · ")}</span></p>
                           <Link href={`/admin/materials?chapter=${m.chapterId}`} className="text-muted hover:text-primary">Ch {m.chapter.chapterNumber}. {m.chapter.title}</Link>
                         </Td>
-                        <Td className="hidden md:table-cell"><StatusBadge status={m.status} /></Td>
+                        <Td className="hidden md:table-cell">
+                          <StatusBadge status={effectiveStatus(m.status, m.publishAt)} />
+                          {m.status === "DRAFT" && m.publishAt && new Date(m.publishAt) > new Date() && (
+                            <p className="mt-1 whitespace-nowrap text-muted">{formatDateTime(m.publishAt)}</p>
+                          )}
+                        </Td>
                         <Td className="hidden whitespace-nowrap text-muted md:table-cell">{timeAgo(m.createdAt)}</Td>
                         <Td className="hidden md:table-cell">{actions}</Td>
                       </Tr>

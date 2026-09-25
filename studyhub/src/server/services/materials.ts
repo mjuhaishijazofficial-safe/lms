@@ -144,7 +144,7 @@ export async function createMaterial(actor: SessionUser, data: CreateMaterialInp
   try {
     return await db.material.create({
       data: {
-        chapterId: data.chapterId, type: data.type, title: data.title, description: data.description, status: data.status,
+        chapterId: data.chapterId, type: data.type, title: data.title, description: data.description, status: data.status, publishAt: data.publishAt,
         order: await appendOrder(data.chapterId), uploadedById: actor.id, ...columns, ...(stored ?? {}),
       },
       select: { id: true },
@@ -169,7 +169,7 @@ export async function updateMaterial(actor: SessionUser, data: UpdateMaterialInp
     await db.material.update({
       where: { id: data.id },
       data: {
-        chapterId: data.chapterId, title: data.title, description: data.description, status: data.status,
+        chapterId: data.chapterId, title: data.title, description: data.description, status: data.status, publishAt: data.publishAt,
         ...(moved ? { order: await appendOrder(data.chapterId) } : {}), ...columns, ...(stored ?? {}),
       },
     });

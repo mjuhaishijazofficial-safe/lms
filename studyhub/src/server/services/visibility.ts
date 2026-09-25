@@ -47,7 +47,16 @@ export function studentSubjectWhere(scope: StudentScope): Prisma.SubjectWhereInp
   };
 }
 
-export const studentChapterWhere = (scope: StudentScope): Prisma.ChapterWhereInput => ({ status: "PUBLISHED", subject: studentSubjectWhere(scope) });
-export const studentMaterialWhere = (scope: StudentScope): Prisma.MaterialWhereInput => ({ status: "PUBLISHED", chapter: studentChapterWhere(scope) });
+/**
+ * A chapter or material is visible once it is truly Published, or once its own scheduled `publishAt` time has
+ * passed while it is still marked Draft — checked here, at read time, so a schedule takes effect on its own with
+ * nothing needing to run in the background. An Archived item is never revealed this way.
+ */
+export function publishedWhere(now: Date = new Date()) {
+  return { OR: [{ status: "PUBLISHED" as const }, { status: "DRAFT" as const, publishAt: { lte: now } }] };
+}
+
+export const studentChapterWhere = (scope: StudentScope, now: Date = new Date()): Prisma.ChapterWhereInput => ({ ...publishedWhere(now), subject: studentSubjectWhere(scope) });
+export const studentMaterialWhere = (scope: StudentScope, now: Date = new Date()): Prisma.MaterialWhereInput => ({ ...publishedWhere(now), chapter: studentChapterWhere(scope, now) });
 /** A test follows its subject's own visibility, same as a chapter does: no extra rule needed. */
 export const studentTestWhere = (scope: StudentScope): Prisma.TestWhereInput => ({ status: "PUBLISHED", subject: studentSubjectWhere(scope) });

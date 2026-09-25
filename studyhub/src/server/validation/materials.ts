@@ -1,13 +1,14 @@
 import { z } from "zod";
 import { parseDuration, parseYouTubeId, safeExternalUrl } from "@/lib/media";
 import { parseLesson } from "@/server/materials/lesson-sanitize";
-import { contentStatusSchema, idSchema, optionalText, trimmed } from "./common";
+import { contentStatusSchema, idSchema, optionalText, publishAtSchema, trimmed } from "./common";
 
 const common = {
   chapterId: idSchema,
   title: trimmed(160, "Title"),
   description: optionalText(1000),
   status: contentStatusSchema,
+  publishAt: publishAtSchema,
 };
 
 // Each of these validates a form input and outputs the value we store instead:

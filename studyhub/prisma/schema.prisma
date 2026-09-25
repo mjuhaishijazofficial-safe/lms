@@ -176,6 +176,9 @@ model Chapter {
   chapterNumber Int
   order         Int           @default(0)
   status        ContentStatus @default(PUBLISHED)
+  /// While status is DRAFT, a time in the future here makes it (and its materials) visible on its own once that
+  /// time passes — no admin action needed. Ignored once status is PUBLISHED or ARCHIVED. See lib/schedule.ts.
+  publishAt     DateTime?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -208,6 +211,8 @@ model Material {
   lessonData      Json?
   order           Int           @default(0)
   status          ContentStatus @default(PUBLISHED)
+  /// Same idea as Chapter.publishAt: a DRAFT material with a past publishAt is visible without anyone publishing it.
+  publishAt       DateTime?
   uploadedById    String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

@@ -15,10 +15,11 @@ import { STATUS_OPTIONS } from "@/components/ui/status-badge";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { ChapterPicker } from "./chapter-picker";
 import { RichTextEditor } from "./rich-text-editor";
+import { ScheduleField } from "./schedule-field";
 import { UploadDropzone } from "./upload-dropzone";
 
 export type MaterialInitial = {
-  id: string; type: MaterialType; chapterId: string; title: string; description: string; status: string;
+  id: string; type: MaterialType; chapterId: string; title: string; description: string; status: string; publishAt: string | null;
   youtubeUrl: string; duration: string; externalUrl: string; textContent: string; lessonJson: string; file: { name: string; size: number | null } | null;
 };
 
@@ -129,6 +130,7 @@ export function MaterialForm({ tree, material, defaultChapterId, maxMb }: {
           {STATUS_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </Field>
+      <ScheduleField initial={v("publishAt")} error={e.publishAt} />
 
       <div className="flex items-center gap-3 pt-2">
         <SubmitButton pendingText={type === "FILE" ? "Uploading…" : "Saving…"}>{material ? "Save changes" : "Add material"}</SubmitButton>
