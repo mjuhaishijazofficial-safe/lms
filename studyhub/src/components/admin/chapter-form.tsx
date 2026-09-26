@@ -37,7 +37,7 @@ export function ChapterForm({ chapter, groups, defaultSubjectId, suggestedNumber
         </select>
       </Field>
 
-      <div className="grid gap-5 sm:grid-cols-[8rem_1fr]">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-[8rem_1fr]">
         <Field id="chapterNumber" label="Number" required error={e.chapterNumber}>
           <input id="chapterNumber" name="chapterNumber" type="number" min={0} max={999} inputMode="numeric" defaultValue={v("chapterNumber", suggestedNumber ?? 1)} required className={`input ${invalid(e.chapterNumber)}`} />
         </Field>

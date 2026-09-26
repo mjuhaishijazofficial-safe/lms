@@ -17,12 +17,12 @@ export function ChapterAccordion({ chapters, openId, completed }: { chapters: Ac
         return (
           <details key={c.id} id={`chapter-${c.id}`} open={c.id === openId} className="group card overflow-hidden">
             <summary className="flex cursor-pointer list-none items-center gap-4 p-4 outline-none transition hover:bg-page/50 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary/20 sm:px-5 [&::-webkit-details-marker]:hidden">
-              <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-tile-blue text-lg font-semibold text-primary">{c.chapterNumber}</span>
+              <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full tile-blue text-lg font-semibold">{c.chapterNumber}</span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-lg font-semibold">{c.title}</span>
                 {c.description && <span className="block truncate text-muted">{c.description}</span>}
               </span>
-              {allDone && <CircleCheck className="size-5 shrink-0 text-teal-700" aria-label="Chapter completed" />}
+              {allDone && <CircleCheck className="size-5 shrink-0 text-success" aria-label="Chapter completed" />}
               <span className="hidden shrink-0 text-muted sm:block">{plural(c.materials.length, "material")}</span>
               <ChevronDown className="size-5 shrink-0 text-ink/70 transition group-open:rotate-180" aria-hidden />
             </summary>

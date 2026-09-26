@@ -49,9 +49,9 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           {results.subjects.length > 0 && (
             <section>
               <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold"><Layers className="size-5" aria-hidden /> Subjects</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {results.subjects.map((s) => {
-                  const icon = subjectIcon(s.icon);
+                  const icon = subjectIcon(s.icon, s.id);
                   return <ResultRow key={s.id} href={`/subjects/${s.id}`} icon={icon.icon} tile={icon.tile} title={s.name} subtitle={s.courseName} />;
                 })}
               </div>
@@ -61,9 +61,9 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           {results.chapters.length > 0 && (
             <section>
               <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold"><ListOrdered className="size-5" aria-hidden /> Chapters</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {results.chapters.map((c) => (
-                  <ResultRow key={c.id} href={`/subjects/${c.subjectId}?chapter=${c.id}#chapter-${c.id}`} icon={ListOrdered} tile="bg-tile-blue text-primary" title={`${c.chapterNumber}. ${c.title}`} subtitle={c.subjectName} />
+                  <ResultRow key={c.id} href={`/subjects/${c.subjectId}?chapter=${c.id}#chapter-${c.id}`} icon={ListOrdered} tile="tile-blue" title={`${c.chapterNumber}. ${c.title}`} subtitle={c.subjectName} />
                 ))}
               </div>
             </section>
@@ -72,7 +72,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
           {results.materials.length > 0 && (
             <section>
               <h2 className="mb-3 flex items-center gap-2 text-lg font-semibold"><BookOpen className="size-5" aria-hidden /> Materials</h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {results.materials.map((m) => {
                   const d = describeMaterial(m);
                   return <ResultRow key={m.id} href={`/materials/${m.id}`} icon={d.icon} tile={d.tile} title={m.title} subtitle={`${m.subjectName} · ${m.chapterTitle}`} />;

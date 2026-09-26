@@ -95,7 +95,7 @@ export function MaterialForm({ tree, material, defaultChapterId, maxMb }: {
       {type === "FILE" && <UploadDropzone maxMb={maxMb} required={!material} error={e.file} current={material?.file ?? undefined} />}
 
       {type === "YOUTUBE" && (
-        <div className="grid gap-5 sm:grid-cols-[1fr_11rem]">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-[1fr_11rem]">
           <Field id="youtubeUrl" label="YouTube link" required error={e.youtubeUrl} hint="Paste the video's address. It plays inside the platform.">
             <input id="youtubeUrl" name="youtubeUrl" type="url" inputMode="url" defaultValue={v("youtubeUrl")} required className={`input ${invalid(e.youtubeUrl)}`} placeholder="https://www.youtube.com/watch?v=…" />
           </Field>

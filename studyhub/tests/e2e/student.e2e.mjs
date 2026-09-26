@@ -118,17 +118,17 @@ for (const p of ["/dashboard", `/subjects/${sA1}`, `/materials/${mPdf}`, "/recen
 { const { r, h } = await html("/dashboard", s1.jar); const t = text(h);
   check("dashboard: greets the signed-in student by first name from the database", r.status === 200 && t.includes("Hi, SmokeTest!") || t.includes("Hi, SmokeTest"), t.slice(0, 120));
   check("dashboard: shows their program", t.includes(`${P} Alpha`));
-  check("dashboard: subject count only counts visible subjects (Algebra + Empty; not the archived one)", /Subjects\s+2\b/.test(t), t.match(/Subjects\s+\d+/)?.[0]);
-  check("dashboard: material count only counts published material in published chapters (4 + 1)", /Total Materials\s+5\b/.test(t), t.match(/Total Materials\s+\d+/)?.[0]);
+  check("dashboard: subject count only counts visible subjects (Algebra + Empty; not the archived one)", /\b2\s+Subjects\b/.test(t), t.match(/\d+\s+Subjects\b/)?.[0]);
+  check("dashboard: material count only counts published material in published chapters (4 + 1)", /\b5\s+Total Materials\b/.test(t), t.match(/\d+\s+Total Materials\b/)?.[0]);
   check("dashboard: shows their subjects, hides archived + other classes", t.includes(`${P} Algebra`) && !t.includes("Hidden Archived Subject") && !t.includes("Beta Biology"));
   check("dashboard: recently added lists visible material only", t.includes(`${P} Worksheet`) && !t.includes("Draft Material") && !t.includes("Archived Material") && !t.includes("In Draft Chapter") && !t.includes("Beta Secret Note"));
   check("dashboard: the bell counts this week's new material and lists it", /5 new study materials this week/.test(h), h.match(/aria-label="[^"]*study materials[^"]*"/)?.[0]);
   check("dashboard: sidebar has the student links and no admin links", ["/dashboard", "/courses", "/subjects", "/search", "/recent", "/bookmarks", "/profile"].every((p) => h.includes(`href="${p}"`)) && !h.includes('href="/admin')); }
 { const { h } = await html("/dashboard", s2.jar); const t = text(h);
-  check("isolation: the Beta student sees Beta only (no Alpha names anywhere)", t.includes(`${P} Beta Biology`) && !t.includes("Alpha") && !t.includes("Algebra") && !t.includes("Worksheet") && /Total Materials\s+1\b/.test(t), t.match(/Total Materials\s+\d+/)?.[0]); }
+  check("isolation: the Beta student sees Beta only (no Alpha names anywhere)", t.includes(`${P} Beta Biology`) && !t.includes("Alpha") && !t.includes("Algebra") && !t.includes("Worksheet") && /\b1\s+Total Materials\b/.test(t), t.match(/\d+\s+Total Materials\b/)?.[0]); }
 { const { h } = await html("/dashboard", s3.jar); const t = text(h);
   check("dashboard: a student with no class sees a clear message", t.includes("You haven't been assigned to a program yet"), t.slice(0, 200));
-  check("...with zero counts and no other class's data", /Subjects\s+0\b/.test(t) && /Total Materials\s+0\b/.test(t) && !t.includes(P + " Algebra") && !t.includes("Beta Biology")); }
+  check("...with zero counts and no other class's data", /\b0\s+Subjects\b/.test(t) && /\b0\s+Total Materials\b/.test(t) && !t.includes(P + " Algebra") && !t.includes("Beta Biology")); }
 
 // ---- my courses / class page / subjects list ------------------------------------------------------------------
 { const t = text((await html("/courses", s1.jar)).h); check("my courses: lists only their class, with counts", t.includes(`${P} Alpha`) && !t.includes(`${P} Beta`) && /2 subjects/.test(t) && /5 materials/.test(t), t.slice(0, 250)); }
@@ -217,19 +217,19 @@ for (let i = 1; i <= 22; i++) await makeMaterial(chB, { type: "LINK", title: `${
   await db.materialProgress.upsert({ where: { userId_materialId: { userId: s1.id, materialId: mDocx } }, create: { userId: s1.id, materialId: mDocx, completedAt: new Date() }, update: { completedAt: new Date() } });
   const { h } = await html(`/subjects/${sA1}`, s1.jar); const t = text(h);
   check("progress: one finished chapter shows 1 / 2 chapters, 50%", /1 \/ 2 chapters/.test(t) && /aria-valuenow="50"/.test(h) && /Chapter completed/.test(h), t.match(/\d+ \/ \d+ chapters/)?.[0]);
-  const d = text((await html("/dashboard", s1.jar)).h); check("progress: the dashboard shows the same overall percentage", /Your progress\s+50%/.test(d), d.match(/Your progress\s+\d+%/)?.[0]);
+  const d = text((await html("/dashboard", s1.jar)).h); check("progress: the dashboard shows the same overall percentage", /\b50%\s+Your progress\b/.test(d), d.match(/\d+%\s+Your progress\b/)?.[0]);
   // Finishing every *visible* material in Real Numbers completes it, even though hidden drafts were never completed.
   for (const id of [mPdf, mYt, mLink, mNote]) await db.materialProgress.upsert({ where: { userId_materialId: { userId: s1.id, materialId: id } }, create: { userId: s1.id, materialId: id, completedAt: new Date() }, update: { completedAt: new Date() } });
   const t2 = text((await html(`/subjects/${sA1}`, s1.jar)).h);
   check("progress: hidden draft/archived material never blocks completion (2 / 2, 100%)", /2 \/ 2 chapters/.test(t2) && /Overall Progress[^]*100\s*%/.test(t2), t2.match(/\d+ \/ \d+ chapters/)?.[0]);
-  const t3 = text((await html("/dashboard", s2.jar)).h); check("progress: one student's progress never appears for another", /Your progress\s+0%/.test(t3)); }
+  const t3 = text((await html("/dashboard", s2.jar)).h); check("progress: one student's progress never appears for another", /\b0%\s+Your progress\b/.test(t3)); }
 { const other = text((await html("/courses", s1.jar)).h); check("progress: the program card reflects it", /100\s*%/.test(other)); }
 
 // ---- live changes by the admin show up at once -----------------------------------------------------------------
 const status = async (listPath, id, st) => { const page = await (await get(listPath, admin)).text(); await submit(listPath, admin, (f) => hidden("id", id)(f) && hidden("status", st)(f), {}, { rawHtml: page }); };
 { await status(`/admin/chapters?subject=${sA1}`, ch2, "ARCHIVED");
   const t = text((await html(`/subjects/${sA1}`, s1.jar)).h); const d = text((await html("/dashboard", s1.jar)).h);
-  check("admin archives a chapter -> it disappears for the student, and totals drop", !t.includes("Polynomials") && /Total Materials\s+4\b/.test(d), d.match(/Total Materials\s+\d+/)?.[0]);
+  check("admin archives a chapter -> it disappears for the student, and totals drop", !t.includes("Polynomials") && /\b4\s+Total Materials\b/.test(d), d.match(/\d+\s+Total Materials\b/)?.[0]);
   check("...and its material can no longer be opened", (await get(`/materials/${mDocx}`, s1.jar)).status === 404);
   await status(`/admin/chapters?subject=${sA1}`, ch2, "PUBLISHED"); check("...and comes back when published again", text((await html(`/subjects/${sA1}`, s1.jar)).h).includes("Polynomials")); }
 { const before = (await html("/recent", s1.jar)).h.includes("Worksheet");

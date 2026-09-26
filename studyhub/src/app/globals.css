@@ -1,28 +1,67 @@
 @import "tailwindcss";
 
-/* Design tokens: navy primary with a gold accent. */
+/*
+ * Design tokens: indigo primary on a light page, dark navy sidebar.
+ * Every colour in the app comes from here — components use these names, never raw Tailwind palette colours.
+ */
 @theme {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  --color-page: #eef2f7;
+  --color-page: #f5f7fb;
   --color-surface: #ffffff;
-  --color-line: #d9e0ea;
-  --color-ink: #0b1b3a;
-  --color-muted: #5b6b85;
+  --color-line: #e7eaf2;
+  --color-ink: #111827;
+  --color-muted: #667085;
 
-  --color-primary: #1e3a8a;
-  --color-primary-hover: #172554;
-  --color-primary-soft: #e3e9f7;
-  --color-accent: #c9a227;
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-soft: #eef0ff;
+  --color-accent: #f59e0b;
 
-  --color-tile-blue: #e3e9f7;
-  --color-tile-amber: #f6ecd2;
-  --color-tile-green: #dcefeb;
-  --color-tile-red: #f6e2e2;
-  --color-tile-purple: #ebe4f5;
+  --color-sidebar: #141b3d;
+  --color-sidebar-hover: #1f2850;
+  --color-sidebar-ink: #b4bbd4;
+  --color-sidebar-accent: #a5a8ff;
 
-  --radius-card: 1rem;
-  --shadow-card: 0 1px 2px rgb(11 27 58 / 0.05), 0 4px 16px rgb(11 27 58 / 0.06);
+  /* Status: text colour + soft background. */
+  --color-success: #067647;
+  --color-success-soft: #ecfdf3;
+  --color-warning: #b54708;
+  --color-warning-soft: #fffaeb;
+  --color-danger: #d92d20;
+  --color-danger-hover: #b42318;
+  --color-danger-soft: #fef3f2;
+  --color-info: #175cd3;
+  --color-info-soft: #eff8ff;
+
+  /* Icon tiles: soft background + matching ink (see .tile-* below). */
+  --color-tile-blue: #eef0ff;
+  --color-tile-blue-ink: #4f46e5;
+  --color-tile-purple: #f4efff;
+  --color-tile-purple-ink: #7c3aed;
+  --color-tile-green: #e6f7ef;
+  --color-tile-green-ink: #059669;
+  --color-tile-amber: #fff4e5;
+  --color-tile-amber-ink: #d97706;
+  --color-tile-red: #ffeef0;
+  --color-tile-red-ink: #e11d48;
+  --color-tile-sky: #e6f5fb;
+  --color-tile-sky-ink: #0284c7;
+  --color-tile-pink: #fdeef6;
+  --color-tile-pink-ink: #db2777;
+
+  /* Vivid fills for subject tiles and progress bars. */
+  --color-vivid-indigo: #6366f1;
+  --color-vivid-green: #10b981;
+  --color-vivid-blue: #3b82f6;
+  --color-vivid-orange: #f97316;
+  --color-vivid-pink: #ec4899;
+  --color-vivid-cyan: #06b6d4;
+  --color-vivid-violet: #8b5cf6;
+
+  --radius-card: 0.875rem;
+  --radius-control: 0.625rem;
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 2px 10px rgb(16 24 40 / 0.04);
 }
 
 body {
@@ -37,18 +76,32 @@ body {
   .input,
   .select,
   .textarea {
-    @apply w-full rounded-xl border border-line bg-surface px-4 py-2.5 text-ink placeholder:text-muted/70 outline-none transition
-      focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed;
+    @apply w-full rounded-control border border-line bg-surface px-3.5 text-sm text-ink placeholder:text-muted/70 outline-none transition
+      focus:border-primary focus:ring-4 focus:ring-primary/10 disabled:cursor-not-allowed disabled:bg-page;
+  }
+  .input,
+  .select {
+    @apply h-10;
   }
   .select {
     @apply appearance-none pr-10;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2364748b' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23667085' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 0.9rem center;
+    background-position: right 0.8rem center;
   }
   .textarea {
-    @apply min-h-28 resize-y;
+    @apply min-h-28 resize-y py-2.5;
   }
+
+  /* Icon tiles: one class sets both the soft background and the icon colour. */
+  .tile-blue { @apply bg-tile-blue text-tile-blue-ink; }
+  .tile-purple { @apply bg-tile-purple text-tile-purple-ink; }
+  .tile-green { @apply bg-tile-green text-tile-green-ink; }
+  .tile-amber { @apply bg-tile-amber text-tile-amber-ink; }
+  .tile-red { @apply bg-tile-red text-tile-red-ink; }
+  .tile-sky { @apply bg-tile-sky text-tile-sky-ink; }
+  .tile-pink { @apply bg-tile-pink text-tile-pink-ink; }
+  .tile-solid { @apply bg-primary text-white; }
   /* Study notes: shared by the admin editor and the student reader so both look identical. */
   .note {
     @apply text-[15px] leading-7 text-ink;
@@ -83,25 +136,74 @@ body {
   .note hr {
     @apply my-6 border-line;
   }
+  /*
+   * Buttons. Every button shares one shape: 40px tall, 14px semibold text, 16px icons, same corners.
+   * Add .btn-sm for the compact 32px version used inside tables and cards.
+   */
+  .btn-primary,
+  .btn-outline,
+  .btn-soft,
+  .btn-danger,
+  .btn-outline-danger,
+  .btn-ghost,
+  .btn-ghost-danger,
+  .btn-icon,
+  .btn-icon-danger {
+    @apply inline-flex h-10 shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-control px-4 text-sm font-semibold transition
+      focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:pointer-events-none disabled:opacity-50;
+  }
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-5 py-2.5 font-semibold text-white transition
-      hover:bg-primary-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply bg-primary text-white shadow-sm hover:bg-primary-hover;
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line bg-surface px-4 py-2.5 font-semibold text-ink transition
-      hover:border-primary/40 hover:text-primary focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-50;
-  }
-  .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-2.5 py-1.5 text-sm font-medium text-muted transition
-      hover:bg-page hover:text-ink focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20 disabled:opacity-40;
-  }
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 font-semibold text-white transition
-      hover:bg-red-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-red-500/25 disabled:opacity-60;
+    @apply border border-line bg-surface text-ink shadow-xs hover:border-primary/35 hover:bg-primary-soft/40 hover:text-primary;
   }
   .btn-soft {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary-soft px-5 py-2.5 font-semibold text-primary transition
-      hover:bg-primary/15 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25;
+    @apply bg-primary-soft text-primary hover:bg-primary/15;
+  }
+  .btn-danger {
+    @apply bg-danger text-white shadow-sm hover:bg-danger-hover focus-visible:ring-danger/20;
+  }
+  .btn-outline-danger {
+    @apply border border-line bg-surface text-danger shadow-xs hover:border-danger/30 hover:bg-danger-soft focus-visible:ring-danger/20;
+  }
+  .btn-ghost {
+    @apply px-3 font-medium text-muted hover:bg-page hover:text-ink;
+  }
+  .btn-ghost-danger {
+    @apply px-3 font-medium text-danger hover:bg-danger-soft focus-visible:ring-danger/20;
+  }
+  /* Square icon-only buttons (row actions, close, menu). */
+  .btn-icon,
+  .btn-icon-danger {
+    @apply size-9 px-0 text-muted;
+  }
+  .btn-icon {
+    @apply hover:bg-page hover:text-ink;
+  }
+  .btn-icon-danger {
+    @apply hover:bg-danger-soft hover:text-danger focus-visible:ring-danger/20;
+  }
+  .btn-sm {
+    @apply h-8 px-3 text-[13px];
+  }
+  .btn-sm.btn-icon,
+  .btn-sm.btn-icon-danger {
+    @apply size-8 px-0;
+  }
+
+  /* Small coloured pill for statuses and counts. */
+  .badge {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  /* Section heading inside a page (below the page title). */
+  .section-title {
+    @apply text-lg font-semibold tracking-tight text-ink;
+  }
+  /* "View all →" style text link. */
+  .link {
+    @apply inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary-hover hover:underline underline-offset-4;
   }
 }
 
@@ -193,4 +295,27 @@ body {
 .lesson-body .step-box h5 {
   margin: 0 0 0.3rem;
   color: #fff;
+}
+
+/*
+ * Button icons. Unlayered on purpose: it outranks the size utilities written on individual icons,
+ * so every button's icon is the same size whatever the markup says.
+ */
+:where(.btn-primary, .btn-outline, .btn-soft, .btn-danger, .btn-outline-danger, .btn-ghost, .btn-ghost-danger) > svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+:where(.btn-icon, .btn-icon-danger) > svg {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+}
+:where(.btn-sm) > svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+:where(.btn-sm.btn-icon, .btn-sm.btn-icon-danger) > svg {
+  width: 1rem;
+  height: 1rem;
 }

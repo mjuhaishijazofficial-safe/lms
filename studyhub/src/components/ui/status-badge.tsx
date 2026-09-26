@@ -1,19 +1,19 @@
 import { cn } from "@/lib/format";
 
 const STYLES: Record<string, { label: string; cls: string }> = {
-  ACTIVE: { label: "Active", cls: "bg-emerald-50 text-emerald-700 ring-emerald-600/15" },
-  INACTIVE: { label: "Inactive", cls: "bg-slate-100 text-slate-600 ring-slate-500/15" },
-  PUBLISHED: { label: "Published", cls: "bg-emerald-50 text-emerald-700 ring-emerald-600/15" },
-  DRAFT: { label: "Draft", cls: "bg-amber-50 text-amber-700 ring-amber-600/20" },
-  SCHEDULED: { label: "Scheduled", cls: "bg-blue-50 text-blue-700 ring-blue-600/15" },
-  ARCHIVED: { label: "Archived", cls: "bg-slate-100 text-slate-600 ring-slate-500/15" },
-  PENDING: { label: "Pending", cls: "bg-amber-50 text-amber-700 ring-amber-600/20" },
-  PAID: { label: "Paid", cls: "bg-emerald-50 text-emerald-700 ring-emerald-600/15" },
-  WAIVED: { label: "Waived", cls: "bg-slate-100 text-slate-600 ring-slate-500/15" },
+  ACTIVE: { label: "Active", cls: "bg-success-soft text-success ring-success/15" },
+  INACTIVE: { label: "Inactive", cls: "bg-page text-muted ring-muted/15" },
+  PUBLISHED: { label: "Published", cls: "bg-success-soft text-success ring-success/15" },
+  DRAFT: { label: "Draft", cls: "bg-warning-soft text-warning ring-warning/20" },
+  SCHEDULED: { label: "Scheduled", cls: "bg-info-soft text-info ring-info/15" },
+  ARCHIVED: { label: "Archived", cls: "bg-page text-muted ring-muted/15" },
+  PENDING: { label: "Pending", cls: "bg-warning-soft text-warning ring-warning/20" },
+  PAID: { label: "Paid", cls: "bg-success-soft text-success ring-success/15" },
+  WAIVED: { label: "Waived", cls: "bg-page text-muted ring-muted/15" },
 };
 
 export function StatusBadge({ status }: { status: string }) {
-  const s = STYLES[status] ?? { label: status, cls: "bg-slate-100 text-slate-600 ring-slate-500/15" };
+  const s = STYLES[status] ?? { label: status, cls: "bg-page text-muted ring-muted/15" };
   return (
     <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset", s.cls)}>
       <span className="size-1.5 rounded-full bg-current" aria-hidden />

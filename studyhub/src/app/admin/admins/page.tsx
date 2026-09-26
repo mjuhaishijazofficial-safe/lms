@@ -45,19 +45,18 @@ export default async function AdminsPage({ searchParams }: PageProps<"/admin/adm
                   </Td>
                   <Td>
                     <StatusBadge status={a.status} />
-                    {a.mustChangePassword && <p className="mt-1 text-xs text-amber-700">Password change pending</p>}
+                    {a.mustChangePassword && <p className="mt-1 text-xs text-warning">Password change pending</p>}
                   </Td>
                   <Td className="hidden whitespace-nowrap text-muted md:table-cell">{a.lastLoginAt ? timeAgo(a.lastLoginAt) : "Never"}</Td>
                   <Td>
-                    <div className="flex items-start justify-end gap-3">
+                    <div className="flex items-start justify-end gap-0.5">
                       {!isMe && <ResetAdminPasswordForm adminId={a.id} name={a.name} />}
                       {!isMe && (
                         <form action={setAdminStatusAction}>
                           <input type="hidden" name="id" value={a.id} />
                           <input type="hidden" name="status" value={active ? "INACTIVE" : "ACTIVE"} />
-                          <button className="btn-ghost" aria-label={`${active ? "Deactivate" : "Reactivate"} ${a.name}`}>
-                            {active ? <UserRoundX className="size-4" aria-hidden /> : <UserRoundCheck className="size-4" aria-hidden />}
-                            <span className="hidden 2xl:inline">{active ? "Deactivate" : "Reactivate"}</span>
+                          <button className="btn-icon btn-sm" title={active ? "Deactivate" : "Reactivate"} aria-label={`${active ? "Deactivate" : "Reactivate"} ${a.name}`}>
+                            {active ? <UserRoundX aria-hidden /> : <UserRoundCheck aria-hidden />}
                           </button>
                         </form>
                       )}

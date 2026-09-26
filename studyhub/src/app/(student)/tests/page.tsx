@@ -29,11 +29,11 @@ export default async function StudentTestsPage() {
           <EmptyState icon={ListChecks} title="No tests yet" description="Your admin hasn't published a test for your subjects yet — check back later." />
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {tests.map((t) => (
             <Link key={t.id} href={`/tests/${t.id}`} className="card flex flex-col gap-3 p-5 transition hover:border-primary/40 hover:shadow-md">
               <div className="flex items-start gap-3">
-                <IconTile icon={ListChecks} size="sm" className="bg-tile-purple text-violet-800" />
+                <IconTile icon={ListChecks} size="sm" className="tile-purple" />
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{t.title}</p>
                   <p className="truncate text-sm text-muted">{t.subjectName} · {t.courseName}</p>
@@ -45,7 +45,7 @@ export default async function StudentTestsPage() {
                 <span>{t.totalQuestions} question{t.totalQuestions === 1 ? "" : "s"}</span>
               </div>
               <div className={`inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-                t.status === "done" ? "bg-emerald-50 text-emerald-700" : t.status === "not-started" ? "bg-page text-muted" : "bg-amber-50 text-amber-800"
+                t.status === "done" ? "bg-success-soft text-success" : t.status === "not-started" ? "bg-page text-muted" : "bg-warning-soft text-warning"
               }`}>
                 {t.status === "done" ? <CheckCircle2 className="size-3.5" aria-hidden /> : t.status === "not-started" ? null : <PlayCircle className="size-3.5" aria-hidden />}
                 {t.status === "done" ? `Completed — ${t.score}/${t.totalQuestions}` : STATUS_LABEL[t.status]}

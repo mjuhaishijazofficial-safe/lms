@@ -24,11 +24,11 @@ export default async function MyCoursesPage() {
           <EmptyState icon={GraduationCap} title={`You haven't been assigned to a ${TERMS.programLower} yet.`} description="Please contact your admin." />
         </div>
       ) : (
-        <div className="grid gap-5 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
           {courses.map((c) => (
             <Link key={c.id} href={`/courses/${c.id}`} className="group card block p-6 transition hover:border-primary/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/20">
               <div className="flex items-center gap-4">
-                <IconTile icon={GraduationCap} size="lg" className="bg-tile-blue text-primary" />
+                <IconTile icon={GraduationCap} size="lg" className="tile-blue" />
                 <div className="min-w-0">
                   <h2 className="truncate text-xl font-semibold group-hover:text-primary">{c.name}</h2>
                   <p className="text-sm text-muted">

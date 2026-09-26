@@ -15,7 +15,7 @@ type Status = "pending" | "uploading" | "done" | "error";
 type Row = { key: number; file: File; title: string; status: Status; error?: string };
 
 const STATUS_STYLE: Record<Status, string> = {
-  pending: "text-muted", uploading: "text-primary", done: "text-emerald-600", error: "text-red-600",
+  pending: "text-muted", uploading: "text-primary", done: "text-success", error: "text-danger",
 };
 
 export function BulkUpload({ tree, maxMb }: { tree: PickerTree; maxMb: number }) {
@@ -108,7 +108,7 @@ export function BulkUpload({ tree, maxMb }: { tree: PickerTree; maxMb: number })
                     value={r.title} onChange={(e) => renameRow(r.key, e.target.value)} disabled={r.status !== "pending"}
                     className="input h-9 w-full py-1 text-sm disabled:bg-transparent disabled:opacity-100" aria-label={`Title for ${r.file.name}`}
                   />
-                  <p className={cn("mt-1 truncate text-xs", r.error ? "text-red-600" : "text-muted")}>
+                  <p className={cn("mt-1 truncate text-xs", r.error ? "text-danger" : "text-muted")}>
                     {r.error ?? `${r.file.name} · ${formatBytes(r.file.size)}`}
                   </p>
                 </div>
@@ -119,7 +119,7 @@ export function BulkUpload({ tree, maxMb }: { tree: PickerTree; maxMb: number })
                   {r.status === "pending" ? "" : r.status[0].toUpperCase() + r.status.slice(1)}
                 </span>
                 {r.status !== "uploading" && r.status !== "done" && (
-                  <button type="button" onClick={() => removeRow(r.key)} className="btn-ghost !p-1.5 shrink-0" aria-label={`Remove ${r.file.name}`} title="Remove">
+                  <button type="button" onClick={() => removeRow(r.key)} className="btn-icon btn-sm" aria-label={`Remove ${r.file.name}`} title="Remove">
                     <Trash2 className="size-4" aria-hidden />
                   </button>
                 )}

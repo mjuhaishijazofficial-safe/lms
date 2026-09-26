@@ -32,14 +32,14 @@ export function QuickAddCourse({ courseId, semesterId, semesterName }: { courseI
           defaultValue={state.success ? "" : state.values?.name}
           placeholder="Add a course, e.g. CS101 - Introduction to Computing"
           aria-invalid={!!error} aria-describedby={error ? `${id}-msg` : undefined}
-          className="input !py-2 text-sm"
+          className="input"
         />
-        <SubmitButton variant="soft" className="shrink-0 !px-4 !py-2 text-sm" pendingText="Adding…">
+        <SubmitButton variant="soft" className="shrink-0" pendingText="Adding…">
           <Plus className="size-4" aria-hidden /> Add
         </SubmitButton>
       </div>
-      {error && <p id={`${id}-msg`} className="text-sm text-red-600">{error}</p>}
-      {state.success && <p className="text-sm text-emerald-700" role="status">{state.success}</p>}
+      {error && <p id={`${id}-msg`} className="text-sm text-danger">{error}</p>}
+      {state.success && <p className="text-sm text-success" role="status">{state.success}</p>}
     </form>
   );
 }

@@ -17,8 +17,8 @@ type Scheme = { slug: string; name: string; sourceUrl: string; semesters: VuCour
 
 const KIND: Record<VuCourseKind, { label: string; cls: string } | null> = {
   R: null,
-  E: { label: "Elective", cls: "bg-blue-50 text-blue-700" },
-  D: { label: "Deficiency", cls: "bg-amber-50 text-amber-800" },
+  E: { label: "Elective", cls: "bg-info-soft text-info" },
+  D: { label: "Deficiency", cls: "bg-warning-soft text-warning" },
 };
 
 /**
@@ -89,12 +89,12 @@ export function VuImportForm({ scheme, programs, defaultTarget, backHref }: { sc
             <fieldset key={i} className="card">
               <legend className="sr-only">{TERMS.semester} {i + 1}</legend>
               <div className="flex items-center gap-3 border-b border-line px-4 py-3 sm:px-5">
-                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-tile-blue text-sm font-bold text-primary" aria-hidden>{i + 1}</span>
+                <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-full tile-blue text-sm font-bold" aria-hidden>{i + 1}</span>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{TERMS.semester} {i + 1}</p>
                   <p className="text-xs text-muted">{n} of {plural(open.length, "course")} ticked</p>
                 </div>
-                <button type="button" className="btn-ghost !px-2 text-xs" onClick={() => setMany(open, n < open.length)} disabled={!open.length}>
+                <button type="button" className="btn-ghost btn-sm" onClick={() => setMany(open, n < open.length)} disabled={!open.length}>
                   {n < open.length ? "Tick all" : "Untick all"}
                 </button>
               </div>
@@ -122,7 +122,7 @@ export function VuImportForm({ scheme, programs, defaultTarget, backHref }: { sc
                             {c.tracks.length > 0 && <span>· {c.tracks.join(", ")}</span>}
                           </span>
                         </span>
-                        {already && <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-emerald-700"><Check className="size-3.5" aria-hidden /> Already added</span>}
+                        {already && <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-success"><Check className="size-3.5" aria-hidden /> Already added</span>}
                       </label>
                     </li>
                   );

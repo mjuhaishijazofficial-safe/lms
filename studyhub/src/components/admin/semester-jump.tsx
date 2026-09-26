@@ -13,7 +13,7 @@ export function SemesterJump({ semesters }: { semesters: { id: string; name: str
       <select
         id="semester-jump"
         defaultValue=""
-        className="select !w-auto !py-1.5 text-sm"
+        className="select !w-auto"
         onChange={(e) => {
           if (e.target.value) document.getElementById(e.target.value)?.scrollIntoView({ behavior: "smooth", block: "start" });
           e.target.value = "";

@@ -45,7 +45,7 @@ const NAV: Record<"admin" | "student", NavItem[]> = {
 function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <ul className="space-y-1.5">
+    <ul className="space-y-1">
       {items.map(({ href, label, icon: Icon, exact }) => {
         const active = exact ? pathname === href : pathname === href || pathname.startsWith(href + "/");
         return (
@@ -55,11 +55,11 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-4 rounded-xl px-4 py-3 text-[15px] font-medium transition",
-                active ? "bg-primary-soft text-primary shadow-[inset_3px_0_0_var(--color-accent)]" : "text-ink/85 hover:bg-page hover:text-ink",
+                "flex items-center gap-3 rounded-control px-3.5 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-accent",
+                active ? "bg-primary text-white shadow-[0_6px_16px_-6px_rgb(79_70_229/0.7)]" : "text-sidebar-ink hover:bg-sidebar-hover hover:text-white",
               )}
             >
-              <Icon className="size-5.5 shrink-0" strokeWidth={active ? 2.2 : 1.8} aria-hidden />
+              <Icon className="size-5 shrink-0" strokeWidth={active ? 2.2 : 1.8} aria-hidden />
               {label}
             </Link>
           </li>
@@ -71,11 +71,11 @@ function NavList({ items, onNavigate }: { items: NavItem[]; onNavigate?: () => v
 
 function HelpCard() {
   return (
-    <a href={ADMIN_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-2xl bg-primary-soft/70 p-4">
-      <Headset className="size-7 shrink-0 text-primary" aria-hidden />
+    <a href={ADMIN_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 rounded-card bg-sidebar-hover p-4 transition hover:bg-white/10">
+      <Headset className="size-6 shrink-0 text-sidebar-accent" aria-hidden />
       <div className="text-sm leading-tight">
-        <p className="font-semibold text-ink">Need Help?</p>
-        <p className="mt-0.5 text-muted">WhatsApp your admin</p>
+        <p className="font-semibold text-white">Need help?</p>
+        <p className="mt-0.5 text-sidebar-ink">WhatsApp your admin</p>
       </div>
     </a>
   );
@@ -84,7 +84,7 @@ function HelpCard() {
 function Panel({ variant, onNavigate }: { variant: "admin" | "student"; onNavigate?: () => void }) {
   return (
     <div className="flex h-full flex-col px-4 py-6">
-      <div className="mb-9 px-3"><Logo /></div>
+      <div className="mb-8 px-2"><Logo tone="dark" /></div>
       <nav aria-label="Main" className="flex-1 overflow-y-auto">
         <NavList items={NAV[variant]} onNavigate={onNavigate} />
       </nav>
@@ -96,7 +96,7 @@ function Panel({ variant, onNavigate }: { variant: "admin" | "student"; onNaviga
 /** Fixed sidebar, shown from the `lg` breakpoint up. */
 export function Sidebar({ variant }: { variant: "admin" | "student" }) {
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-66 border-r border-line bg-surface/80 lg:block">
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-66 bg-sidebar lg:block">
       <Panel variant={variant} />
     </aside>
   );
@@ -126,7 +126,7 @@ export function MobileMenu({ variant }: { variant: "admin" | "student" }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex size-10 items-center justify-center rounded-xl border border-line bg-surface text-ink"
+        className="btn-outline size-10 px-0"
         aria-label="Open menu"
         aria-expanded={open}
       >
@@ -136,8 +136,8 @@ export function MobileMenu({ variant }: { variant: "admin" | "student" }) {
       {open && (
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="absolute inset-0 bg-ink/40" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 w-[min(18rem,85vw)] bg-surface shadow-2xl">
-            <button type="button" onClick={() => setOpen(false)} className="absolute right-3 top-3 rounded-lg p-2 text-muted hover:bg-page" aria-label="Close menu">
+          <div className="absolute inset-y-0 left-0 w-[min(18rem,85vw)] bg-sidebar shadow-2xl">
+            <button type="button" onClick={() => setOpen(false)} className="btn-icon absolute right-3 top-5 text-sidebar-ink hover:bg-sidebar-hover hover:text-white" aria-label="Close menu">
               <X className="size-5" aria-hidden />
             </button>
             <Panel variant={variant} onNavigate={() => setOpen(false)} />

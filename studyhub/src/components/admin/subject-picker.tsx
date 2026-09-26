@@ -138,12 +138,12 @@ export function SubjectPicker({ catalogue, presets, initial }: {
             {searchGroups.map((group) => (
               <fieldset key={group.id}>
                 <legend className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{group.name}</legend>
-                <div className="grid gap-1.5 sm:grid-cols-2">{group.subjects.map(option)}</div>
+                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">{group.subjects.map(option)}</div>
               </fieldset>
             ))}
           </>
         ) : (
-          <div className="grid gap-1.5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
             {shown.length === 0 && <p className="text-sm text-muted">No subjects in {active.name} yet.</p>}
             {shown.map(option)}
           </div>

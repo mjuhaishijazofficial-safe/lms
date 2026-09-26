@@ -72,14 +72,14 @@ export default async function SubjectsPage({ searchParams }: PageProps<"/admin/s
                 </thead>
                 <tbody>
                   {subjects.map((s, i) => {
-                    const icon = subjectIcon(s.icon);
+                    const icon = subjectIcon(s.icon, s.id);
                     return (
                       <Tr key={s.id}>
                         <Td className="hidden md:table-cell">
                           <MoveButtons id={s.id} action={moveSubjectAction} returnTo={returnTo} label={s.name}
                             first={i > 0 && !sameGroup(subjects[i - 1], s)} last={i < subjects.length - 1 && !sameGroup(subjects[i + 1], s)} />
                         </Td>
-                        <Td>
+                        <Td className="md:min-w-64">
                           <div className="flex items-center gap-3">
                             <IconTile icon={icon.icon} size="sm" className={icon.tile} />
                             <div className="min-w-0">
@@ -93,7 +93,7 @@ export default async function SubjectsPage({ searchParams }: PageProps<"/admin/s
                           <Link href={`/admin/courses/${s.course.id}`} className="hover:text-primary">{s.course.name}</Link>
                           {s.semester
                             ? <p className="text-muted">{s.semester.name}</p>
-                            : <Link href={`/admin/courses/${s.course.id}`} className="font-medium text-amber-700 hover:underline">No {TERMS.semesterLower} yet</Link>}
+                            : <Link href={`/admin/courses/${s.course.id}`} className="font-medium text-warning hover:underline">No {TERMS.semesterLower} yet</Link>}
                         </Td>
                         <Td className="hidden whitespace-nowrap md:table-cell"><Link href={`/admin/chapters?subject=${s.id}`} className="text-primary hover:underline">{plural(s._count.chapters, "chapter")}</Link></Td>
                         <Td className="hidden whitespace-nowrap md:table-cell">

@@ -52,7 +52,7 @@ export default async function AnnouncementsPage({ searchParams }: PageProps<"/ad
                 </form>
                 <ConfirmDialog
                   trigger={<><Trash2 className="size-4" aria-hidden /> Delete</>}
-                  triggerClassName="btn-ghost hover:!text-red-600"
+                  triggerClassName="btn-ghost-danger"
                   title="Delete this announcement?"
                   description="It is removed for everyone. To keep it for later, hide it instead."
                   confirmLabel="Delete announcement"

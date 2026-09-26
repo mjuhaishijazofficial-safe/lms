@@ -37,13 +37,13 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
       <PageHeader title={`Hi, ${user.name}!`} description="Here's what's in your study library." />
       <Notice searchParams={await searchParams} />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-        <StatCard icon={Users} tile="bg-tile-blue text-primary" label="Total students" value={stats.students} href="/admin/students" />
-        <StatCard icon={UserCheck} tile="bg-tile-green text-teal-700" label="Active students" value={stats.activeStudents} hint={stats.students ? `${stats.students - stats.activeStudents} inactive` : undefined} href="/admin/students?status=ACTIVE" />
-        <StatCard icon={GraduationCap} tile="bg-tile-purple text-violet-800" label={TERMS.programs} value={stats.courses} href="/admin/courses" />
-        <StatCard icon={Layers} tile="bg-tile-amber text-amber-800" label="Subjects" value={stats.subjects} href="/admin/subjects" />
-        <StatCard icon={ListOrdered} tile="bg-sky-100 text-sky-600" label="Chapters" value={stats.chapters} href="/admin/chapters" />
-        <StatCard icon={FileText} tile="bg-tile-red text-rose-800" label="Study materials" value={stats.materials} />
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard icon={Users} tile="tile-blue" label="Total students" value={stats.students} href="/admin/students" />
+        <StatCard icon={UserCheck} tile="tile-green" label="Active students" value={stats.activeStudents} hint={stats.students ? `${stats.students - stats.activeStudents} inactive` : undefined} href="/admin/students?status=ACTIVE" />
+        <StatCard icon={GraduationCap} tile="tile-purple" label={TERMS.programs} value={stats.courses} href="/admin/courses" />
+        <StatCard icon={Layers} tile="tile-amber" label="Subjects" value={stats.subjects} href="/admin/subjects" />
+        <StatCard icon={ListOrdered} tile="tile-sky" label="Chapters" value={stats.chapters} href="/admin/chapters" />
+        <StatCard icon={FileText} tile="tile-red" label="Study materials" value={stats.materials} />
       </div>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2 2xl:grid-cols-3">

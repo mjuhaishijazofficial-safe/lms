@@ -1,7 +1,7 @@
 import { cn, initials } from "@/lib/format";
 
 // Stable soft colour per person, derived from their name.
-const PALETTE = ["bg-tile-blue text-primary", "bg-tile-purple text-violet-700", "bg-tile-green text-emerald-700", "bg-tile-amber text-amber-700", "bg-tile-red text-red-700", "bg-sky-100 text-sky-700"];
+const PALETTE = ["tile-blue", "tile-purple", "tile-green", "tile-amber", "tile-red", "tile-sky"];
 
 export function Avatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
   const hash = [...name].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);

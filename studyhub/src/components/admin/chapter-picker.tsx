@@ -23,7 +23,7 @@ export function ChapterPicker({ tree, initialChapterId, error }: { tree: PickerT
   const chapters = subjects.find((s) => s.id === subjectId)?.chapters ?? [];
 
   return (
-    <div className="grid gap-5 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
       <Field id="picker-course" label={TERMS.program} required>
         <select id="picker-course" value={courseId} className="select" onChange={(e) => { setCourseId(e.target.value); setSubjectId(""); setChapterId(""); }}>
           <option value="" disabled>Choose a {TERMS.programLower}…</option>

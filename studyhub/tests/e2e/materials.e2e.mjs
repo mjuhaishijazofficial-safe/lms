@@ -225,7 +225,7 @@ for (let i = 1; i <= 22; i++) await NEW({ type: "LINK", chapterId: Bc.ch1, title
   const titles = [...html.matchAll(/href="\/admin\/materials\/[a-z0-9]+"[^>]*>SmokeTest ([^<]+)</g)].map((m) => m[1]);
   check("sort: newest first", titles[0] === "Formula Note", titles.join(", ")); }
 { const r = await get("/admin/materials?type=EVIL&status=WHATEVER&sort=%3Bdrop&page=-3&chapter=%27--", admin); check("junk query parameters are ignored safely", r.status === 200, String(r.status)); }
-{ const t = await pageText("/admin"); check("dashboard shows recent uploads and the materials count", t.includes("Recent uploads") && /Study materials\s+\d+/.test(t) && !t.includes("No study material yet")); }
+{ const t = await pageText("/admin"); check("dashboard shows recent uploads and the materials count", t.includes("Recent uploads") && /\d+\s+Study materials/.test(t) && !t.includes("No study material yet")); }
 
 // ---- reorder -------------------------------------------------------------------------------------------------
 { const order = async () => [...(await (await get(`/admin/materials?chapter=${A.ch1}`, admin)).text()).matchAll(/href="\/admin\/materials\/[a-z0-9]+"[^>]*>SmokeTest ([^<]+)</g)].map((m) => m[1]);

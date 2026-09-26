@@ -42,7 +42,7 @@ export function ScheduleField({ status, initial, error }: { status: string; init
           className={`input ${invalid(error)}`}
         />
         {local && (
-          <button type="button" onClick={() => setLocal("")} className="btn-ghost !p-1.5" aria-label="Clear the scheduled time" title="Clear">
+          <button type="button" onClick={() => setLocal("")} className="btn-icon btn-sm" aria-label="Clear the scheduled time" title="Clear">
             <X className="size-4" aria-hidden />
           </button>
         )}

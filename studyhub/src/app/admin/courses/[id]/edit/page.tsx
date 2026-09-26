@@ -39,7 +39,7 @@ export default async function EditProgramPage({ params, searchParams }: PageProp
             <div className="mt-4">
               <ConfirmDialog
                 trigger={<><Trash2 className="size-4" aria-hidden /> Delete {TERMS.programLower}</>}
-                triggerClassName="btn-outline !text-red-600 hover:!border-red-300"
+                triggerClassName="btn-outline-danger"
                 title={`Delete “${course.name}”?`}
                 description={<>Its {TERMS.semesters.toLowerCase()} are deleted with it. This can&apos;t be undone.</>}
                 confirmLabel="Delete"

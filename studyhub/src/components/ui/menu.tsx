@@ -29,7 +29,7 @@ export function Menu({ label, children, className }: { label: string; children: 
 
   return (
     <div ref={root} className={cn("relative", className)}>
-      <button type="button" className="btn-ghost !p-2" aria-label={label} title={label} aria-expanded={open} aria-controls={panelId} onClick={() => setOpen((o) => !o)}>
+      <button type="button" className="btn-icon" aria-label={label} title={label} aria-expanded={open} aria-controls={panelId} onClick={() => setOpen((o) => !o)}>
         <MoreHorizontal className="size-5" aria-hidden />
       </button>
       <div id={panelId} hidden={!open} className="absolute right-0 top-full z-20 mt-1 w-72 rounded-2xl border border-line bg-surface p-2 shadow-xl">

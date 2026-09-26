@@ -19,7 +19,7 @@ export function MaterialCard({ material: m, completed, context }: { material: Ma
           <p className="mt-1.5 text-sm text-muted">{meta}</p>
           {context && <p className="mt-0.5 truncate text-xs text-muted">{context}</p>}
         </div>
-        {completed && <CircleCheck className="size-5 shrink-0 text-emerald-600" aria-label="Completed" />}
+        {completed && <CircleCheck className="size-5 shrink-0 text-success" aria-label="Completed" />}
       </div>
       <div className="mt-auto pt-4">
         <MaterialAction id={m.id} type={m.type} fileName={m.fileName} className="btn-soft w-full" />
@@ -29,5 +29,5 @@ export function MaterialCard({ material: m, completed, context }: { material: Ma
 }
 
 export function MaterialGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{children}</div>;
+  return <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">{children}</div>;
 }

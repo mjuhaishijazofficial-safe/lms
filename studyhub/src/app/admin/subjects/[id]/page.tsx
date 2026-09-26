@@ -39,7 +39,7 @@ export default async function EditSubjectPage({ params, searchParams }: PageProp
         ) : (
           <>
             <p className="text-sm text-muted">{plural(students.length, "student")} have this subject ticked.</p>
-            <ul className="grid gap-1.5 sm:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
               {students.map((st) => (
                 <li key={st.id}>
                   <Link href={`/admin/students/${st.id}`} className="block truncate rounded-lg px-2 py-1.5 text-sm hover:bg-page hover:text-primary">

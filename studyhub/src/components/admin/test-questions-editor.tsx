@@ -138,7 +138,7 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
             onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); }}
             disabled={!!importing}
           />
-          <span className="btn-outline !py-1.5 text-sm"><FileUp className="size-4" aria-hidden /> Import questions from a file</span>
+          <span className="btn-outline btn-sm"><FileUp className="size-4" aria-hidden /> Import questions from a file</span>
           <span className="text-sm text-muted">
             {importing ? (importing.total > 1 ? `Reading page ${importing.done} of ${importing.total}…` : "Reading the file…") :"Your chapter's HTML study guide (answers included) or a PDF of MCQs. No AI, nothing leaves your browser."}
           </span>
@@ -146,7 +146,7 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
         {importMessage && (
           <p className={cn(
             "mt-2.5 flex items-start gap-1.5 text-sm",
-            importMessage.tone === "error" ? "text-red-600" : importMessage.tone === "warn" ? "text-amber-800" : "text-muted",
+            importMessage.tone === "error" ? "text-danger" : importMessage.tone === "warn" ? "text-warning" : "text-muted",
           )}>
             {importMessage.tone !== "info" && <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />} {importMessage.text}
           </p>
@@ -154,18 +154,18 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
       </div>
 
       {items.map((it, i) => (
-        <fieldset key={it.key} className={cn("rounded-2xl border p-4 sm:p-5", it.needsReview ? "border-amber-300 bg-amber-50/40" : "border-line bg-page/40")}>
+        <fieldset key={it.key} className={cn("rounded-2xl border p-4 sm:p-5", it.needsReview ? "border-warning/30 bg-warning-soft/40" : "border-line bg-page/40")}>
           <div className="mb-3 flex items-center justify-between gap-3">
             <legend className="text-sm font-semibold">Question {i + 1}</legend>
             <div className="flex items-center gap-1">
-              <button type="button" className="btn-ghost !p-1.5" disabled={i === 0} onClick={() => move(it.key, "up")} aria-label={`Move question ${i + 1} up`} title="Move up">
+              <button type="button" className="btn-icon btn-sm" disabled={i === 0} onClick={() => move(it.key, "up")} aria-label={`Move question ${i + 1} up`} title="Move up">
                 <ChevronUp className="size-4.5" aria-hidden />
               </button>
-              <button type="button" className="btn-ghost !p-1.5" disabled={i === items.length - 1} onClick={() => move(it.key, "down")} aria-label={`Move question ${i + 1} down`} title="Move down">
+              <button type="button" className="btn-icon btn-sm" disabled={i === items.length - 1} onClick={() => move(it.key, "down")} aria-label={`Move question ${i + 1} down`} title="Move down">
                 <ChevronDown className="size-4.5" aria-hidden />
               </button>
               <button
-                type="button" className="btn-ghost !p-1.5 hover:!bg-red-50 hover:!text-red-600" disabled={items.length === 1}
+                type="button" className="btn-icon-danger btn-sm" disabled={items.length === 1}
                 onClick={() => removeQuestion(it.key)} aria-label={`Remove question ${i + 1}`} title="Remove question"
               >
                 <Trash2 className="size-4.5" aria-hidden />
@@ -174,7 +174,7 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
           </div>
 
           {it.needsReview && (
-            <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-amber-800">
+            <p className="mb-2 flex items-center gap-1.5 text-sm font-medium text-warning">
               <AlertTriangle className="size-4 shrink-0" aria-hidden /> Imported from the PDF — its answer wasn&apos;t clear, so check which option below is correct.
             </p>
           )}
@@ -198,7 +198,7 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
                   className={cn("input h-10 flex-1 py-1.5 text-sm", it.answer === oi && "border-primary/50 bg-primary-soft/40")}
                 />
                 <button
-                  type="button" className="btn-ghost !p-1.5" disabled={it.options.length <= 2}
+                  type="button" className="btn-icon btn-sm" disabled={it.options.length <= 2}
                   onClick={() => removeOption(it.key, oi)} aria-label={`Remove option ${OPTION_LETTERS[oi]}`} title="Remove option"
                 >
                   <Trash2 className="size-4" aria-hidden />
@@ -207,7 +207,7 @@ export function TestQuestionsEditor({ initial }: { initial: TestQuestion[] }) {
             ))}
           </div>
           {it.options.length < 6 && (
-            <button type="button" className="btn-outline mt-2 !py-1.5 text-sm" onClick={() => addOption(it.key)}>
+            <button type="button" className="btn-outline btn-sm mt-2" onClick={() => addOption(it.key)}>
               <Plus className="size-4" aria-hidden /> Add option
             </button>
           )}

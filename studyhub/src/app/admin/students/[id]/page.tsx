@@ -50,7 +50,7 @@ export default async function EditStudentPage({ params, searchParams }: PageProp
             </form>
             <ConfirmDialog
               trigger={<><Trash2 className="size-4.5" aria-hidden /> Delete</>}
-              triggerClassName="btn-outline hover:!border-red-300 hover:!text-red-600"
+              triggerClassName="btn-outline-danger"
               title={`Delete ${student.name}?`}
               description="Their account, bookmarks and progress are permanently removed. To keep the record, deactivate instead."
               confirmLabel="Delete student"
@@ -140,7 +140,7 @@ export default async function EditStudentPage({ params, searchParams }: PageProp
                     <FeeStatusSelect id={f.id} status={f.status} returnTo={here} />
                     <ConfirmDialog
                       trigger={<Trash2 className="size-4" aria-hidden />}
-                      triggerClassName="btn-ghost !p-1.5 hover:!bg-red-50 hover:!text-red-600"
+                      triggerClassName="btn-icon-danger btn-sm"
                       triggerLabel={`Delete the ${f.period} fee`}
                       title={`Delete the ${f.period} fee?`}
                       description="This can't be undone."

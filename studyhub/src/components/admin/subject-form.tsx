@@ -57,7 +57,7 @@ export function SubjectForm({ subject, tree, defaultCourseId, defaultSemesterId 
             </button>
           ))}
         </div>
-        {e.icon && <p className="mt-1.5 text-sm text-red-600">{e.icon[0]}</p>}
+        {e.icon && <p className="mt-1.5 text-sm text-danger">{e.icon[0]}</p>}
       </fieldset>
 
       <Field id="status" label="Status" error={e.status}>

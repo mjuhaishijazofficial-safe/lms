@@ -42,10 +42,10 @@ export default async function BookmarksPage({ searchParams }: PageProps<"/bookma
         <div className="space-y-10">
           {subjects.length > 0 && (
             <section>
-              <h2 className="mb-4 text-xl font-semibold">Subjects</h2>
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <h2 className="section-title mb-4">Subjects</h2>
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
                 {subjects.map((s) => {
-                  const icon = subjectIcon(s.icon);
+                  const icon = subjectIcon(s.icon, s.id);
                   return (
                     <div key={s.id} className="card flex flex-col p-5">
                       <div className="flex items-center gap-4">
@@ -71,13 +71,11 @@ export default async function BookmarksPage({ searchParams }: PageProps<"/bookma
 
           {materials.total > 0 && (
             <section>
-              <h2 className="mb-4 text-xl font-semibold">Materials</h2>
-              <div className="space-y-3">
+              <h2 className="section-title mb-4">Materials</h2>
+              <div className="card divide-y divide-line">
                 {materials.rows.map((m) => (
-                  <div key={m.id} className="space-y-1.5">
-                    <RecentMaterialCard material={m} />
-                    <div className="flex justify-end"><RemoveBookmarkButton kind="material" id={m.id} returnTo={`/bookmarks${page > 1 ? `?page=${page}` : ""}`} /></div>
-                  </div>
+                  <RecentMaterialCard key={m.id} material={m}
+                    extra={<RemoveBookmarkButton kind="material" id={m.id} returnTo={`/bookmarks${page > 1 ? `?page=${page}` : ""}`} />} />
                 ))}
               </div>
               <div className="card mt-4 overflow-hidden"><Pagination page={page} total={materials.total} pageSize={PAGE_SIZE} basePath="/bookmarks" params={{}} /></div>

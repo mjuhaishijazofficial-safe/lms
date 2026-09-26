@@ -12,7 +12,7 @@ export function SemesterGroup({ group, defaultOpen }: { group: SubjectGroup; def
   return (
     <details id={`semester-${group.key}`} open={defaultOpen} className="group card overflow-hidden scroll-mt-6">
       <summary className="flex cursor-pointer list-none items-center gap-4 p-4 outline-none transition hover:bg-page/50 focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-primary/20 sm:px-5 [&::-webkit-details-marker]:hidden">
-        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-tile-blue text-primary"><CalendarRange className="size-5" aria-hidden /></span>
+        <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full tile-blue"><CalendarRange className="size-5" aria-hidden /></span>
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-3 text-lg font-semibold">
             {group.name}

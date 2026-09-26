@@ -74,10 +74,10 @@ export default async function SubjectPage({ params, searchParams }: PageProps<"/
       {tab === "about" && (
         <section className="card space-y-5 p-6 sm:p-8">
           <div>
-            <h2 className="text-xl font-semibold">About {subject.name}</h2>
+            <h2 className="section-title">About {subject.name}</h2>
             <p className="mt-2 text-muted">{subject.description || "Your admin hasn't added a description for this subject yet."}</p>
           </div>
-          <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {[
               ["Chapters", subject.chapters.length], ["Documents", counts.FILE], ["Videos", counts.YOUTUBE], ["Links", counts.LINK], ["Notes", counts.TEXT], ["Lessons", counts.LESSON],
             ].map(([label, value]) => (
@@ -98,7 +98,7 @@ export default async function SubjectPage({ params, searchParams }: PageProps<"/
           <div className="card"><EmptyState icon={Sparkles} title="You've opened everything in this subject." description="Great work! Revisit any chapter to review." /></div>
         ) : (
           <section>
-            <h2 className="mb-1 text-xl font-semibold">Up next</h2>
+            <h2 className="section-title mb-1">Up next</h2>
             <p className="mb-4 text-muted">Material you haven&apos;t opened yet, in study order.</p>
             <MaterialGrid>
               {upNext.map(({ m, chapter }) => <MaterialCard key={m.id} material={m} context={`Chapter ${chapter.chapterNumber}: ${chapter.title}`} />)}

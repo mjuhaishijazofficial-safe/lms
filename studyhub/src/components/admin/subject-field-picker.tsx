@@ -18,7 +18,7 @@ export function SubjectFieldPicker({ tree, initialSubjectId, error }: { tree: Pi
   const subjects = tree.find((c) => c.id === courseId)?.subjects ?? [];
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <Field id="picker-course" label={TERMS.program} required>
         <select id="picker-course" value={courseId} className="select" onChange={(e) => { setCourseId(e.target.value); setSubjectId(""); }}>
           <option value="" disabled>Choose a {TERMS.programLower}…</option>

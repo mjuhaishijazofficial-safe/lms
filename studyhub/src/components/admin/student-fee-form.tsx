@@ -16,7 +16,7 @@ export function StudentFeeForm({ studentId }: { studentId: string }) {
     <form action={action} className="space-y-4 border-t border-line pt-4">
       <input type="hidden" name="userId" value={studentId} />
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field id="amount" label="Amount" required error={e.amount}>
           <input id="amount" name="amount" type="number" min={1} defaultValue={state.values?.amount} required className={`input ${invalid(e.amount)}`} placeholder="500" />
         </Field>

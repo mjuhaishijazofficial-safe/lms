@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, CalendarRange, FileText, Layers, TrendingUp } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarRange, FileText, Layers, TrendingUp } from "lucide-react";
 import { requireStudent } from "@/server/auth/guards";
 import { listRecentMaterials, loadLibrary } from "@/server/services/library";
 import { announcementsForStudent } from "@/server/services/announcements";
@@ -17,9 +17,9 @@ export const metadata: Metadata = { title: "Dashboard" };
 
 function SectionHeading({ title, note, href, label }: { title: string; note?: string; href?: string; label?: string }) {
   return (
-    <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-      <h2 className="text-xl font-semibold">{title}{note && <span className="ml-2 text-base font-normal text-muted">{note}</span>}</h2>
-      {href && <Link href={href} className="text-sm font-medium text-primary hover:underline">{label ?? "View all"}</Link>}
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+      <h2 className="section-title">{title}{note && <span className="ml-2 text-sm font-normal text-muted">{note}</span>}</h2>
+      {href && <Link href={href} className="link">{label ?? "View all"}<ArrowRight className="size-4" aria-hidden /></Link>}
     </div>
   );
 }
@@ -37,21 +37,21 @@ export default async function StudentDashboard({ searchParams }: PageProps<"/das
   return (
     <>
       <header className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Hi, {user.name.split(" ")[0]}!</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">Hi, {user.name.split(" ")[0]}!</h1>
         <p className="mt-1 text-muted">Keep learning, keep growing.</p>
       </header>
       <Notice searchParams={await searchParams} />
       <AnnouncementsCard items={announcements} />
 
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          icon={CalendarRange} tile="bg-tile-blue text-primary" label={TERMS.semester} value={current?.name ?? "—"}
+          icon={CalendarRange} tile="tile-blue" label={TERMS.semester} value={current?.name ?? "—"}
           hint={course?.name} href={course ? `/courses/${course.id}` : undefined}
         />
-        <StatCard icon={BookOpen} tile="bg-tile-amber text-amber-800" label="Subjects" value={library.subjectCount} hint={earlier > 0 ? `incl. ${earlier} earlier` : undefined} href="/subjects" />
-        <StatCard icon={FileText} tile="bg-tile-blue text-primary" label="Total Materials" value={library.materialCount} href="/recent" />
+        <StatCard icon={BookOpen} tile="tile-amber" label="Subjects" value={library.subjectCount} hint={earlier > 0 ? `incl. ${earlier} earlier` : undefined} href="/subjects" />
+        <StatCard icon={FileText} tile="tile-blue" label="Total Materials" value={library.materialCount} href="/recent" />
         <StatCard
-          icon={TrendingUp} tile="bg-tile-green text-teal-700" label="Your progress" value={`${progress.percent}%`}
+          icon={TrendingUp} tile="tile-green" label="Your progress" value={`${progress.percent}%`}
           hint={progress.totalChapters === 0 ? "Nothing to study yet" : progress.completedChapters === 0 ? "Start with any chapter" : `${plural(progress.completedChapters, "chapter")} completed. Keep going!`}
         />
       </div>
@@ -67,7 +67,7 @@ export default async function StudentDashboard({ searchParams }: PageProps<"/das
             />
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {focus.slice(0, 6).map((s) => <SubjectCard key={s.id} subject={s} />)}
           </div>
         )}
@@ -80,7 +80,7 @@ export default async function StudentDashboard({ searchParams }: PageProps<"/das
             <EmptyState icon={FileText} title="No study material has been added yet." description="New material will show up here as soon as your admin adds it." />
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="card divide-y divide-line">
             {recent.rows.map((m) => <RecentMaterialCard key={m.id} material={m} />)}
           </div>
         )}

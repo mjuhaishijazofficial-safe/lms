@@ -98,8 +98,8 @@ export default async function FeesPage({ searchParams }: PageProps<"/admin/fees"
                   </Td>
                   <Td>
                     <ConfirmDialog
-                      trigger={<><Trash2 className="size-4" aria-hidden /> <span className="hidden 2xl:inline">Delete</span></>}
-                      triggerClassName="btn-ghost hover:!bg-red-50 hover:!text-red-600"
+                      trigger={<Trash2 aria-hidden />}
+                      triggerClassName="btn-icon-danger btn-sm"
                       triggerLabel={`Delete this fee for ${f.user.name}`}
                       title={`Delete this fee for ${f.user.name}?`}
                       description="This can't be undone."

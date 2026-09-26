@@ -91,7 +91,7 @@ export default async function ChaptersPage({ searchParams }: PageProps<"/admin/c
                           first={i > 0 && rows[i - 1].subjectId !== c.subjectId} last={i < rows.length - 1 && rows[i + 1].subjectId !== c.subjectId} />
                       </Td>
                       <Td>
-                        <span className="inline-flex size-8 items-center justify-center rounded-full bg-tile-blue text-sm font-semibold text-primary">{c.chapterNumber}</span>
+                        <span className="inline-flex size-8 items-center justify-center rounded-full tile-blue text-sm font-semibold">{c.chapterNumber}</span>
                       </Td>
                       <Td>
                         <Link href={`/admin/chapters/${c.id}`} className="font-semibold hover:text-primary">{c.title}</Link>

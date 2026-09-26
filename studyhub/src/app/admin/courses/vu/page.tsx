@@ -59,7 +59,7 @@ export default async function VuImportPage({ searchParams }: PageProps<"/admin/c
         {suggested && (
           <ul className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"><SchemeCard p={suggested} href={qs(suggested.slug)} suggested /></ul>
         )}
-        <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {VU_PROGRAMS.filter((p) => p !== suggested).map((p) => <SchemeCard key={p.slug} p={p} href={qs(p.slug)} />)}
         </ul>
         <p className="mt-6 text-sm text-muted">

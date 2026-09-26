@@ -161,14 +161,14 @@ export function GuideChaptersForm({ groups, nextNumbers, defaultSubjectId, maxMb
               return (
                 <li key={r.key} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-3">
                   <div className="flex min-w-0 flex-1 items-start gap-3">
-                    <span className="mt-1 inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-tile-blue text-xs font-bold text-primary" title="Chapter number">
+                    <span className="mt-1 inline-flex size-8 shrink-0 items-center justify-center rounded-full tile-blue text-xs font-bold" title="Chapter number">
                       {r.result?.chapterNumber ?? (n !== undefined ? firstNumber + n : "–")}
                     </span>
                     <div className="min-w-0 flex-1 space-y-1">
                       <input
                         value={r.title} onChange={(e) => patch(r.key, { title: e.target.value })} maxLength={120}
                         disabled={r.state !== "ready" && r.state !== "failed"} aria-label={`Chapter title for ${r.file.name}`}
-                        className="input !py-1.5 text-sm font-medium"
+                        className="input font-medium"
                       />
                       <p className="flex flex-wrap items-center gap-x-2 text-xs text-muted">
                         <FileCode2 className="size-3.5" aria-hidden /> {r.file.name}
@@ -176,9 +176,9 @@ export function GuideChaptersForm({ groups, nextNumbers, defaultSubjectId, maxMb
                         {r.questions && !r.readError && <span>· {r.questions.length ? plural(r.questions.length, "MCQ") : "no MCQs found"}</span>}
                         {when && r.state !== "done" && <span>· opens {formatDateTime(when)}</span>}
                       </p>
-                      {(r.readError || r.message) && <p className="flex items-start gap-1 text-xs text-red-600"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden /> {r.readError ?? r.message}</p>}
+                      {(r.readError || r.message) && <p className="flex items-start gap-1 text-xs text-danger"><AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden /> {r.readError ?? r.message}</p>}
                       {r.state === "done" && r.result && (
-                        <p className="flex flex-wrap items-center gap-x-2 text-xs text-emerald-700">
+                        <p className="flex flex-wrap items-center gap-x-2 text-xs text-success">
                           <CheckCircle2 className="size-3.5" aria-hidden /> Chapter {r.result.chapterNumber} created{r.result.testId ? " with its test" : ""}.
                           <Link href={`/admin/materials?chapter=${r.result.chapterId}`} className="font-medium underline">See it</Link>
                           {r.result.testId && <Link href={`/admin/tests/${r.result.testId}`} className="font-medium underline">Check the test</Link>}
@@ -189,9 +189,9 @@ export function GuideChaptersForm({ groups, nextNumbers, defaultSubjectId, maxMb
                   {r.state !== "done" && (
                     <div className="flex shrink-0 items-center gap-1 self-end sm:self-center">
                       {r.state === "saving" && <Loader2 className="size-4 animate-spin text-primary" aria-label="Creating" />}
-                      <button type="button" className="btn-ghost !p-1.5" onClick={() => move(r.key, -1)} disabled={running || i === 0} aria-label={`Move ${r.file.name} up`}><ArrowUp className="size-4" aria-hidden /></button>
-                      <button type="button" className="btn-ghost !p-1.5" onClick={() => move(r.key, 1)} disabled={running || i === rows.length - 1} aria-label={`Move ${r.file.name} down`}><ArrowDown className="size-4" aria-hidden /></button>
-                      <button type="button" className="btn-ghost !p-1.5 hover:!bg-red-50 hover:!text-red-600" onClick={() => setRows((p) => p.filter((x) => x.key !== r.key))} disabled={running} aria-label={`Remove ${r.file.name}`}><Trash2 className="size-4" aria-hidden /></button>
+                      <button type="button" className="btn-icon btn-sm" onClick={() => move(r.key, -1)} disabled={running || i === 0} aria-label={`Move ${r.file.name} up`}><ArrowUp className="size-4" aria-hidden /></button>
+                      <button type="button" className="btn-icon btn-sm" onClick={() => move(r.key, 1)} disabled={running || i === rows.length - 1} aria-label={`Move ${r.file.name} down`}><ArrowDown className="size-4" aria-hidden /></button>
+                      <button type="button" className="btn-icon-danger btn-sm" onClick={() => setRows((p) => p.filter((x) => x.key !== r.key))} disabled={running} aria-label={`Remove ${r.file.name}`}><Trash2 className="size-4" aria-hidden /></button>
                     </div>
                   )}
                 </li>
@@ -210,9 +210,9 @@ export function GuideChaptersForm({ groups, nextNumbers, defaultSubjectId, maxMb
             <input type="radio" name="release" checked={release === "scheduled"} onChange={() => setRelease("scheduled")} className="mt-1 accent-primary" />
             <span className="flex flex-wrap items-center gap-2">
               One at a time: the first on
-              <input type="datetime-local" value={firstLocal} onChange={(e) => setFirstLocal(e.target.value)} className="input !w-auto !py-1 text-sm" aria-label="First chapter opens on" />
+              <input type="datetime-local" value={firstLocal} onChange={(e) => setFirstLocal(e.target.value)} className="input !w-auto" aria-label="First chapter opens on" />
               then one every
-              <input type="number" min={1} max={60} value={everyDays} onChange={(e) => setEveryDays(Math.min(60, Math.max(1, Number(e.target.value) || 1)))} className="input !w-20 !py-1 text-sm" aria-label="Days between chapters" />
+              <input type="number" min={1} max={60} value={everyDays} onChange={(e) => setEveryDays(Math.min(60, Math.max(1, Number(e.target.value) || 1)))} className="input !w-20" aria-label="Days between chapters" />
               days
             </span>
           </label>
@@ -226,7 +226,7 @@ export function GuideChaptersForm({ groups, nextNumbers, defaultSubjectId, maxMb
         <label className="flex flex-wrap items-center gap-2.5 border-t border-line pt-4 text-sm">
           <input type="checkbox" checked={makeTest} onChange={(e) => setMakeTest(e.target.checked)} disabled={running} className="accent-primary" />
           Make a practice test from each guide&apos;s MCQs, with
-          <input type="number" min={1} max={300} value={minutes} onChange={(e) => setMinutes(Math.min(300, Math.max(1, Number(e.target.value) || 1)))} disabled={running || !makeTest} className="input !w-20 !py-1 text-sm" aria-label="Test time limit in minutes" />
+          <input type="number" min={1} max={300} value={minutes} onChange={(e) => setMinutes(Math.min(300, Math.max(1, Number(e.target.value) || 1)))} disabled={running || !makeTest} className="input !w-20" aria-label="Test time limit in minutes" />
           minutes. It opens together with its chapter.
         </label>
       </section>
@@ -236,7 +236,7 @@ export function GuideChaptersForm({ groups, nextNumbers, defaultSubjectId, maxMb
           {running ? <><Loader2 className="size-4 animate-spin" aria-hidden /> Creating…</> : `Create ${plural(pending.length, "chapter")}`}
         </button>
         {done.length > 0 && !running && <Link href={`/admin/chapters?subject=${subjectId}`} className="btn-outline">Go to chapters</Link>}
-        {!subjectId && rows.length > 0 && <p className="text-sm text-amber-800">Choose the course first.</p>}
+        {!subjectId && rows.length > 0 && <p className="text-sm text-warning">Choose the course first.</p>}
       </div>
     </div>
   );

@@ -44,7 +44,7 @@ export function TestForm({ test, tree, questions, attemptCount }: {
         <Field id="description" label="Description" error={e.description} hint="Shown to students before they start.">
           <textarea id="description" name="description" defaultValue={v("description")} maxLength={500} className={`textarea ${invalid(e.description)}`} />
         </Field>
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <Field id="durationMinutes" label="Time limit (minutes)" required error={e.durationMinutes} hint="Students are auto-submitted when time runs out.">
             <input id="durationMinutes" name="durationMinutes" type="number" min={1} max={300} defaultValue={v("durationMinutes", "20")} required className={`input ${invalid(e.durationMinutes)}`} />
           </Field>

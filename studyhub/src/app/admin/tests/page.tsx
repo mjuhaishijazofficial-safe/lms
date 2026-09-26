@@ -105,9 +105,9 @@ export default async function TestsPage({ searchParams }: PageProps<"/admin/test
                     );
                     return (
                       <Tr key={t.id}>
-                        <Td>
+                        <Td className="md:min-w-64">
                           <div className="flex items-center gap-3">
-                            <IconTile icon={ListChecks} size="sm" className="bg-tile-purple text-violet-800" />
+                            <IconTile icon={ListChecks} size="sm" className="tile-purple" />
                             <div className="min-w-0">
                               <Link href={`/admin/tests/${t.id}`} className="font-semibold hover:text-primary">{t.title}</Link>
                               <p className="text-muted">{count} question{count === 1 ? "" : "s"}</p>

@@ -180,10 +180,10 @@ check("earlier semester: material page opens", (await view(material.Programming,
 { const r = await dl(material.Databases, Bb.jar); check("an earlier-semester student can't download a later semester's file", r.status === 403, String(r.status)); }
 { const t = text((await page("/recent", A.jar)).h); check("recent materials follow the same rule", t.includes(`${P} Databases Slides`) && !t.includes(`${P} Networks Slides`)); }
 { const h = (await page("/dashboard", A.jar)).h; const t = text(h);
-  check("dashboard: shows the current semester and the program", /Semester\s+Semester 3/.test(t) && t.includes(`${P} Uni`), t.slice(0, 220));
+  check("dashboard: shows the current semester and the program", /Semester 3\s+Semester\b/.test(t) && t.includes(`${P} Uni`), t.slice(0, 220));
   const mine = t.slice(t.indexOf("My subjects"), t.indexOf("Recently added")); // the recent list may legitimately name earlier-semester subjects
   check("dashboard 'My subjects' focuses on the current semester (plus whole-program subjects)", mine.includes(`${P} Databases`) && mine.includes(`${P} Writing`) && !mine.includes(`${P} Programming`) && !mine.includes(`${P} Networks`), mine.slice(0, 300));
-  check("dashboard counts all visible subjects and says how many are earlier ones", /Subjects\s+4\b/.test(t) && /incl. 2 earlier/.test(t), t.match(/Subjects\s+\d+[^T]{0,40}/)?.[0]); }
+  check("dashboard counts all visible subjects and says how many are earlier ones", /\b4\s+Subjects\b/.test(t) && /incl. 2 earlier/.test(t), t.match(/\d+\s+Subjects[^T]{0,40}/)?.[0]); }
 { const t = text((await page("/subjects", A.jar)).h);
   check("subjects page groups by semester: current first, then earlier, then 'All semesters'", t.indexOf("Semester 3") < t.indexOf("Semester 2") && t.indexOf("Semester 2") < t.indexOf("Semester 1") && t.indexOf("Semester 1") < t.indexOf("All semesters") && /Current semester/.test(t)); }
 { const { h } = await page(`/subjects/${subj.Databases}`, A.jar); const t = text(h);
@@ -227,7 +227,7 @@ const E = await makeStudent("Eve", "smoketest.sem.eve", { courseId: uni, semeste
   check("promote: moves active students to the next semester with a count", loc(r).includes("notice=students-promoted") && /n=1\b/.test(loc(r)), loc(r));
   const notice = text((await page(loc(r), admin)).h); check("...and the message says how many moved", /Moved 1 student\(s\) up to the next semester/.test(notice), notice.slice(0, 200));
   check("...the promoted student now sees semester 4 subjects", (await subjectsOn(A.jar)).includes("Networks"));
-  check("...and the dashboard shows Semester 4", /Semester\s+Semester 4/.test(text((await page("/dashboard", A.jar)).h)));
+  check("...and the dashboard shows Semester 4", /Semester 4\s+Semester\b/.test(text((await page("/dashboard", A.jar)).h)));
   const eve = text(await (await get(`/admin/students?q=${E.email}`, admin)).text());
   check("inactive students are not promoted", /Semester 3/.test(eve), eve.slice(eve.indexOf("Eve"), eve.indexOf("Eve") + 160));
   check("students in other semesters are untouched", (await subjectsOn(Bb.jar)).sort().join() === ["Programming"].join()); }

@@ -6,12 +6,12 @@ export function PageHeader({ title, description, crumbs, actions }: {
   return (
     <header className="mb-6 space-y-3">
       {crumbs && <Breadcrumbs items={crumbs} />}
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">{title}</h1>
-          {description && <p className="mt-1 text-muted">{description}</p>}
+          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-[1.75rem]">{title}</h1>
+          {description && <p className="mt-1 max-w-3xl text-muted">{description}</p>}
         </div>
-        {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>}
       </div>
     </header>
   );

@@ -21,7 +21,7 @@ export function ProgramSemesterFields({ tree, courseId: initialCourse = "", seme
   const semesters = tree.find((c) => c.id === courseId)?.semesters ?? [];
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       <Field id="courseId" label={TERMS.program} required={programRequired} error={errors.courseId}>
         <select
           id="courseId" name="courseId" value={courseId} required={programRequired} className={`select ${invalid(errors.courseId)}`}

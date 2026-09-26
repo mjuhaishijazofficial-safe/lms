@@ -35,7 +35,7 @@ export function UserMenu({ name, role }: { name: string; role: "ADMIN" | "STUDEN
           {role === "ADMIN" ? "Account settings" : "My profile"}
         </Link>
         <form action={logoutAction}>
-          <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50">
+          <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-danger hover:bg-danger-soft">
             <LogOut className="size-4" aria-hidden /> Log out
           </button>
         </form>

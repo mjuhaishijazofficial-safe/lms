@@ -74,7 +74,7 @@ export function RichTextEditor({ name, initialHtml, error }: { name: string; ini
   return (
     <Field id="textContent" label="Note" required error={error} hint="Formatting is kept simple on purpose so notes look the same for every student.">
       <input type="hidden" name={name} value={html} />
-      <div className={cn("overflow-hidden rounded-xl border bg-surface transition focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10", error?.length ? "border-red-400" : "border-line")}>
+      <div className={cn("overflow-hidden rounded-xl border bg-surface transition focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/10", error?.length ? "border-danger/30" : "border-line")}>
         {editor ? <Toolbar editor={editor} /> : <div className="h-12 border-b border-line bg-page/60" />}
         <EditorContent editor={editor} />
       </div>

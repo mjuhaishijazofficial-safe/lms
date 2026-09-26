@@ -9,7 +9,7 @@ export function SubjectHeader({ name, subtitle, description, icon, progress, sub
   name: string; subtitle: string; description: string; icon: string; progress: Progress;
   subjectId: string; bookmarked: boolean; returnTo: string;
 }) {
-  const tile = subjectIcon(icon);
+  const tile = subjectIcon(icon, subjectId);
   return (
     <section className="relative overflow-hidden rounded-card border border-line bg-linear-to-br from-primary-soft via-white to-primary-soft/50 p-5 shadow-card sm:p-8">
       <svg aria-hidden viewBox="0 0 1200 240" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 size-full text-primary/[0.07]">
@@ -20,13 +20,13 @@ export function SubjectHeader({ name, subtitle, description, icon, progress, sub
         <div className="flex min-w-0 flex-1 basis-96 items-start gap-5">
           <IconTile icon={tile.icon} size="xl" className={tile.tile} />
           <div className="min-w-0">
-            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{name}</h1>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{name}</h1>
             <p className="mt-1 text-lg">{subtitle}</p>
             {description && <p className="mt-3 max-w-2xl text-muted">{description}</p>}
           </div>
         </div>
         <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:items-end">
-          <ProgressCard progress={progress} />
+          <ProgressCard progress={progress} barClassName={tile.bar} />
           <SubjectBookmarkButton subjectId={subjectId} bookmarked={bookmarked} returnTo={returnTo} />
         </div>
       </div>

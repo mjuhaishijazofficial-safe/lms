@@ -50,7 +50,7 @@ export function RemoveBookmarkButton({ kind, id, returnTo }: { kind: "subject" |
     <form action={action}>
       <input type="hidden" name={field} value={id} />
       <input type="hidden" name="returnTo" value={returnTo} />
-      <button type="submit" className="btn-ghost text-red-600 hover:!bg-red-50">Remove bookmark</button>
+      <button type="submit" className="btn-ghost-danger btn-sm" title="Remove bookmark">Remove</button>
     </form>
   );
 }

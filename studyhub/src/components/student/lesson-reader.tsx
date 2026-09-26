@@ -88,9 +88,9 @@ export function LessonReader({ lesson, downloadHref }: { lesson: Lesson; downloa
                   {m.options.map((o, oi) => (
                     <div
                       key={oi}
-                      className={cn("flex items-start gap-3 rounded-xl border p-3 text-sm", reveal && oi === m.answer ? "border-teal-600 bg-teal-50" : "border-line")}
+                      className={cn("flex items-start gap-3 rounded-xl border p-3 text-sm", reveal && oi === m.answer ? "border-success bg-success-soft" : "border-line")}
                     >
-                      <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-bold", reveal && oi === m.answer ? "bg-teal-700 text-white" : "bg-primary-soft text-primary")}>
+                      <span className={cn("inline-flex size-6 shrink-0 items-center justify-center rounded-md text-xs font-bold", reveal && oi === m.answer ? "bg-success text-white" : "bg-primary-soft text-primary")}>
                         {OPTION_LETTERS[oi]}
                       </span>
                       <span>{o}</span>
@@ -98,7 +98,7 @@ export function LessonReader({ lesson, downloadHref }: { lesson: Lesson; downloa
                   ))}
                 </div>
                 {reveal ? (
-                  <div className="rounded-xl bg-teal-50 p-3 text-sm text-teal-900">
+                  <div className="rounded-xl bg-success-soft p-3 text-sm text-success">
                     <strong>Answer: {OPTION_LETTERS[m.answer]}) {m.options[m.answer]}</strong>
                     {m.explanation && <><br />{m.explanation}</>}
                   </div>

@@ -174,7 +174,7 @@ const bob = await makeStudent("Bob", "smoketest.eng.bob", courseA, semA["Semeste
 { const { t } = await page("/bookmarks", bob.jar); check("isolation: Bob's bookmarks are still empty (Alice's don't leak)", t.includes("No bookmarks yet")); }
 { // remove one via the Bookmarks page
   const before = await page("/bookmarks", alice.jar);
-  const r = await submit("/bookmarks", alice.jar, (f) => hasField("materialId")(f) && f.includes(">Remove bookmark<"), { materialId: mat2 }, { rawHtml: before.h });
+  const r = await submit("/bookmarks", alice.jar, (f) => hasField("materialId")(f) && f.includes(">Remove<"), { materialId: mat2 }, { rawHtml: before.h });
   check("remove a bookmarked material from the Bookmarks page", loc(r) === "/bookmarks", `${r.status} ${loc(r)}`);
   const { t } = await page("/bookmarks", alice.jar);
   check("...it's gone, the other one remains", !t.includes("Beta Note") && t.includes("Alpha Note"), t.slice(t.indexOf("Materials"), t.indexOf("Materials") + 300)); }
@@ -207,9 +207,9 @@ const bob = await makeStudent("Bob", "smoketest.eng.bob", courseA, semA["Semeste
   const { h, t } = await page(`/subjects/${visibleSubject}`, alice.jar);
   check("subject page: chapter shows completed once every material in it is done", /aria-label="Chapter completed"/.test(h));
   check("subject page: overall progress is 100% (1 of 1 counted chapters)", /1 \/ 1 chapters/.test(t) && /100\s*%/.test(t), t.match(/\d+ \/ \d+ chapters/)?.[0]); }
-{ const t = text((await page("/dashboard", alice.jar)).h); check("dashboard: reflects the same 100% progress", /Your progress\s+100\s*%/.test(t), t.match(/Your progress\s+\S+%/)?.[0]); }
+{ const t = text((await page("/dashboard", alice.jar)).h); check("dashboard: reflects the same 100% progress", /\b100\s*%\s+Your progress\b/.test(t), t.match(/\S+%\s+Your progress\b/)?.[0]); }
 { const t = text((await page("/courses", alice.jar)).h); check("my courses: the class card also reflects 100%", /100\s*%/.test(t)); }
-{ const t = text((await page("/dashboard", bob.jar)).h); check("isolation: Bob's own progress is untouched (still 0%)", /Your progress\s+0\s*%/.test(t), t.match(/Your progress\s+\S+%/)?.[0]); }
+{ const t = text((await page("/dashboard", bob.jar)).h); check("isolation: Bob's own progress is untouched (still 0%)", /\b0\s*%\s+Your progress\b/.test(t), t.match(/\S+%\s+Your progress\b/)?.[0]); }
 { // undo completion on one material -> chapter is no longer "done", percentage drops
   const doc = await (await get(`/materials/${mat1}`, alice.jar)).text();
   await submit(`/materials/${mat1}`, alice.jar, completeFormPick, { materialId: mat1 }, { rawHtml: doc });

@@ -37,14 +37,14 @@ export function ConfirmDialog({ trigger, triggerClassName, triggerLabel, title, 
       >
         <div className="p-6">
           <div className="flex items-start gap-4">
-            <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-full", tone === "danger" ? "bg-red-50 text-red-600" : "bg-primary-soft text-primary")}>
+            <span className={cn("inline-flex size-11 shrink-0 items-center justify-center rounded-full", tone === "danger" ? "bg-danger-soft text-danger" : "bg-primary-soft text-primary")}>
               <TriangleAlert className="size-5" aria-hidden />
             </span>
             <div className="min-w-0 flex-1">
               <h2 id={titleId} className="text-lg font-semibold">{title}</h2>
               <div className="mt-1 text-sm text-muted">{description}</div>
             </div>
-            <button type="button" onClick={() => ref.current?.close()} className="rounded-lg p-1 text-muted hover:bg-page hover:text-ink" aria-label="Close">
+            <button type="button" onClick={() => ref.current?.close()} className="btn-icon btn-sm -mr-1 -mt-1" aria-label="Close">
               <X className="size-5" aria-hidden />
             </button>
           </div>

@@ -111,8 +111,8 @@ export default async function ProgramPage({ params, searchParams }: PageProps<"/
             <input type="hidden" name="returnTo" value={returnTo} />
             <label htmlFor="new-semester" className="shrink-0 text-sm font-medium">Add a {TERMS.semesterLower}</label>
             <div className="flex w-full gap-2 sm:max-w-md">
-              <input id="new-semester" name="name" required maxLength={60} defaultValue={`${TERMS.semester} ${semesters.length + 1}`} className="input min-w-0 flex-1 !py-2 text-sm" />
-              <SubmitButton variant="soft" className="shrink-0 !py-2 text-sm"><Plus className="size-4" aria-hidden /> Add</SubmitButton>
+              <input id="new-semester" name="name" required maxLength={60} defaultValue={`${TERMS.semester} ${semesters.length + 1}`} className="input min-w-0 flex-1" />
+              <SubmitButton variant="soft" className="shrink-0"><Plus className="size-4" aria-hidden /> Add</SubmitButton>
             </div>
           </form>
         </div>

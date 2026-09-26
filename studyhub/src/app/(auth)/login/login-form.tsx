@@ -10,7 +10,7 @@ export function LoginForm() {
   return (
     <form action={action} className="space-y-5" noValidate>
       {state.error && (
-        <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p role="alert" className="rounded-control border border-danger/30 bg-danger-soft px-4 py-3 text-sm text-danger">
           {state.error}
         </p>
       )}
@@ -18,11 +18,11 @@ export function LoginForm() {
       <div className="space-y-1.5">
         <label htmlFor="email" className="text-sm font-medium text-ink">Email or username</label>
         <div className="relative">
-          <Mail className="pointer-events-none absolute left-3.5 top-1/2 size-4.5 -translate-y-1/2 text-muted" aria-hidden />
+          <Mail className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
           <input
             id="email" name="email" type="text" autoComplete="username" required autoFocus
             defaultValue={state.email}
-            className="input pl-11"
+            className="input pl-10"
             placeholder="you@school.com"
           />
         </div>
@@ -31,12 +31,12 @@ export function LoginForm() {
       <div className="space-y-1.5">
         <label htmlFor="password" className="text-sm font-medium text-ink">Password</label>
         <div className="relative">
-          <Lock className="pointer-events-none absolute left-3.5 top-1/2 size-4.5 -translate-y-1/2 text-muted" aria-hidden />
-          <input id="password" name="password" type="password" autoComplete="current-password" required className="input pl-11" />
+          <Lock className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
+          <input id="password" name="password" type="password" autoComplete="current-password" required className="input pl-10" />
         </div>
       </div>
 
-      <button type="submit" disabled={pending} className="btn-primary w-full py-3">
+      <button type="submit" disabled={pending} className="btn-primary w-full">
         {pending && <Loader2 className="size-4 animate-spin" aria-hidden />}
         {pending ? "Signing in…" : "Sign in"}
       </button>

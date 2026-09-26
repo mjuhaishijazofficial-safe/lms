@@ -64,7 +64,7 @@ export function UploadDropzone({ maxMb, current, error, required }: {
         }}
         className={cn(
           "relative rounded-2xl border-2 border-dashed p-6 text-center transition",
-          dragging ? "border-primary bg-primary-soft" : message ? "border-red-300 bg-red-50/40" : "border-line bg-page/50 hover:border-primary/40",
+          dragging ? "border-primary bg-primary-soft" : message ? "border-danger/30 bg-danger-soft/40" : "border-line bg-page/50 hover:border-primary/40",
         )}
       >
         <input
@@ -75,7 +75,7 @@ export function UploadDropzone({ maxMb, current, error, required }: {
         />
         {picked ? (
           <div className="relative z-10 flex items-center justify-center gap-3 text-left">
-            <span className="inline-flex size-11 items-center justify-center rounded-xl bg-tile-red text-rose-800"><FileText className="size-5" aria-hidden /></span>
+            <span className="inline-flex size-11 items-center justify-center rounded-xl tile-red"><FileText className="size-5" aria-hidden /></span>
             <div className="min-w-0">
               <p className="truncate font-medium">{picked.name}</p>
               <p className="text-sm text-muted">{formatBytes(picked.size)} · ready to upload</p>

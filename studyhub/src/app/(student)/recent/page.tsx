@@ -25,7 +25,7 @@ export default async function RecentPage({ searchParams }: PageProps<"/recent">)
         </div>
       ) : (
         <>
-          <div className="space-y-3">{rows.map((m) => <RecentMaterialCard key={m.id} material={m} />)}</div>
+          <div className="card divide-y divide-line">{rows.map((m) => <RecentMaterialCard key={m.id} material={m} />)}</div>
           <div className="card mt-4 overflow-hidden"><Pagination page={page} total={total} pageSize={PAGE_SIZE} basePath="/recent" params={{}} /></div>
         </>
       )}

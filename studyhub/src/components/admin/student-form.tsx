@@ -30,7 +30,7 @@ export function StudentForm({ student, tree, catalogue, presets, subjectIds = []
       <Field id="name" label="Full name" required error={e.name}>
         <input id="name" name="name" defaultValue={v("name")} required maxLength={120} autoComplete="off" className={`input ${invalid(e.name)}`} />
       </Field>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id="email" label="Email or username" required error={e.email} hint="What the student types to sign in.">
           <input id="email" name="email" defaultValue={v("email")} required autoComplete="off" className={`input ${invalid(e.email)}`} />
         </Field>
@@ -82,7 +82,7 @@ export function ResetPasswordForm({ studentId }: { studentId: string }) {
         <p className="mt-1 text-sm text-muted">Sets a temporary password, signs the student out everywhere, and makes them choose a new password at next sign-in.</p>
       </div>
       {state.error && <Alert tone="error">{state.error}</Alert>}
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id="reset-password" label="Temporary password" required error={e.password}>
           <input id="reset-password" name="password" type="text" required minLength={8} autoComplete="new-password" className={`input font-mono ${invalid(e.password)}`} />
         </Field>

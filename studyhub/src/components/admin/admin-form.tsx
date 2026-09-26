@@ -20,7 +20,7 @@ export function AdminForm() {
       <Field id="admin-name" label="Full name" required error={e.name}>
         <input id="admin-name" name="name" defaultValue={state.values?.name ?? ""} required maxLength={120} autoComplete="off" className={`input ${invalid(e.name)}`} />
       </Field>
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id="admin-email" label="Email or username" required error={e.email} hint="What they type to sign in.">
           <input id="admin-email" name="email" defaultValue={state.values?.email ?? ""} required autoComplete="off" className={`input ${invalid(e.email)}`} />
         </Field>
@@ -43,7 +43,7 @@ export function ResetAdminPasswordForm({ adminId, name }: { adminId: string; nam
         <input name="password" type="text" required minLength={8} autoComplete="new-password" placeholder="New temporary password" aria-label={`New temporary password for ${name}`} className="input h-9 w-44 font-mono text-sm" />
         <SubmitButton variant="soft" pendingText="Saving…">Reset</SubmitButton>
       </div>
-      {message && <p role="alert" className="text-xs text-red-600">{message}</p>}
+      {message && <p role="alert" className="text-xs text-danger">{message}</p>}
     </form>
   );
 }

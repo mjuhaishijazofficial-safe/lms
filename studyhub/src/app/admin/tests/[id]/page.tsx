@@ -37,7 +37,7 @@ export default async function EditTestPage({ params, searchParams }: PageProps<"
             )}
             <ConfirmDialog
               trigger={<><Trash2 className="size-4.5" aria-hidden /> Delete</>}
-              triggerClassName="btn-outline hover:!border-red-300 hover:!text-red-600"
+              triggerClassName="btn-outline-danger"
               title={`Delete "${test.title}"?`}
               description={attemptCount > 0 ? "Students have already attempted this test; deleting it removes their results too. This can't be undone." : "This can't be undone."}
               confirmLabel="Delete test"

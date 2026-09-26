@@ -41,7 +41,7 @@ export function FeeBulkForm({ courses }: { courses: { id: string; name: string }
         </Field>
       )}
 
-      <div className="grid gap-5 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <Field id="amount" label="Amount" required error={e.amount} hint="In rupees, per student.">
           <input id="amount" name="amount" type="number" min={1} defaultValue={v("amount")} required className={`input ${invalid(e.amount)}`} placeholder="500" />
         </Field>

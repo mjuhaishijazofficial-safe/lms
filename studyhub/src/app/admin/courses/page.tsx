@@ -13,7 +13,7 @@ import { moveCourseAction } from "./actions";
 
 export const metadata: Metadata = { title: TERMS.programs };
 
-const TILES = ["bg-tile-blue text-primary", "bg-tile-purple text-violet-800", "bg-tile-green text-teal-700", "bg-tile-amber text-amber-800", "bg-tile-red text-rose-800"];
+const TILES = ["tile-blue", "tile-purple", "tile-green", "tile-amber", "tile-red"];
 
 export default async function ProgramsPage({ searchParams }: PageProps<"/admin/courses">) {
   const programs = await programCards();
@@ -47,7 +47,7 @@ export default async function ProgramsPage({ searchParams }: PageProps<"/admin/c
           />
         </div>
       ) : (
-        <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {programs.map((p, i) => (
             <li key={p.id} className="card relative flex flex-col p-5 transition hover:border-primary/40 hover:shadow-lg">
               <div className="flex items-start gap-4">

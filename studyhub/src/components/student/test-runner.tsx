@@ -47,7 +47,7 @@ function StartScreen({ view, onStarted }: { view: OkView & { phase: "not-started
         You get one attempt. Once you start, the clock does not stop — even if you close this tab and come back.
         You will see your score as soon as you submit.
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
       <button type="button" className="btn-primary" onClick={() => void start()} disabled={busy}>
         {busy ? "Starting…" : "Start test"}
       </button>
@@ -99,13 +99,13 @@ function InProgress({ view, onDone }: { view: OkView & { phase: "in-progress" };
           <p className="truncate font-semibold">{view.title}</p>
           <p className="text-sm text-muted">{answered} of {view.totalQuestions} answered</p>
         </div>
-        <div className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold tabular-nums", low ? "bg-red-50 text-red-700" : "bg-primary-soft text-primary")}>
+        <div className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold tabular-nums", low ? "bg-danger-soft text-danger" : "bg-primary-soft text-primary")}>
           <Clock className="size-4" aria-hidden /> {mmss(secondsLeft)}
         </div>
       </div>
 
       {warning && (
-        <div className="flex items-center gap-2 rounded-xl bg-amber-50 px-4 py-2.5 text-sm text-amber-800" role="alert">
+        <div className="flex items-center gap-2 rounded-xl bg-warning-soft px-4 py-2.5 text-sm text-warning" role="alert">
           <AlertTriangle className="size-4 shrink-0" aria-hidden /> {warning}
         </div>
       )}
@@ -153,14 +153,14 @@ function Results({ view }: { view: OkView & { phase: "done" } }) {
           return (
             <div key={qi} className={cn("card space-y-2 border-l-4 p-5", correct ? "border-l-emerald-400" : "border-l-red-400")}>
               <p className="flex items-start gap-2 text-sm font-medium">
-                {correct ? <CheckCircle2 className="mt-0.5 size-4.5 shrink-0 text-emerald-600" aria-hidden /> : <XCircle className="mt-0.5 size-4.5 shrink-0 text-red-500" aria-hidden />}
+                {correct ? <CheckCircle2 className="mt-0.5 size-4.5 shrink-0 text-success" aria-hidden /> : <XCircle className="mt-0.5 size-4.5 shrink-0 text-danger" aria-hidden />}
                 {qi + 1}. {q.question}
               </p>
               <div className="space-y-1.5 pl-6.5 text-sm">
                 {q.options.map((opt, oi) => (
                   <p key={oi} className={cn(
                     "rounded-lg px-3 py-1.5",
-                    oi === q.answer ? "bg-emerald-50 text-emerald-800" : oi === picked ? "bg-red-50 text-red-700" : "text-muted",
+                    oi === q.answer ? "bg-success-soft text-success" : oi === picked ? "bg-danger-soft text-danger" : "text-muted",
                   )}>
                     <strong className="mr-1.5">{OPTION_LETTERS[oi]}.</strong>{opt}
                     {oi === q.answer && <span className="ml-2 text-xs font-medium">Correct answer</span>}

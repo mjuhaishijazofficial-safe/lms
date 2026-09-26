@@ -7,11 +7,11 @@ export type AnnouncementItem = { id: string; title: string; body: string; create
 export function AnnouncementsCard({ items }: { items: AnnouncementItem[] }) {
   if (items.length === 0) return null;
   return (
-    <section aria-label="Announcements" className="mb-8 rounded-card border border-accent/40 bg-accent/10 p-5">
-      <h2 className="flex items-center gap-2 text-base font-semibold text-ink">
-        <Megaphone className="size-5 text-primary" aria-hidden /> Announcements
+    <section aria-label="Announcements" className="card mb-6 border-l-4 border-l-accent p-5">
+      <h2 className="flex items-center gap-2.5 font-semibold text-ink">
+        <span className="tile-amber inline-flex size-8 items-center justify-center rounded-lg"><Megaphone className="size-4" aria-hidden /></span> Announcements
       </h2>
-      <ul className="mt-3 divide-y divide-accent/25">
+      <ul className="mt-3 divide-y divide-line">
         {items.map((a) => (
           <li key={a.id} className="py-3 first:pt-0 last:pb-0">
             <div className="flex flex-wrap items-baseline justify-between gap-x-3">

@@ -56,8 +56,8 @@ export default async function MaterialsPage({ searchParams }: PageProps<"/admin/
         description={`Study files, videos, links and notes, organised by ${TERMS.programLower}, subject and chapter.`}
         actions={hasChapters && (
           <>
-            <Link href="/admin/materials/bulk" className="btn-outline"><FileUp className="size-4.5" aria-hidden /> Add multiple</Link>
-            <Link href={`/admin/materials/new${chapterId ? `?chapter=${chapterId}` : ""}`} className="btn-primary"><Plus className="size-4.5" aria-hidden /> New material</Link>
+            <Link href="/admin/materials/bulk" className="btn-outline"><FileUp aria-hidden /> Add multiple</Link>
+            <Link href={`/admin/materials/new${chapterId ? `?chapter=${chapterId}` : ""}`} className="btn-primary"><Plus aria-hidden /> New material</Link>
           </>
         )}
       />
@@ -128,10 +128,10 @@ export default async function MaterialsPage({ searchParams }: PageProps<"/admin/
                       : m.type === "LINK" ? (m.externalUrl ? new URL(m.externalUrl).hostname : "Link")
                       : "Note";
                     const actions = (
-                      <div className="flex items-center justify-end gap-1">
+                      <div className="flex items-center justify-end gap-0.5">
                         {m.type === "FILE" && (
-                          <a href={`/api/materials/${m.id}/file`} target="_blank" rel="noopener" className="btn-ghost" aria-label={`Open ${m.title}`} title="Open file">
-                            <ExternalLink className="size-4" aria-hidden />
+                          <a href={`/api/materials/${m.id}/file`} target="_blank" rel="noopener" className="btn-icon btn-sm" aria-label={`Open ${m.title}`} title="Open file">
+                            <ExternalLink aria-hidden />
                           </a>
                         )}
                         <RowActions id={m.id} name={m.title} status={m.status} editHref={`/admin/materials/${m.id}`} returnTo={returnTo}
@@ -152,15 +152,17 @@ export default async function MaterialsPage({ searchParams }: PageProps<"/admin/
                             <IconTile icon={meta.icon} size="sm" className={meta.tile} />
                             <div className="min-w-0">
                               <Link href={`/admin/materials/${m.id}`} className="font-semibold hover:text-primary">{m.title}</Link>
-                              <p className="max-w-xs truncate text-muted">{detail}</p>
+                              <p className="max-w-64 truncate text-muted">{detail}</p>
                               <div className="mt-1 md:hidden"><StatusBadge status={effectiveStatus(m.status, m.publishAt)} /></div>
                               <div className="-ml-2.5 mt-1 md:hidden [&>div]:justify-start">{actions}</div>
                             </div>
                           </div>
                         </Td>
                         <Td className="hidden md:table-cell">
-                          <p className="whitespace-nowrap">{m.chapter.subject.name} · <span className="text-muted">{[m.chapter.subject.course.name, m.chapter.subject.semester?.name].filter(Boolean).join(" · ")}</span></p>
-                          <Link href={`/admin/materials?chapter=${m.chapterId}`} className="text-muted hover:text-primary">Ch {m.chapter.chapterNumber}. {m.chapter.title}</Link>
+                          <div className="max-w-72">
+                            <Link href={`/admin/materials?chapter=${m.chapterId}`} className="block truncate font-medium hover:text-primary">{m.chapter.subject.name} · Ch {m.chapter.chapterNumber}. {m.chapter.title}</Link>
+                            <p className="truncate text-muted">{[m.chapter.subject.course.name, m.chapter.subject.semester?.name].filter(Boolean).join(" · ")}</p>
+                          </div>
                         </Td>
                         <Td className="hidden md:table-cell">
                           <StatusBadge status={effectiveStatus(m.status, m.publishAt)} />

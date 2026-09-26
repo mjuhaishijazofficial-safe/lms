@@ -26,7 +26,7 @@ function splitName(name: string): { code: string | null; title: string } {
 }
 
 function CourseItem({ c }: { c: CourseRow }) {
-  const icon = subjectIcon(c.icon);
+  const icon = subjectIcon(c.icon, c.id);
   const { code, title } = splitName(c.name);
   return (
     <li className="group flex items-center gap-3 px-4 py-2.5 sm:px-5">
@@ -75,7 +75,7 @@ export function SemesterSection({ courseId, semester, index, total }: { courseId
   return (
     <section id={`semester-${index + 1}`} aria-labelledby={`sem-h-${s.id}`} className="card scroll-mt-24">
       <header className="flex items-center gap-3 border-b border-line px-4 py-3.5 sm:px-5">
-        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-tile-blue text-sm font-bold text-primary" aria-hidden>{index + 1}</span>
+        <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-full tile-blue text-sm font-bold" aria-hidden>{index + 1}</span>
         <div className="min-w-0 flex-1">
           <h2 id={`sem-h-${s.id}`} className="truncate font-semibold">{s.name}</h2>
           <p className="text-sm text-muted">
@@ -90,8 +90,8 @@ export function SemesterSection({ courseId, semester, index, total }: { courseId
             <input type="hidden" name="returnTo" value={returnTo} />
             <label htmlFor={`sem-${s.id}`} className="mb-1 block px-2 text-xs font-medium text-muted">Rename</label>
             <div className="flex gap-1.5">
-              <input id={`sem-${s.id}`} name="name" defaultValue={s.name} maxLength={60} required className="input !px-3 !py-1.5 text-sm" />
-              <SubmitButton variant="soft" className="!px-3 !py-1.5 text-sm">Save</SubmitButton>
+              <input id={`sem-${s.id}`} name="name" defaultValue={s.name} maxLength={60} required className="input" />
+              <SubmitButton variant="soft">Save</SubmitButton>
             </div>
           </form>
           <div className="pt-1.5">
@@ -111,7 +111,7 @@ export function SemesterSection({ courseId, semester, index, total }: { courseId
             )}
             <ConfirmDialog
               trigger={<><Trash2 className="size-4" aria-hidden /> Delete {TERMS.semesterLower}</>}
-              triggerClassName={`${menuItem} !text-red-600 hover:!bg-red-50`}
+              triggerClassName={`${menuItem} !text-danger hover:!bg-danger-soft`}
               title={`Delete “${s.name}”?`}
               description={<>Only a {TERMS.semesterLower} with no courses and no students can be deleted. This can&apos;t be undone.</>}
               confirmLabel="Delete"
@@ -140,9 +140,9 @@ export function UnplacedCourses({ courseId, courses, semesters, suggested, sugge
 }) {
   const anySuggested = courses.some((c) => suggested[c.id]);
   return (
-    <section aria-labelledby="unplaced-h" className="card overflow-hidden border-amber-300">
-      <header className="flex items-start gap-3 border-b border-amber-200 bg-amber-50 px-4 py-3.5 sm:px-5">
-        <TriangleAlert className="mt-0.5 size-5 shrink-0 text-amber-600" aria-hidden />
+    <section aria-labelledby="unplaced-h" className="card overflow-hidden border-warning/30">
+      <header className="flex items-start gap-3 border-b border-warning/30 bg-warning-soft px-4 py-3.5 sm:px-5">
+        <TriangleAlert className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden />
         <div className="min-w-0">
           <h2 id="unplaced-h" className="font-semibold">{plural(courses.length, "course")} {courses.length === 1 ? "needs" : "need"} a {TERMS.semesterLower}</h2>
           <p className="text-sm text-muted">
@@ -155,7 +155,7 @@ export function UnplacedCourses({ courseId, courses, semesters, suggested, sugge
         <input type="hidden" name="courseId" value={courseId} />
         <ul className="divide-y divide-line">
           {courses.map((c) => {
-            const icon = subjectIcon(c.icon);
+            const icon = subjectIcon(c.icon, c.id);
             const { code, title } = splitName(c.name);
             return (
               <li key={c.id} className="flex flex-col gap-2.5 px-4 py-3 sm:flex-row sm:items-center sm:gap-3 sm:py-2.5 sm:px-5">
@@ -170,7 +170,7 @@ export function UnplacedCourses({ courseId, courses, semesters, suggested, sugge
                   </div>
                 </div>
                 <label htmlFor={`place-${c.id}`} className="sr-only">{TERMS.semester} for {c.name}</label>
-                <select id={`place-${c.id}`} name={`semester_${c.id}`} defaultValue={suggested[c.id] ?? ""} className="select w-full !py-1.5 text-sm sm:!w-auto sm:shrink-0">
+                <select id={`place-${c.id}`} name={`semester_${c.id}`} defaultValue={suggested[c.id] ?? ""} className="select w-full sm:!w-auto sm:shrink-0">
                   <option value="">Choose a {TERMS.semesterLower}…</option>
                   {semesters.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
                 </select>

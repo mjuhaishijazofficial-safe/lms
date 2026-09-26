@@ -146,12 +146,12 @@ function PlanTable({ rows, title }: { rows: ImportRow[]; title?: string }) {
                 <td className="px-4 py-2.5">{r.subjects.length ? r.subjects.join(", ") : <span className="text-muted">none</span>}</td>
                 <td className="px-4 py-2.5">
                   {r.skipped && (
-                    <p className="flex items-start gap-1.5 text-amber-800"><CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />Skipped: {r.skipped}</p>
+                    <p className="flex items-start gap-1.5 text-warning"><CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />Skipped: {r.skipped}</p>
                   )}
                   {r.unmatched.length > 0 && (
-                    <p className="flex items-start gap-1.5 text-rose-800"><CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />Not found: {r.unmatched.join(", ")}</p>
+                    <p className="flex items-start gap-1.5 text-danger"><CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden />Not found: {r.unmatched.join(", ")}</p>
                   )}
-                  {!r.skipped && r.unmatched.length === 0 && <span className="text-teal-700">OK</span>}
+                  {!r.skipped && r.unmatched.length === 0 && <span className="text-success">OK</span>}
                 </td>
               </tr>
             ))}

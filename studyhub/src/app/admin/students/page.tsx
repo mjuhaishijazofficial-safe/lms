@@ -108,19 +108,18 @@ export default async function StudentsPage({ searchParams }: PageProps<"/admin/s
                     </Td>
                     <Td>
                       <StatusBadge status={s.status} />
-                      {s.mustChangePassword && <p className="mt-1 text-xs text-amber-700">Password change pending</p>}
+                      {s.mustChangePassword && <p className="mt-1 text-xs text-warning">Password change pending</p>}
                     </Td>
                     <Td className="hidden whitespace-nowrap text-muted md:table-cell">{s.lastLoginAt ? timeAgo(s.lastLoginAt) : "Never"}</Td>
                     <Td>
-                      <div className="flex items-center justify-end gap-1">
-                        <Link href={`/admin/students/${s.id}`} className="btn-ghost" aria-label={`Edit ${s.name}`}><Pencil className="size-4" aria-hidden /> <span className="hidden 2xl:inline">Edit</span></Link>
+                      <div className="flex items-center justify-end gap-0.5">
+                        <Link href={`/admin/students/${s.id}`} className="btn-icon btn-sm" aria-label={`Edit ${s.name}`} title="Edit"><Pencil aria-hidden /></Link>
                         <form action={setStudentStatusAction}>
                           <input type="hidden" name="id" value={s.id} />
                           <input type="hidden" name="status" value={active ? "INACTIVE" : "ACTIVE"} />
                           <input type="hidden" name="returnTo" value={returnTo} />
-                          <button className="btn-ghost" title={active ? "Deactivate" : "Reactivate"} aria-label={`${active ? "Deactivate" : "Reactivate"} ${s.name}`}>
-                            {active ? <UserRoundX className="size-4" aria-hidden /> : <UserRoundCheck className="size-4" aria-hidden />}
-                            <span className="hidden 2xl:inline">{active ? "Deactivate" : "Reactivate"}</span>
+                          <button className="btn-icon btn-sm" title={active ? "Deactivate" : "Reactivate"} aria-label={`${active ? "Deactivate" : "Reactivate"} ${s.name}`}>
+                            {active ? <UserRoundX aria-hidden /> : <UserRoundCheck aria-hidden />}
                           </button>
                         </form>
                       </div>
