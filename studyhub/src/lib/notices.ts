@@ -60,5 +60,3 @@ export const ERRORS = {
   "failed": "Something went wrong. Please try again.",
 } as const;
 
-export type NoticeKey = keyof typeof NOTICES;
-export type ErrorKey = keyof typeof ERRORS;

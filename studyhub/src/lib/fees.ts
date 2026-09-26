@@ -5,4 +5,3 @@ export const CURRENCY = "Rs.";
 export const formatAmount = (amount: number) => `${CURRENCY} ${amount.toLocaleString()}`;
 
 export const FEE_STATUSES = ["PENDING", "PAID", "WAIVED"] as const;
-export type FeeStatusValue = (typeof FEE_STATUSES)[number];

@@ -47,8 +47,6 @@
   --color-tile-red-ink: #e11d48;
   --color-tile-sky: #e6f5fb;
   --color-tile-sky-ink: #0284c7;
-  --color-tile-pink: #fdeef6;
-  --color-tile-pink-ink: #db2777;
 
   /* Vivid fills for subject tiles and progress bars. */
   --color-vivid-indigo: #6366f1;
@@ -100,7 +98,6 @@ body {
   .tile-amber { @apply bg-tile-amber text-tile-amber-ink; }
   .tile-red { @apply bg-tile-red text-tile-red-ink; }
   .tile-sky { @apply bg-tile-sky text-tile-sky-ink; }
-  .tile-pink { @apply bg-tile-pink text-tile-pink-ink; }
   .tile-solid { @apply bg-primary text-white; }
   /* Study notes: shared by the admin editor and the student reader so both look identical. */
   .note {
@@ -192,10 +189,6 @@ body {
     @apply size-8 px-0;
   }
 
-  /* Small coloured pill for statuses and counts. */
-  .badge {
-    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium;
-  }
 
   /* Section heading inside a page (below the page title). */
   .section-title {
