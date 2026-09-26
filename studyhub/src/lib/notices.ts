@@ -14,6 +14,7 @@ export const NOTICES = {
   "admin-password-reset": "Temporary password set. The admin has been signed out and must choose a new password at next sign-in.",
   "admin-activated": "Admin reactivated. They can sign in again.",
   "admin-deactivated": "Admin deactivated and signed out everywhere.",
+  "admin-deleted": "Admin deleted.",
   "password-reset": "Temporary password set. The student has been signed out and must choose a new password at next sign-in.",
   "course-created": `${TERMS.program} created.`,
   "course-updated": `${TERMS.program} saved.`,
@@ -57,6 +58,7 @@ export const ERRORS = {
   "not-found": "That item no longer exists. It may have been deleted.",
   "forbidden": "You don't have permission to do that.",
   "admin-self": "You cannot deactivate your own account.",
+  "admin-self-delete": "You cannot delete your own account.",
   "failed": "Something went wrong. Please try again.",
 } as const;
 

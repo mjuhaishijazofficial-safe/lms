@@ -8,7 +8,7 @@ import { formValues, fromZodError, toFormState, type FormState } from "@/server/
 import { runAdminAction } from "@/server/action-helpers";
 import { adminPasswordSchema, createAdminSchema } from "@/server/validation/admin";
 import { idSchema } from "@/server/validation/common";
-import { createAdmin, resetAdminPassword, setAdminStatus } from "@/server/services/admins";
+import { createAdmin, deleteAdmin, resetAdminPassword, setAdminStatus } from "@/server/services/admins";
 
 export async function createAdminAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const values = formValues(formData);
@@ -33,6 +33,14 @@ export async function setAdminStatusAction(formData: FormData) {
   if (id === actor.id && status === "INACTIVE") redirect("/admin/admins?error=admin-self");
   await runAdminAction("student", "/admin/admins", status === "ACTIVE" ? "admin-activated" : "admin-deactivated",
     (a) => setAdminStatus(a, id, status));
+}
+
+export async function deleteAdminAction(formData: FormData) {
+  const id = idSchema.safeParse(formData.get("id"));
+  if (!id.success) redirect("/admin/admins?error=failed");
+  const actor = await assertAdmin();
+  if (id.data === actor.id) redirect("/admin/admins?error=admin-self-delete");
+  await runAdminAction("student", "/admin/admins", "admin-deleted", (a) => deleteAdmin(a, id.data));
 }
 
 export async function resetAdminPasswordAction(_prev: FormState, formData: FormData): Promise<FormState> {

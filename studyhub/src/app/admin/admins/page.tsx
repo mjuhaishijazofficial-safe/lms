@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import { UserRoundCheck, UserRoundX } from "lucide-react";
+import { Trash2, UserRoundCheck, UserRoundX } from "lucide-react";
 import { assertAdmin } from "@/server/auth/guards";
-import { listAdmins } from "@/server/services/admins";
+import { isSuperAdmin, listAdmins } from "@/server/services/admins";
 import { timeAgo } from "@/lib/format";
 import { PageHeader } from "@/components/ui/page-header";
 import { Notice } from "@/components/ui/notice";
 import { Avatar } from "@/components/ui/avatar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TableCard, Td, Th, Tr } from "@/components/ui/data-table";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AdminForm, ResetAdminPasswordForm } from "@/components/admin/admin-form";
-import { setAdminStatusAction } from "./actions";
+import { deleteAdminAction, setAdminStatusAction } from "./actions";
 
 export const metadata: Metadata = { title: "Admins" };
 
@@ -17,6 +18,7 @@ export default async function AdminsPage({ searchParams }: PageProps<"/admin/adm
   const sp = await searchParams;
   const me = await assertAdmin();
   const admins = await listAdmins(me);
+  const canDelete = isSuperAdmin(me);
 
   return (
     <>
@@ -59,6 +61,18 @@ export default async function AdminsPage({ searchParams }: PageProps<"/admin/adm
                             {active ? <UserRoundX aria-hidden /> : <UserRoundCheck aria-hidden />}
                           </button>
                         </form>
+                      )}
+                      {canDelete && !isMe && (
+                        <ConfirmDialog
+                          trigger={<Trash2 aria-hidden />}
+                          triggerClassName="btn-icon-danger btn-sm"
+                          triggerLabel={`Delete ${a.name}`}
+                          title={`Delete ${a.name}?`}
+                          description="Their admin account is permanently removed and they are signed out everywhere. Materials and tests they added stay. To keep the account, deactivate instead."
+                          confirmLabel="Delete admin"
+                          action={deleteAdminAction}
+                          fields={{ id: a.id }}
+                        />
                       )}
                     </div>
                   </Td>
