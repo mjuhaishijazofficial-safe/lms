@@ -23,10 +23,7 @@ export function UserMenu({ name, role }: { name: string; role: "ADMIN" | "STUDEN
     <details ref={ref} className="group relative">
       <summary className="flex cursor-pointer list-none items-center gap-3 rounded-xl py-1 pl-1 pr-2 transition hover:bg-surface [&::-webkit-details-marker]:hidden">
         <Avatar name={name} />
-        <span className="hidden text-left leading-tight sm:block">
-          <span className="block max-w-40 truncate font-semibold text-ink">{name}</span>
-          <span className="block text-sm text-muted">{role === "ADMIN" ? "Admin" : "Student"}</span>
-        </span>
+        <span className="hidden max-w-40 truncate font-semibold text-ink sm:block">{name}</span>
         <ChevronDown className="size-4.5 text-ink/70 transition group-open:rotate-180" aria-hidden />
       </summary>
       <div className="card absolute right-0 z-40 mt-2 w-56 p-1.5">

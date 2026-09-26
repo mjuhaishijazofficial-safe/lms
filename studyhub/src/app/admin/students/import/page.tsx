@@ -11,7 +11,6 @@ export default async function ImportStudentsPage() {
     <>
       <PageHeader
         title="Import students"
-        description="Add many students at once, with their subjects, from a pasted list."
         crumbs={[{ label: "Students", href: "/admin/students" }, { label: "Import" }]}
       />
       <StudentImportForm tree={tree} />

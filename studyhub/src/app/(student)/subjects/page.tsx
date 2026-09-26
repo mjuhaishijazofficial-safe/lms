@@ -17,7 +17,7 @@ export default async function SubjectsPage() {
 
   return (
     <>
-      <PageHeader title="Subjects" description={`Everything you are studying, by ${TERMS.semesterLower}. Earlier ${TERMS.semesters.toLowerCase()} stay open for revision.`} />
+      <PageHeader title="Subjects" />
       {subjectCount === 0 ? (
         <div className="card">
           <EmptyState

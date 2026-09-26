@@ -25,7 +25,7 @@ export default async function ProfilePage({ searchParams }: PageProps<"/profile"
 
   return (
     <>
-      <PageHeader title="Profile" description="Your details. Ask your admin if anything needs changing." />
+      <PageHeader title="Profile" />
       <Notice searchParams={await searchParams} />
       <div className="grid items-start gap-6 lg:grid-cols-2">
         <section className="card p-6 sm:p-8">

@@ -39,7 +39,6 @@ export default async function StudentsPage({ searchParams }: PageProps<"/admin/s
     <>
       <PageHeader
         title="Students"
-        description={`Create student accounts, place them in a ${TERMS.programLower} and ${TERMS.semesterLower}, and control who can sign in.`}
         actions={
           <>
             <Link href="/admin/students/import" className="btn-outline"><ClipboardPaste className="size-4.5" aria-hidden /> Import list</Link>

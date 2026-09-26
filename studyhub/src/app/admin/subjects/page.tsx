@@ -34,7 +34,6 @@ export default async function SubjectsPage({ searchParams }: PageProps<"/admin/s
     <>
       <PageHeader
         title="Subjects"
-        description={`Each subject belongs to one ${TERMS.programLower}, optionally to a ${TERMS.semesterLower}, and contains chapters.`}
         actions={courses.length > 0 && <Link href={`/admin/subjects/new${semesterId ? `?semester=${semesterId}` : ""}${!semesterId && courseId ? `?course=${courseId}` : ""}`} className="btn-primary"><Plus className="size-4.5" aria-hidden /> New subject</Link>}
       />
       <Notice searchParams={sp} />

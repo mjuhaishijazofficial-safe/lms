@@ -38,7 +38,6 @@ export default async function FeesPage({ searchParams }: PageProps<"/admin/fees"
     <>
       <PageHeader
         title="Fees"
-        description="What each student owes StudyHub for a period, and whether they've paid. Payment itself happens off-platform — this is only the record."
         actions={<Link href="/admin/fees/new" className="btn-primary"><Plus className="size-4.5" aria-hidden /> New fee</Link>}
       />
       <Notice searchParams={sp} />

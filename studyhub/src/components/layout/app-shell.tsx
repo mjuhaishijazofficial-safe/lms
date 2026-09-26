@@ -11,7 +11,7 @@ export function AppShell({ user, variant, topbar, actions, children }: {
       <Sidebar variant={variant} />
       <div className="lg:pl-66">
         <div className="mx-auto max-w-360 px-4 sm:px-6 lg:px-8">
-          <header className="flex items-center gap-3 py-4 lg:py-5">
+          <header className="flex items-center gap-3 py-3">
             <MobileMenu variant={variant} />
             <div className="min-w-0 flex-1">{topbar}</div>
             {actions}

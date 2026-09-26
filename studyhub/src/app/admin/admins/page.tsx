@@ -20,7 +20,7 @@ export default async function AdminsPage({ searchParams }: PageProps<"/admin/adm
 
   return (
     <>
-      <PageHeader title="Admins" description="People who can manage students, programs and study material." />
+      <PageHeader title="Admins" />
       <Notice searchParams={sp} />
 
       <TableCard>

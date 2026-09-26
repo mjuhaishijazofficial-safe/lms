@@ -43,7 +43,6 @@ export default async function TestsPage({ searchParams }: PageProps<"/admin/test
     <>
       <PageHeader
         title="Tests"
-        description="Timed, MCQ-based tests you write yourself for a subject — a weekly test, a quiz, anything you like. No AI, no cost."
         actions={hasSubjects && <Link href="/admin/tests/new" className="btn-primary"><Plus className="size-4.5" aria-hidden /> New test</Link>}
       />
       <Notice searchParams={sp} />

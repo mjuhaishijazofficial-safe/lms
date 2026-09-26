@@ -18,7 +18,7 @@ export default async function RecentPage({ searchParams }: PageProps<"/recent">)
 
   return (
     <>
-      <PageHeader title="Recent Materials" description="The newest study material available to you, newest first." />
+      <PageHeader title="Recent Materials" />
       {rows.length === 0 ? (
         <div className="card">
           <EmptyState icon={Clock} title="No study material has been added yet." description="New material will show up here as soon as your admin adds it." />

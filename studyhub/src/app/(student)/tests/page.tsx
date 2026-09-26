@@ -22,7 +22,7 @@ export default async function StudentTestsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Tests" description="Timed tests your admin has set for your subjects. Each one is a single attempt." />
+      <PageHeader title="Tests" />
 
       {tests.length === 0 ? (
         <div className="card">

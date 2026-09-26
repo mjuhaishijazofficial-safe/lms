@@ -38,7 +38,6 @@ export default async function StudentDashboard({ searchParams }: PageProps<"/das
     <>
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight sm:text-[1.75rem]">Hi, {user.name.split(" ")[0]}!</h1>
-        <p className="mt-1 text-muted">Keep learning, keep growing.</p>
       </header>
       <Notice searchParams={await searchParams} />
       <AnnouncementsCard items={announcements} />

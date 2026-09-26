@@ -32,7 +32,7 @@ export default async function SearchPage({ searchParams }: PageProps<"/search">)
 
   return (
     <>
-      <PageHeader title="Search" description={q ? `Results for "${q}"` : "Search your subjects, chapters and materials."} />
+      <PageHeader title="Search" description={q ? `Results for "${q}"` : undefined} />
 
       <form method="get" action="/search" role="search" className="mb-8 max-w-xl">
         <label htmlFor="q" className="sr-only">Search</label>

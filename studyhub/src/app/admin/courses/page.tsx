@@ -22,7 +22,6 @@ export default async function ProgramsPage({ searchParams }: PageProps<"/admin/c
     <>
       <PageHeader
         title={TERMS.programs}
-        description={`Each ${TERMS.programLower} is a degree, like BS Computer Science or BBA. Open one to see its ${TERMS.semesters.toLowerCase()} and the courses in each.`}
         actions={
           <>
             <Link href="/admin/courses/vu" className="btn-outline"><Download className="size-4.5" aria-hidden /> Add from VU</Link>

@@ -34,7 +34,7 @@ export default async function AdminDashboard({ searchParams }: PageProps<"/admin
 
   return (
     <>
-      <PageHeader title={`Hi, ${user.name}!`} description="Here's what's in your study library." />
+      <PageHeader title={`Hi, ${user.name}!`} />
       <Notice searchParams={await searchParams} />
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">

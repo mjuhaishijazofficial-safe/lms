@@ -32,7 +32,7 @@ export default async function BookmarksPage({ searchParams }: PageProps<"/bookma
 
   return (
     <>
-      <PageHeader title="Bookmarks" description="Subjects and study material you saved for later." />
+      <PageHeader title="Bookmarks" />
 
       {empty ? (
         <div className="card">

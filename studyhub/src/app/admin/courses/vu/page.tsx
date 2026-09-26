@@ -51,9 +51,6 @@ export default async function VuImportPage({ searchParams }: PageProps<"/admin/c
       <>
         <PageHeader
           title="Add from Virtual University"
-          description={into
-            ? `Which VU degree is ${into.name}? Its courses are added to the right ${TERMS.semesters.toLowerCase()}, and you choose which ones first.`
-            : `Pick a degree. You'll see every course VU lists for it, ${TERMS.semesterLower} by ${TERMS.semesterLower}, and choose which to add.`}
           crumbs={crumbs}
         />
         {suggested && (
@@ -74,7 +71,6 @@ export default async function VuImportPage({ searchParams }: PageProps<"/admin/c
     <>
       <PageHeader
         title={scheme.name}
-        description={`Tick the courses to add. Required ones are ticked already. Electives are left for you to choose, since each student takes only some.`}
         crumbs={[...crumbs.slice(0, -1), { label: "Add from VU", href: `/admin/courses/vu${into ? `?program=${into.id}` : ""}` }, { label: scheme.name }]}
       />
       <VuImportForm

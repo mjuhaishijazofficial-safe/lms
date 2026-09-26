@@ -18,7 +18,7 @@ export default async function StudentFeePage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Fee" description="Your StudyHub usage fee. Payment is handled by your admin, not inside the app." />
+      <PageHeader title="Fee" />
 
       {fees.length === 0 ? (
         <div className="card">

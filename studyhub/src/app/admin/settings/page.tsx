@@ -11,7 +11,7 @@ export default async function SettingsPage({ searchParams }: PageProps<"/admin/s
   const user = await requireAdmin();
   return (
     <>
-      <PageHeader title="Settings" description="Your own account. Student accounts are managed under Students." />
+      <PageHeader title="Settings" />
       <Notice searchParams={await searchParams} />
       <div className="space-y-6">
         <AccountForm name={user.name} email={user.email} />

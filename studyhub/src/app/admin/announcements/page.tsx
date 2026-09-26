@@ -20,7 +20,7 @@ export default async function AnnouncementsPage({ searchParams }: PageProps<"/ad
 
   return (
     <>
-      <PageHeader title="Announcements" description="Messages that appear at the top of your students' dashboards." />
+      <PageHeader title="Announcements" />
       <Notice searchParams={sp} />
 
       {items.length === 0 ? (

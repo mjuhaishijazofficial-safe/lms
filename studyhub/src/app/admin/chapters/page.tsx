@@ -40,7 +40,6 @@ export default async function ChaptersPage({ searchParams }: PageProps<"/admin/c
     <>
       <PageHeader
         title="Chapters"
-        description="Chapters organise a subject's study materials."
         actions={hasSubjects && (
           <>
             <Link href={`/admin/chapters/guides${subjectId ? `?subject=${subjectId}` : ""}`} className="btn-outline"><FileCode2 className="size-4.5" aria-hidden /> From study guides</Link>

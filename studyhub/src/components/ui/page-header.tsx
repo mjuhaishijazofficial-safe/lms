@@ -4,7 +4,7 @@ export function PageHeader({ title, description, crumbs, actions }: {
   title: string; description?: string; crumbs?: Crumb[]; actions?: React.ReactNode;
 }) {
   return (
-    <header className="mb-6 space-y-3">
+    <header className="mb-5 space-y-2">
       {crumbs && <Breadcrumbs items={crumbs} />}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">

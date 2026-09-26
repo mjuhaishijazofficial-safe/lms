@@ -53,7 +53,6 @@ export default async function MaterialsPage({ searchParams }: PageProps<"/admin/
     <>
       <PageHeader
         title="Materials"
-        description={`Study files, videos, links and notes, organised by ${TERMS.programLower}, subject and chapter.`}
         actions={hasChapters && (
           <>
             <Link href="/admin/materials/bulk" className="btn-outline"><FileUp aria-hidden /> Add multiple</Link>

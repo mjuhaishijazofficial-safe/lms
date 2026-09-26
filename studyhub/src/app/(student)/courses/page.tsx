@@ -18,7 +18,7 @@ export default async function MyCoursesPage() {
 
   return (
     <>
-      <PageHeader title="My Courses" description={`The ${TERMS.programLower} you are enrolled in, with its ${TERMS.semesters.toLowerCase()} and subjects.`} />
+      <PageHeader title="My Courses" />
       {courses.length === 0 ? (
         <div className="card">
           <EmptyState icon={GraduationCap} title={`You haven't been assigned to a ${TERMS.programLower} yet.`} description="Please contact your admin." />

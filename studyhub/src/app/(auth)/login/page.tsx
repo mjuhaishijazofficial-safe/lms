@@ -28,7 +28,6 @@ export default async function LoginPage() {
         <div className="relative"><Logo tone="dark" /></div>
         <div className="relative my-auto max-w-md">
           <h2 className="text-4xl font-bold leading-tight tracking-tight">All your study material in one place.</h2>
-          <p className="mt-4 text-lg text-sidebar-ink">Sign in to pick up where you left off.</p>
           <ul className="mt-10 space-y-6">
             {FEATURES.map(({ icon: Icon, title, text }) => (
               <li key={title} className="flex items-start gap-4">
@@ -51,8 +50,7 @@ export default async function LoginPage() {
             <Logo />
           </div>
           <div className="card p-6 sm:p-8">
-            <h1 className="text-2xl font-bold tracking-tight text-ink">Welcome back</h1>
-            <p className="mb-7 mt-1 text-muted">Sign in to continue to your study material.</p>
+            <h1 className="mb-6 text-2xl font-bold tracking-tight text-ink">Welcome back</h1>
             <LoginForm />
             <div className="mt-7 border-t border-line pt-6 text-sm">
               <p className="font-medium text-ink">Forgot your password?</p>

@@ -17,7 +17,6 @@ export default async function GuideChaptersPage({ searchParams }: PageProps<"/ad
     <>
       <PageHeader
         title="Chapters from study guides"
-        description="Drop a course's NotebookLM HTML guides. Each one becomes the next chapter, with the guide attached and a practice test made from its MCQs, released on your schedule."
         crumbs={[{ label: "Chapters", href: "/admin/chapters" }, { label: "From study guides" }]}
       />
       <GuideChaptersForm
